@@ -1,0 +1,26 @@
+#! /bin/zsh
+
+print "Shiver me timbers!!"
+
+print "called with: $@"
+
+path+=.capthooks
+
+capt_files_changed=( $(git diff  --name-only origin/master | grep '\.clj$') )
+print "Files changed:" $capt_files_changed
+
+source capt.zsh
+
+print "commit_msg:" $commit_msg
+print "post_commit" $post_commit[2]
+print "pre_commit" $post_commit
+
+for line in $pre_commit; do
+    inv=( ${(@s: :)line} )
+    cmd=$inv[1]X
+    print "running:" $cmd
+    .capthooks/$cmd
+done
+
+active_hook=$1
+print "active:" $active_hook
