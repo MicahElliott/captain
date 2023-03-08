@@ -37,10 +37,58 @@ Each developer on your of your code base is encouraged to install Captain.
 1. Put the `capt` zsh script on your `path`
 1. Copy the set of one-liner git-hooks into your repo's `.git/hooks` dir
 1. Create a `.capt` file
-1. Create a `.capt-loacal` file
-1. Point Captain to your team scripts
+1. Create a `.capt-local` file
+1. Point Captain to your repo (team-shared) scripts
 
-## Configuration
+## Setup and configuration
+
+Start by creating a simple `capt.zsh` control file:
+
+``` zsh
+# Captain git-hook manager control file
+
+pre_commit=(
+    "clj-kondo $CAPT_FILES_CHANGED" # linting
+    cljfmt # reformat or check for poor formatting
+    "git-confirm.sh" # look for FIXMEs
+    'run-minimal-test-suite $CAPT_FILES_CHANGED'
+)
+commit_msg=(
+    'commitlint $(cat "$1")' # ensure log message meets standards
+)
+post_commit=(
+    "play-post-commit-sound.sh" # happy music on successful commit
+    "commit-colors $(git rev-parse HEAD)" # more confirmation rewards
+)
+post_checkout=(
+    "alert-migrations-pending.zsh" # inform that action is needed
+)
+```
+
+Say you want to enable those four git-hooks. Here's how you would create the
+corresponding hook scripts:
+
+```shell
+for hookfile in pre-commit commit-message post-checkout post-checkout; do
+    echo '#!/bin/zsh\ncapt $(basename $0) $@' >.git/hooks/$hookfile
+done
+```
+
+That enables git to do its default thing: next time you do a `git commit`, git
+will fire its default `pre-commit` script (you just created that) which just
+calls `capt` with git's args. Then `capt` does its job of finding the
+`capt.zsh` control file that you created.
+
+## User-local additional hooks
+
+Suppose you have even higher personal standards than the rest of your team. Or
+you just have OCD about line length. You can ensure that all of _your_ commits
+conform to your OCD by creating another local-only `captlocal.zsh` control
+file.
+
+``` zsh
+pre_commit=( 'check-line-length' ... other-custom-checkers... )
+```
 
 ## How to use Captain
 

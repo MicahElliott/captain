@@ -1,26 +1,77 @@
 #! /bin/zsh
 
-print "Shiver me timbers!!"
+# capt: a very simple git-hook manager
 
-print "called with: $@"
+print_banner() {
+    # print '(◕‿-) Shiver me timbers!'
+    print '(◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!'
+    print '       _________'
+    print '      |-_ .-. _-|'
+    print '      |  (*^*)  |'
+    print '      |_-"|H|"-_|'
+    print
+}
+# (⌒▽⌒) bird
+dbg() { [[ -n $CAPT_VERBOSE ]] && print $@ }
+aye() { print '(◕‿-)' $@ }
 
-path+=.capthooks
+print_banner
 
-capt_files_changed=( $(git diff  --name-only origin/master | grep '\.clj$') )
-print "Files changed:" $capt_files_changed
+active_githook=$1
+# hookargs=${@[2-]} # wrong
+aye "Runnin a shot: $active_githook hook scripts"
 
-source capt.zsh
+hooksdir=${CAPT_HOOKSDIR-.git/hooks}
+scriptsdir=${CAPT_SCRIPTSDIR-.captscripts}
+captfile=${CAPT_FILE-capt.zsh}
+captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
+path+=$scriptsdir
 
-print "commit_msg:" $commit_msg
-print "post_commit" $post_commit[2]
-print "pre_commit" $post_commit
+# Set up vars to be available in proj capt.zsh
+CAPT_FILES_CHANGED=( $(git diff  --name-only --cached origin/master | grep '\.clj$') )
+aye "Files under siege:" $CAPT_FILES_CHANGED
 
-for line in $pre_commit; do
-    inv=( ${(@s: :)line} )
-    cmd=$inv[1]X
-    print "running:" $cmd
-    .capthooks/$cmd
-done
+if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
+aye "Loadin the gunwales: $PWD/$captfile"
 
-active_hook=$1
-print "active:" $active_hook
+run_scripts () {
+    # active_githook=$1
+    aye "Execution awaits!"
+    for line in $@; do aye "- ${${(@s/:/)line}[1]}"; done; print
+    # print "scripts:" $=@
+    for line in $@; do
+        inv=( ${(@s: :)line} ) # split on spaces to get first
+        name=$inv[1]
+        prog=$inv[2]
+        cmd=${line#* } # remove up to first space
+        # shift 2 inv
+        aye "Ahoy! Fire in the hole, runnin $name" $=cmd
+        print CMD: $scriptsdir/$=cmd
+        if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd; else eval $cmd; fi
+        es=$?
+        if [[ $es -ne 0 ]]; then aye 'Shiver me timbers! Non-zero exit:' $es; print; exit $es; fi
+    done
+}
+
+select_hook() {
+    case $active_githook in
+        pre-commit) run_scripts $pre_commit ;;
+        commit-msg) run_scripts $commit_msg ;;
+        post-commit) run_scripts $post_commit ;;
+        prepare-commit-msg) run_scripts $prepare_commit_msg ;;
+        post-checkout) run_scripts $post_checkout ;;
+    esac
+}
+
+# Run team-wide repo hooks
+source $captfile
+select_hook
+
+if [[ -f $captfilelocal ]]; then
+    # Run user-local hooks
+    aye "Walkin the plank: user-local hook scripts"
+    source $captfilelocal
+    select_hook
+fi
+
+aye 'Show a leg!'
