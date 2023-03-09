@@ -45,7 +45,7 @@ run_scripts () {
     for line in $@; do
         inv=( ${(@s: :)line} ) # split on spaces to get first
         name=$inv[1] prog=$inv[2] cmd=${line#* } # remove up to first space
-        aye "Ahoy! Fire in the hole, runnin $name" $cmd
+        aye "Ahoy! Runnin $name" $cmd
         # Work with either a local script or something found on path
         if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd
         elif type $prog >/dev/null;    then eval $cmd
@@ -66,6 +66,7 @@ select_hook() {
         post-commit)        run_scripts $post_commit ;;
         prepare-commit-msg) run_scripts $prepare_commit_msg ;;
         post-checkout)      run_scripts $post_checkout ;;
+        *)                  run_scripts $1 ;;
     esac }
 
 ### Main
