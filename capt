@@ -2,6 +2,14 @@
 
 # capt: a very simple git-hook manager
 
+dbg() { [[ -n $CAPT_VERBOSE ]] && print $@ }
+aye() { print '(◕‿-)' $@ }
+
+reporoot=$(git rev-parse --show-toplevel)
+if [[ $reporoot != $PWD ]]; then
+    aye "Captain only runs from yer repo root: $reporoot"; exit 1
+fi
+
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
     print '(◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!'
@@ -9,16 +17,11 @@ print_banner() {
     print '      |-_ .-. _-|'
     print '      |  (*^*)  |'
     print '      |_-"|H|"-_|'
-    print
-}
-# (⌒▽⌒) bird
-dbg() { [[ -n $CAPT_VERBOSE ]] && print $@ }
-aye() { print '(◕‿-)' $@ }
+    print }
 
 print_banner
 
 active_githook=$1
-# hookargs=${@[2-]} # wrong
 aye "Runnin a shot: $active_githook hook scripts"
 
 hooksdir=${CAPT_HOOKSDIR-.git/hooks}
@@ -34,44 +37,50 @@ aye "Files under siege:" $CAPT_FILES_CHANGED
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 aye "Loadin the gunwales: $PWD/$captfile"
 
+# Run the scripts from control file
 run_scripts () {
-    # active_githook=$1
     aye "Execution awaits!"
+    # Print out all the scripts about to be run
     for line in $@; do aye "- ${${(@s/:/)line}[1]}"; done; print
-    # print "scripts:" $=@
     for line in $@; do
         inv=( ${(@s: :)line} ) # split on spaces to get first
-        name=$inv[1]
-        prog=$inv[2]
-        cmd=${line#* } # remove up to first space
-        # shift 2 inv
-        aye "Ahoy! Fire in the hole, runnin $name" $=cmd
-        print CMD: $scriptsdir/$=cmd
-        if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd; else eval $cmd; fi
+        name=$inv[1] prog=$inv[2] cmd=${line#* } # remove up to first space
+        aye "Ahoy! Fire in the hole, runnin $name" $cmd
+        # Work with either a local script or something found on path
+        if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd
+        elif type $prog >/dev/null;    then eval $cmd
+        # Just skip this one hook if ccommand not found
+        else aye "Skippin on yer $name $prog be lost at sea."
+        fi
         es=$?
+        wait # don't process until background scripts are finished
+        # Bail out on whole run if any script not successful
         if [[ $es -ne 0 ]]; then aye 'Shiver me timbers! Non-zero exit:' $es; print; exit $es; fi
-    done
-}
+    done }
 
+# Run a set of scripts based on which hook is active
 select_hook() {
     case $active_githook in
-        pre-commit) run_scripts $pre_commit ;;
-        commit-msg) run_scripts $commit_msg ;;
-        post-commit) run_scripts $post_commit ;;
+        pre-commit)         run_scripts $pre_commit ;;
+        commit-msg)         run_scripts $commit_msg ;;
+        post-commit)        run_scripts $post_commit ;;
         prepare-commit-msg) run_scripts $prepare_commit_msg ;;
-        post-checkout) run_scripts $post_checkout ;;
-    esac
-}
+        post-checkout)      run_scripts $post_checkout ;;
+    esac }
+
+### Main
 
 # Run team-wide repo hooks
 source $captfile
 select_hook
 
+# Optionally run user hooks if they exist
 if [[ -f $captfilelocal ]]; then
     # Run user-local hooks
-    aye "Walkin the plank: user-local hook scripts"
+    aye "Next on the plank: user-local hook scripts"
     source $captfilelocal
     select_hook
 fi
 
+# Show successful completion
 aye 'Show a leg!'

@@ -1,6 +1,8 @@
 # Captain
 
-Captain is a very simple, worse-is-better approach to git-hook managmement.
+Captain is a very simple, worse-is-better approach to git-hook managmement,
+with no magic, and just a tiny script to download. Suited for a team,
+extensible for you.
 
 ## Why Captain instead of X?
 
@@ -12,8 +14,9 @@ Compared to Lefthook, Husky, and Overcommit, Captain is:
 - Compatible: other managers don't play nice with git clients, but Captain does
 - Basic: config is just a Zsh file with arrays of scripts for each hook (no yaml etc)
 - Clear: your standard git-hooks become one-line calls to `capt`
+- Fun: get ideas for new hooks and be entertained by the Captain!
 
-And just like those others, Captain is also:
+And like those others, Captain is also:
 
 - Shareable: your whole team has a set of common hooks
 - Individual: you can maintain your own set of hooks
@@ -48,46 +51,59 @@ Start by creating a simple `capt.zsh` control file:
 # Captain git-hook manager control file
 
 pre_commit=(
-    "clj-kondo $CAPT_FILES_CHANGED" # linting
-    cljfmt # reformat or check for poor formatting
-    "git-confirm.sh" # look for FIXMEs
-    'run-minimal-test-suite $CAPT_FILES_CHANGED'
+    "linter:        clj-kondo $CAPT_CHANGES &" # linting of files being committed
+    'formatter:     cljfmt &'                  # reformat or check for poor formatting
+    'fixmes:        git-confirm.sh'            # look for/prompt on FIXMEs
+    'test-suite.py: run-minimal-test-suite $CAPT_CHANGES'
 )
 commit_msg=(
-    'commitlint $(cat "$1")' # ensure log message meets standards
+    'commit-legalizer: commitlint $(cat "$1")' # ensure log message meets standards
 )
 post_commit=(
-    "play-post-commit-sound.sh" # happy music on successful commit
-    "commit-colors $(git rev-parse HEAD)" # more confirmation rewards
+    "stimulator: play-post-commit-sound.sh"           # happy music on successful commit
+    "colorizer:  commit-colors $(git rev-parse HEAD)" # more confirmation rewards
 )
 post_checkout=(
-    "alert-migrations-pending.zsh" # inform that action is needed
+    "mig-alerter: alert-migrations-pending.zsh" # inform that action is needed
 )
 ```
 
-Say you want to enable those four git-hooks. Here's how you would create the
-corresponding hook scripts:
+Some things to notice in that file:
+
+- All the hooks/scripts are short and live in a single place
+- Each "hook section" is just a Zsh array named for git's conventions
+- Each script is a line with a `somename:` prefix, then the eval'd command
+- The `linter` and `formatter` are run in parallel by being backgrounded (`&`)
+- It doesn't generally matter whether you single- or double-quote commands
+- The `$CAPT_CHANGES` is the convenient list of files that are part of the commit
+- The `test-suite.py` is a local script not on `path`; Captain figures that out
+- It gets put into git at your project-root and is used by all devs on the project
+
+Now say you want to enable those four git-hooks (comprising 8 scripts). Here's
+how you would create the corresponding hooks, which can be done by each
+developer upon cloning the project repo:
 
 ```shell
 for hookfile in pre-commit commit-message post-checkout post-checkout; do
     echo '#!/bin/zsh\ncapt $(basename $0) $@' >.git/hooks/$hookfile
+    chmod +x .git/hooks/$hookfile
 done
 ```
 
-That enables git to do its default thing: next time you do a `git commit`, git
-will fire its default `pre-commit` script (you just created that) which just
-calls `capt` with git's args. Then `capt` does its job of finding the
-`capt.zsh` control file that you created.
+That enables git to do its default thing: next time you (or anyone) does a
+`git commit`, git will fire its default `pre-commit` script (you just created
+that) which just calls `capt` with git's args. Then `capt` does its job of
+finding the `capt.zsh` control file that you created.
 
 ## User-local additional hooks
 
-Suppose you have even higher personal standards than the rest of your team. Or
-you just have OCD about line length. You can ensure that all of _your_ commits
+Suppose you have even higher personal standards than the rest of your team. I.e,
+you have OCD about line length. You can ensure that all of _your_ commits
 conform to your OCD by creating another local-only `captlocal.zsh` control
 file.
 
 ``` zsh
-pre_commit=( 'check-line-length' ... other-custom-checkers... )
+pre_commit=( 'line-lengh-nazi: check-line-length' ... other-custom-checkers... )
 ```
 
 ## How to use Captain
