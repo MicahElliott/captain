@@ -10,6 +10,11 @@ if [[ $reporoot != $PWD ]]; then
     aye "Captain only runs from yer repo root: $reporoot"; exit 1
 fi
 
+if [[ $#@ < 1 ]]; then
+    aye 'Captain needs arrrgs!'; exit 1
+fi
+
+
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
     print '(◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!'
@@ -22,7 +27,7 @@ print_banner() {
 print_banner
 
 active_githook=$1
-aye "Runnin a shot: $active_githook hook scripts"
+aye "=== ${(U)active_githook} ==="
 
 hooksdir=${CAPT_HOOKSDIR-.git/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-.captscripts}
@@ -30,22 +35,79 @@ captfile=${CAPT_FILE-capt.zsh}
 captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
 path+=$scriptsdir
 
-# Set up vars to be available in proj capt.zsh
-CAPT_FILES_CHANGED=( $(git diff  --name-only --cached origin/master | grep '\.clj$') )
-aye "Files under siege:" $CAPT_FILES_CHANGED
+# Built-in hooks
+typeset -A builtin_cannons=(
+    'markdownlint' '(md|mkd|markdown)'
+    'clj-kondo'    '(clj|cljc|cljs)'
+)
+
+get_exts() {}
+filter_md='{md,mkd,markdown}'
+
+setup_changes() {
+    # Set up vars to be available in proj capt.zsh
+    # VALUEADD Magic to figure out main v master and get changed files
+    main_branch=$(git branch | grep '*' | cut -f2 -d' ')
+    CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
+}
 
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 aye "Loadin the gunwales: $PWD/$captfile"
 
+capt_play_alert() {
+    if [[ $OSTYPE = linux-gnu ]]; then
+        player=play
+    elif [[ $OSTYPE =~ darwin ]]; then
+        player=afplay
+    else
+        aye "Can't find audio player for alerting; falling back to beep."
+        player=beep
+    fi
+    $player $@ }
+
+setup_changes
+
 # Run the scripts from control file
 run_scripts () {
+    # TODO check for existence of specified hook
     aye "Execution awaits!"
     # Print out all the scripts about to be run
-    for line in $@; do aye "- ${${(@s/:/)line}[1]}"; done; print
+    for line in $@; do
+        [[ $line == *:* ]] && aye "- ${${(@s/:/)line}[1]}" || aye "- $line"
+    done
     for line in $@; do
         inv=( ${(@s: :)line} ) # split on spaces to get first
-        name=$inv[1] prog=$inv[2] cmd=${line#* } # remove up to first space
-        aye "Ahoy! Runnin $name" $cmd
+        name=$inv[1]
+        prog=$inv[2]
+        cmd=${line#* } # remove up to first space
+
+        # Built-in has filter already, or specified filter
+        print_name=$(sed 's/(.*//' <<<$name)
+        print
+        aye "??? ${(U)print_name} ???"
+        if [[ ! $name == *: ]]; then
+            prog=$inv[1]
+            filtered_files=( $(grep -E "\.$builtin_cannons[$name]" <<<$CAPT_FILES_CHANGED) )
+            cmd="$prog $filtered_files"
+            aye "Filtered files under siege:" $filtered_files
+            aye "Aimin our built-in cannon: $name"
+        elif [[ $name == *(*)* ]]; then
+            filter=$(sed 's/.*(/(/;s/://' <<<$name) # remove front name and trailing :
+            dbg filter: $filter
+            dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
+            filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") )
+            CAPT_FILES_CHANGED=$filtered_files
+            aye "Filtered files under siege:" $filtered_files
+            # cmd="$name $filtered_files"
+            aye "Aimin yer custom-rigged cannon: $name $cmd"
+        elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then
+            aye "Files under siege:" $filtered_files
+            aye "Ahoy! Blastin yer cannon with yer files: $name" $cmd
+        else
+            aye "Ye took care of file selection yerself, er no files needin fer sayin."
+            aye "Ahoy! Blastin yer cannon: $name" $cmd
+        fi
+
         # Work with either a local script or something found on path
         if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd
         elif type $prog >/dev/null;    then eval $cmd
@@ -55,7 +117,11 @@ run_scripts () {
         es=$?
         wait # don't process until background scripts are finished
         # Bail out on whole run if any script not successful
-        if [[ $es -ne 0 ]]; then aye 'Shiver me timbers! Non-zero exit:' $es; print; exit $es; fi
+        if [[ $es -ne 0 ]]; then
+            aye '<>_<> (-_- ;) \(ˆ˚ˆ)/  くコ:彡 ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
+        else
+            aye '✓✓✓ SURVIVAL! ✓✓✓'
+        fi
     done }
 
 # Run a set of scripts based on which hook is active
@@ -84,4 +150,5 @@ if [[ -f $captfilelocal ]]; then
 fi
 
 # Show successful completion
+print
 aye 'Show a leg!'

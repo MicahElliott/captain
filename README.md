@@ -1,10 +1,10 @@
 # Captain
 
-Captain is a very simple, worse-is-better approach to git-hook managmement,
+Captain is a very simple, worse-is-better approach to git-hook management,
 with no magic, and just a tiny script to download. Suited for a team,
 extensible for you.
 
-```
+```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀
 ⠀⣠⣤⣶⣶⣿⣿⣿⣿⣯⠀⠀⣽⣿⣿⣿⣿⣷⣶⣤⣄⠀
@@ -14,31 +14,33 @@ extensible for you.
 ⠀⣠⣾⣿⠂⠀⠀⣤⣄⠀⠀⢰⣿⣿⣿⣿⡆⠐⣿⣷⣄⠀
 ⠀⣿⣿⡀⠀⠀⠈⠿⠟⠀⠀⠈⠻⣿⣿⡿⠃⠀⢀⣿⣿⠀
 ⠀⠘⠻⢿⣷⡀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⢀⣾⡿⠟⠃⠀
-⠀⠀⠀⠸⣿⣿⣷⣦⣾⣿⣿⣿⣿⣦⣴⣾⣿⣿⡇⠀⠀⠀  I'll be sinkin me hooks into yer git!
+⠀⠀⠀⠸⣿⣿⣷⣦⣾⣿⣿⣿⣿⣦⣴⣾⣿⣿⡇⠀⠀⠀  Aye, I'll be sinkin me hooks inta yer gits!
 ⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀
 ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀
-
 ```
 
 ## Why Captain instead of another hook manager?
 
-Compared to Lefthook, Husky, and Overcommit, Captain is:
+Compared to [Lefthook](https://github.com/evilmartians/lefthook),
+[Husky](https://typicode.github.io/husky/), and
+[Overcommit](https://github.com/sds/overcommit), Captain is:
 
 - Tiny and transparent: read and understand the whole code base (one file) in minutes
 - Simple: workflow is just calling the scripts you probably already have
-- No dependencies: if you have Zsh, you're already done
+- No dependencies: if you have Such, you're already done
 - Compatible: other managers don't play nice with git clients (eg, magit), but Captain does
 - Basic: config is just a Zsh file with arrays of scripts for each hook (no yaml etc)
 - Clear: your standard git-hooks become one-line calls to `capt`
 - Fun: get ideas for new hooks and be entertained by the Captain!
 - All documentation right here: this readme is all you need
 - Language and tool agnostic: you don't need to know anything about npm, ruby, etc
+- Hands-off: Captain doesn't try to install things for you
+- Extensible, custom for each dev: run your own hooks in addition to standards
 
 And like those others, Captain is also:
 
 - Shareable: your whole team has a set of common hooks
-- Individual: you can maintain your own set of hooks
 - Batteries: vars for which files changed, multi-OS functions
 - Customizeable: run hooks in parallel, with verbosity, etc; run from personal
   dirs or team's
@@ -50,7 +52,8 @@ hooks that all developers agree on. Also, having multiple tasks in a single
 hook file gets slow and ugly: managers give you organization, parallelism, and
 some shortcut facilities. Over time, you come up with more ideas for things
 that can run automatically as hooks, and eventually, your standard hook files
-just get unmanageable.
+can get unmanageable.
+
 
 ## Installation
 
@@ -66,6 +69,49 @@ pre-commit hooks. You can run it directly to see, and then have all of
 git-hooks call it.
 
 ## Setup and configuration
+
+Say you want to enable some git-hooks. Here's how you would create the
+them, just like you always do with git. This can be done by each
+developer upon cloning the project repo:
+
+```shell
+    # git's default location; everyone has to do the hook creation, not in repo
+hookdir=.git/hooks
+# Or like this, if you want to commit the hooks to repo, and set hooksPath
+# hookdir=.capthooks
+# git config core.hooksPath $hookdir
+mkdir $hookdir
+for hookfile in pre-commit commit-message post-checkout post-commit; do
+    echo 'capt $(basename $0) $@' > $hookdir/$hookfile
+    chmod +x $hookdir/$hookfile
+done
+```
+
+Now your `$hookdir` looks like:
+
+```text
+.capthooks
+├── commit-message
+├── post-checkout
+├── post-commit
+└── pre-commit
+```
+
+That enables git to do its default thing: next time you (or anyone) does a
+`git commit`, git will fire its default `pre-commit` script (you just created
+that) which just calls `capt` with git's args. Then `capt` does its job of
+finding the `capt.zsh` control file that you created.
+
+OR, you could put all those trivial one-liner git-hooks into your project's
+repo and point git to them:
+
+```shell
+git add $hookdir
+git commit -m 'Add capt-driven git hooks (PSA: install capt and set hooksPath)'
+```
+
+so that all your fellow developers will just get "hooked"
+without having to do anything but:
 
 Start by creating a simple `capt.zsh` control file:
 
@@ -108,38 +154,6 @@ Some things to notice in that file:
 - It gets put into git at your project-root and is used by all devs on the project
 - The last `clean_up` hook isn't a git hook, but you can run it directly with `capt` cli
 
-Now say you want to enable those four git-hooks (comprising 8 scripts). Here's
-how you would create the corresponding hooks, which can be done by each
-developer upon cloning the project repo:
-
-```shell
-# git's default location; everyone has to do the hook creation
-hookdir=.git/hooks/$hookfile
-# Or like this, if you want to commit the hooks, and set hooksPath
-# hookdir=.githooks/$hookfile
-# git config core.hooksPath $hookdir
-for hookfile in pre-commit commit-message post-checkout post-checkout; do
-    echo 'capt $(basename $0) $@' > $hookdir/$hookfile
-    chmod +x $hookdir/$hookfile
-done
-```
-
-That enables git to do its default thing: next time you (or anyone) does a
-`git commit`, git will fire its default `pre-commit` script (you just created
-that) which just calls `capt` with git's args. Then `capt` does its job of
-finding the `capt.zsh` control file that you created.
-
-OR, you could put all those trivial one-liner git-hooks into your project's
-repo and point git to them:
-
-```shell
-git add $hookdir
-git commit -m 'Add capt-driven git hooks (PSA: install capt and set hooksPath)'
-```
-
-so that all your fellow developers will just get "hooked"
-without having to do anything but:
-
 ## User-local additional hooks
 
 Suppose you have even higher personal standards than the rest of your team. I.e,
@@ -148,7 +162,7 @@ conform to your OCD by creating another local-only `captlocal.zsh` control
 file.
 
 ``` zsh
-pre_commit=( 'line-lengh-nazi: check-line-length' ... other-custom-checkers... )
+pre_commit=( 'line-length-nazi: check-line-length' ... other-custom-checkers... )
 ```
 
 ## Migrating your existing git-hooks
@@ -195,3 +209,6 @@ your own. Here is a list of themes to start with:
 - alerting: migrations to be run
 - deprecations: insecure or outdated deps
 - audio effects: good or bad things completed
+
+[Here](https://github.com/sds/overcommit/blob/master/config/default.yml) is a
+list of available hooks in Overcommit for in.
