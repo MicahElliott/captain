@@ -26,14 +26,17 @@ print_banner() {
 
 print_banner
 
-active_githook=$1
-aye "=== ${(U)active_githook} ==="
-
 hooksdir=${CAPT_HOOKSDIR-.git/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-.captscripts}
 captfile=${CAPT_FILE-capt.zsh}
 captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
 path+=$scriptsdir
+
+if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
+aye "Loadin the gunwales: $PWD/$captfile\n"
+
+active_githook=$1
+aye "=== ${(U)active_githook} ==="
 
 # Built-in hooks
 typeset -A builtin_cannons=(
@@ -50,9 +53,6 @@ setup_changes() {
     main_branch=$(git branch | grep '*' | cut -f2 -d' ')
     CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
 }
-
-if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
-aye "Loadin the gunwales: $PWD/$captfile"
 
 capt_play_alert() {
     if [[ $OSTYPE = linux-gnu ]]; then
@@ -87,22 +87,32 @@ run_scripts () {
         aye "??? ${(U)print_name} ???"
         if [[ ! $name == *: ]]; then
             prog=$inv[1]
+            just_buitins=${(k)builtin_cannons}
+            if ! (($just_buitins[(Ie)$name])); then aye "Unable to find built-in:" $name; exit 1; fi
             filtered_files=( $(grep -E "\.$builtin_cannons[$name]" <<<$CAPT_FILES_CHANGED) )
             cmd="$prog $filtered_files"
-            aye "Filtered files under siege:" $filtered_files
-            aye "Aimin our built-in cannon: $name"
+            if [[ $#filtered_files < 1 ]]; then aye "Not seein any files staged, skippin."; continue
+            else
+                aye "Filtered files under siege:" $filtered_files
+                aye "Aimin our built-in cannon: $name"
+            fi
         elif [[ $name == *(*)* ]]; then
             filter=$(sed 's/.*(/(/;s/://' <<<$name) # remove front name and trailing :
             dbg filter: $filter
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
             filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") )
             CAPT_FILES_CHANGED=$filtered_files
-            aye "Filtered files under siege:" $filtered_files
-            # cmd="$name $filtered_files"
-            aye "Aimin yer custom-rigged cannon: $name $cmd"
+            if [[ $#filtered_files < 1 ]]; then aye "Not seein any files staged, skippin."; continue
+            else
+                aye "Filtered files under siege:" $filtered_files
+                aye "Aimin yer custom-rigged cannon: $name $cmd"
+            fi
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then
-            aye "Files under siege:" $filtered_files
-            aye "Ahoy! Blastin yer cannon with yer files: $name" $cmd
+            if [[ $#filtered_files < 1 ]]; then aye "Not seein any files staged, skippin."; continue
+            else
+                aye "Files under siege:" $CAPT_FILES_CHANGED
+                aye "Ahoy! Blastin yer cannon with yer files: $name" $cmd
+            fi
         else
             aye "Ye took care of file selection yerself, er no files needin fer sayin."
             aye "Ahoy! Blastin yer cannon: $name" $cmd
