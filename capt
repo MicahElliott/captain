@@ -11,9 +11,8 @@ if [[ $reporoot != $PWD ]]; then
 fi
 
 if [[ $#@ < 1 ]]; then
-    aye 'Captain needs arrrgs!'; exit 1
+    aye 'Captain needs arrrgs! Try passing a git-hook name, like "pre-commit".'; exit 1
 fi
-
 
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'

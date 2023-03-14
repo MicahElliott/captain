@@ -28,9 +28,9 @@ Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 
 - Tiny and transparent: read and understand the whole code base (one file) in minutes
 - Simple: workflow is just calling the scripts you probably already have
-- No dependencies: if you have Such, you're already done
-- Compatible: other managers don't play nice with git clients (eg, magit), but Captain does
-- Basic: config is just a Zsh file with arrays of scripts for each hook (no yaml etc)
+- No dependencies: if you have Zsh, you're already done
+- Client-compatible: other managers don't play nice with some git clients (eg, magit)
+- Basic: config is just a `capt.zsh` file with arrays of scripts for each hook (no yaml etc)
 - Clear: your standard git-hooks become one-line calls to `capt`
 - Fun: get ideas for new hooks and be entertained by the Captain!
 - All documentation right here: this readme is all you need
@@ -38,7 +38,7 @@ Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 - Hands-off: Captain doesn't try to install things for you
 - Extensible, custom for each dev: run your own hooks in addition to standards
 
-And like those others, Captain is also:
+Captain also has most of the features of other managers:
 
 - Shareable: your whole team has a set of common hooks
 - Batteries: vars for which files changed, multi-OS functions
@@ -73,7 +73,8 @@ invent, write, and/or wrap around every tool you run:
 
 ## Installation
 
-Each developer of your code base is encouraged to install Captain.
+Each developer of your code base is encouraged to install Captain, so
+violations can be caught before code changes go to CI.
 
 1. Put the `capt` zsh script on your `path`
 1. Run the for-loop below to create any git-hooks you want
@@ -181,6 +182,72 @@ commits conform by creating another local-only `captlocal.zsh` control file.
 pre_commit=( 'line-length-nazi: check-line-length' ... other-custom-checkers... )
 ```
 
+## Sample run
+
+Rather than a live demo, here's an example of a `pre-commit` run (doesn't
+correspond to checks shown above). This shows a couple of team-shared checks
+(clj-kondo and fixmes), and then after the parrot a single user-local
+`something` check:
+
+```text
+(◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!
+       _________
+      |-_ .-. _-|
+      |  (*^*)  |
+      |_-"|H|"-_|
+
+(◕‿-) Loadin the gunwales: /home/mde/work/fooproj/capt.zsh
+
+(◕‿-) === PRE-COMMIT ===
+
+(◕‿-) Discoverin yer MAIN branch remotely...
+(◕‿-) Main branch bein compared against: master
+(◕‿-) Files changed in yer stage (10):
+(◕‿-) - base/src/main/clojure/foo/core.clj
+(◕‿-) - resources/sql/some-queriees.sql
+(◕‿-) - ...
+(◕‿-) Execution awaits!
+(◕‿-) - clj-kondo
+(◕‿-) - fixmes
+
+(◕‿-) ??? CLJ-KONDO ???
+(◕‿-) Files under siege: 10
+maybe some output from clj-kondo, but assume all is well
+(◕‿-) Ahoy! Aimin our built-in cannon with files: $CAPT_FILES_CHANGED
+(◕‿-) ✓✓✓ SURVIVAL! (time: 2ms) ✓✓✓
+
+(◕‿-) ??? FIXMES ???
+(◕‿-) Ye took care of file selection yerself, or no files needin fer sayin.
+(◕‿-) Ahoy! Aimin yer cannon: fixmes: git-confirm.sh
+Git-Confirm: hooks.confirm.match not set, defaulting to 'TODO'
+Add matches with `git config --add hooks.confirm.match "string-to-match"`
+(◕‿-) ✓✓✓ SURVIVAL! (time: 12ms) ✓✓✓
+
+(◕‿-) Ye survived the barrage. Must have been a fluke.
+
+         \
+         (o>
+      ___(()___
+         ||
+
+(◕‿-) Next on the plank: user-local hook scripts
+(◕‿-) Loadin the gunwales: /home/mde/work/cc/captlocal.zsh
+
+(◕‿-) Execution awaits!
+(◕‿-) - something
+
+(◕‿-) ??? SOMETHING ???
+(◕‿-) Ye took care of file selection yerself, or no files needin fer sayin.
+(◕‿-) Ahoy! Aimin yer cannon: something: sayhi.zsh
+some output from sayhi
+(◕‿-) ✓✓✓ SURVIVAL! (time: 3ms) ✓✓✓
+
+(◕‿-) Ye survived the barrage. Must have been a fluke.
+
+(◕‿-) Show a leg!
+hint: Waiting for your editor to close the file...
+```
+
 ## Migrating your existing git-hooks
 
 You can either take the plunge and clean up, separate, and move your existing
@@ -229,4 +296,22 @@ your own. Here is a list of themes to start with:
 - audio effects: good or bad things completed
 
 [Here](https://github.com/sds/overcommit/blob/master/config/default.yml) is a
-list of available hooks in Overcommit for in.
+list of available hooks in Overcommit for inspiration.
+
+And here is a list of common hooks that any project may want to leverage,
+regardless of language:
+
+- commitlint
+- [markdownlint](https://github.com/igorshubovych/markdownlint-cli)
+- git-confirm: fixmes, etc
+- audible notifications
+-
+
+```text
+  \\
+   (o>
+   //\
+___V_/_____
+   ||
+   ||
+```
