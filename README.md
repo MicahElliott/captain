@@ -26,16 +26,19 @@ for individuals.
 enabling its checks. (You won't be impacted if you do nothing.)
 
 ```shell
- # point git to the new hooks
+# point git to the new hooks
 git config core.hooksPath .capthooks
-# install the tiny capt script
+# Install the capt command (a small shell script)
 cd /somewhere/on/your/PATH
 wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt
-chmod +x captq
-# make some changes and run git
-cd your-repo-root
-git commit # Captain at yer service!
+chmod +x capt
+# Make some changes and run git
+cd your-project-root
+git commit # Captain at yer service! ...
 ```
+
+If there are any "checkers" (linters, formatters, etc) being invoked that you
+don't have installed yet, Captain will kindly let you more details.
 
 ## Do I need a hook manager?
 
