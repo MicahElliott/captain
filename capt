@@ -5,13 +5,15 @@
 dbg() { [[ -n $CAPT_VERBOSE ]] && print $@ }
 aye() { print '(◕‿-)' $@ }
 
-reporoot=$(git rev-parse --show-toplevel)
-if [[ $reporoot != $PWD ]]; then
+reporoot=$(git rev-parse --show-toplevel 2>/dev/null)
+if [[ $? -ne 0 ]]; then
+    aye "Captain must be run from the root of a git repo."; exit 1
+elif [[ $reporoot != $PWD ]]; then
     aye "Captain only runs from yer repo root: $reporoot"; exit 1
 fi
 
 if [[ $#@ < 1 ]]; then
-    aye 'Captain needs arrrgs! Try passing a git-hook name, like "pre-commit".'; exit 1
+    aye 'Captain needs an arrrg! Try passing a git-hook name, like "pre-commit".'; exit 1
 fi
 
 print_banner() {
