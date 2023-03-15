@@ -6,3 +6,5 @@ pre_commit=(
     "fixmes: git-confirm.sh"
     # color-commit
 )
+
+commit_msg=( msglint )

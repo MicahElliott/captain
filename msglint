@@ -1,0 +1,27 @@
+#! /bin/zsh
+
+# Check commit message for adherence to hard-coded style
+
+example=':books: (#1234) [i18n] Add proper diacritics'
+msg=$1
+line1=$(head -1 <<< $msg)
+
+if ! grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*' <<<$line1; then
+    print 'Message does not match pattern'
+    print 'Acceptable subjects: (books|sparkles|bug|wrench|cop|check|lock|bomb|tada)'
+    print 'Optional specs: (#123) [topic]'
+    print 'Proper message: Verb ...'
+    print "Full example: $example"
+    exit 1
+fi
+
+line1len=$(wc --chars <<<$line1)
+if (( 72 < line1len )); then
+    print 'First line length exceeds 72'
+    exit 1
+fi
+
+if grep -q '[ .]$' <<<$line1; then
+    print 'First line must not end with period or space'
+    exit 1
+fi

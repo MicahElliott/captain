@@ -49,7 +49,7 @@ typeset -A builtin_cannons=(
     'markdownlint' '(md|mkd|markdown)markdownlint'
     'kondo'        '(clj|cljc|cljs)clj-kondo'
     # 'gommit'       'gommit check message "$(cat $1)"'
-    'gommit'       'gommit check message "$(cat $GITARG1)"'
+    'msglint'       'msglint "$(cat $GITARG1)"'
 )
 
 setup_changes() {
