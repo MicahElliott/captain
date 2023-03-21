@@ -1,0 +1,17 @@
+#! /bin/zsh
+
+# Convert branch name into commit message
+
+ex=mde/SCRUM-12345_FEAT_mytopic_some-detail-words
+ex=mde/SCRUM-12345_FEAT_some-detail-words
+becomes='feat: (SCRUM-12345) [mytopic] Some detail words'
+
+arr=${1:gs/_/ }
+arr=( $=arr )
+if [[ $#arr == 4 ]]; then
+    topic=" "[$arr[3]"]" sentence=$arr[4]
+else
+    sentence=$arr[3]
+fi
+story=$(sed -r -e 's^.*/^^' <<<$arr[1]) # SCRUM-12345
+print "${(L)arr[2]}: ($story)$topic ${sentence:gs/-/ }"
