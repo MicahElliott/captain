@@ -2,11 +2,14 @@
 
 # capt: a very simple git-hook manager
 
+autoload colors; colors
+
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 
-dbg() { [[ -n $CAPT_VERBOSE ]] && print "DEBUG:" $@ }
-aye() { print '(◕‿-)' $@ }
+dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[yellow]DEBUG:" $@$reset_color }
+# aye() { print '(◕‿-)' $@ }
+aye() { print "$fg_bold[blue](◕‿-)$reset_color" $@ }
 
 reporoot=$(git rev-parse --show-toplevel 2>/dev/null)
 if [[ $? -ne 0 ]]; then
@@ -21,7 +24,7 @@ fi
 
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
-    print '(◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!'
+    print "\n$fg_bold[blue](◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print '       _________'
     print '      |-_ .-. _-|'
     print '      |  (*^*)  |'
@@ -50,18 +53,30 @@ typeset -A builtin_cannons=(
     'kondo'        '(clj|cljc|cljs)clj-kondo'
     # 'gommit'       'gommit check message "$(cat $1)"'
     'msglint'       'msglint "$(cat $GITARG1)"'
+    'cljfmt'       '(clj)cljfmt check'
 )
 
+# Set up vars to be available in proj capt.zsh, print which files changed
 setup_changes() {
-    # Set up vars to be available in proj capt.zsh
     # VALUEADD Magic to figure out main v master and get changed files
-    # Fast and inaccurate https://stackoverflow.com/a/50056710/326516
-    main_branch=$(git branch | grep '*' | cut -f2 -d' ')
+    if [[ -z $CAPT_MAIN_BRANCH ]]; then
+        # Fast and inaccurate https://stackoverflow.com/a/50056710/326516
+        # main_branch=$(git branch | grep '*' | cut -f2 -d' ')
+        # https://stackoverflow.com/a/42570510/326516
+        # main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | grep '\->' | cut -d' ' -f5 | cut -d/ -f2)
+        # https://stackoverflow.com/a/49384283/326516
+        main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | sed 's@^origin/@@')
+    fi
     if [[ ! $main_branch == (main|master) ]]; then
         # This approach is better but slow to reach remote so like to avoid
-        aye "Discoverin yer MAIN branch remotely..."
+        aye "Discoverin yer MAIN branch remotely, since couldn't determine locally."
+        aye "You could set CAPT_MAIN_BRANCH to avoid the stall."
+        # https://stackoverflow.com/a/67170894/326516SX
+        aye "You should also run this registration sincXSe your repo is not a clone:"
+        aye "git remote set-head origin -a"
         main_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
     fi
+    dbg "main_branch: $main_branch"
     aye "Main branch bein compared against: $main_branch"
     CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
     aye "Files changed in yer stage ($#CAPT_FILES_CHANGED):"
@@ -178,11 +193,11 @@ run_scripts () {
 # Run a set of scripts based on which hook is active
 select_hook() {
     case $active_githook in
-        pre-commit)         run_scripts $pre_commit ;;
-        commit-msg)         run_scripts $commit_msg ;;
-        post-commit)        run_scripts $post_commit ;;
-        prepare-commit-msg) run_scripts $prepare_commit_msg ;;
-        post-checkout)      run_scripts $post_checkout ;;
+        pre-commit)         run_scripts $pre_commit;         unset pre_commit ;;
+        commit-msg)         run_scripts $commit_msg;         unset commit_msg ;;
+        post-commit)        run_scripts $post_commit;        unset post_commit ;;
+        prepare-commit-msg) run_scripts $prepare_commit_msg; unset prepare_commit_msg ;;
+        post-checkout)      run_scripts $post_checkout;      unset post_checkout ;;
         *)                  run_scripts $1 ;;
     esac }
 
@@ -191,6 +206,21 @@ select_hook() {
 # Run team-wide repo hooks
 source $captfile
 select_hook
+
+exit_gracefully() { aye "No captfilelocal found, so finishin now."; exit }
+
+[[ -f $captfilelocal ]] && source $captfilelocal || exit_gracefully
+
+dbg active_githook: $active_githook
+dbg post_checkout: $post_checkout
+# eval "unset ${active_githook:gs/-/_}"
+if [[ $active_githook == 'pre-commit'         && -z $pre_commit ]] ||
+   [[ $active_githook == 'commit-msg'         && -z $commit_msg ]] ||
+   [[ $active_githook == 'post-commit'        && -z $post_commit ]] ||
+   [[ $active_githook == 'prepare-commit-msg' && -z $prepare_commit_msg ]] ||
+   [[ $active_githook == 'post-checkout'      && -z $post_checkout ]]; then
+    exit_gracefully
+fi
 
 # Optionally run user hooks if they exist
 if [[ -f $captfilelocal ]]; then
@@ -201,9 +231,9 @@ if [[ -f $captfilelocal ]]; then
     print "      ___(()___"
     print "         ||"
     print
+    date
     aye "Next on the plank: user-local hook scripts"
     aye "Loadin the gunwales: $PWD/$captfilelocal\n"
-    source $captfilelocal
     select_hook
 fi
 

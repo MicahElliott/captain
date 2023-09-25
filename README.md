@@ -1,8 +1,8 @@
 # Captain
 
 Captain is a simple and convenient approach to client-side git-hook
-management, with just a tiny script to download. Suited for a team, extensible
-for individuals.
+management, with just a single tiny script to download. Suited for a sharing
+across a team, extensible for individuals.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
@@ -40,12 +40,15 @@ git commit # Captain at yer service! ...
 If there are any "checkers" (linters, formatters, etc) being invoked that you
 don't have installed yet, Captain will kindly let you more details.
 
+OR, if you're looking to be the one to bring Captain git-hook management to a
+project, read on....
+
 ## Do I need a hook manager?
 
 Without a hook manager, it's challenging to have a single set of checks
 (linters, formatters, cleaners, etc) that all developers agree on. Also,
 having multiple objectives/tasks in a single hook file gets slow and ugly.
-Managers give you organization, parallelism, shortcut facilities, clarity,
+Managers give you organization, concurrency, shortcut facilities, clarity,
 consistency, and more. Over time, you come up with more ideas for things that
 can run automatically as checks, and eventually your standard hook files can
 get unmanageable and messy.

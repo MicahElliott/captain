@@ -25,3 +25,11 @@ if grep -q '[ .]$' <<<$line1; then
     print 'First line must not end with period or space'
     exit 1
 fi
+
+print "\n\nmsg: $msg\n"
+
+if (( $(wc -l <<< $msg) < 3 )); then
+    print 'WARNING: you are encouraged to write a paragraph describing your change'
+fi
+
+print 'Commit message looks good!'
