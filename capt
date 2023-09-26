@@ -78,7 +78,8 @@ setup_changes() {
     fi
     dbg "main_branch: $main_branch"
     aye "Main branch bein compared against: $main_branch"
-    CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
+    # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
+    CAPT_FILES_CHANGED=( $(git diff --name-only --cached $main_branch) )
     aye "Files changed in yer stage ($#CAPT_FILES_CHANGED):"
     for f in $CAPT_FILES_CHANGED; do aye "- $f"; done
 }
