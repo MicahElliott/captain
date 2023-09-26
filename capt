@@ -49,7 +49,7 @@ aye "=== ${(U)active_githook} ==="
 # keys are for lookups
 # values are an optional filter, followed by a command to run
 typeset -A builtin_cannons=(
-    'markdownlint' '(md|mkd|markdown)markdownlint'
+    'markdownlint' '(md|mkd|markdown)mdl'
     'kondo'        '(clj|cljc|cljs)clj-kondo'
     # 'gommit'       'gommit check message "$(cat $1)"'
     'msglint'       'msglint "$(cat $GITARG1)"'
