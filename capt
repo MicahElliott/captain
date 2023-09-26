@@ -7,7 +7,7 @@ autoload colors; colors
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 
-dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[yellow]DEBUG:" $@$reset_color }
+dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[grey]DEBUG:" $@$reset_color }
 # aye() { print '(◕‿-)' $@ }
 aye() { print "$fg_bold[blue](◕‿-)$reset_color" $@ }
 
@@ -30,7 +30,8 @@ print_banner() {
     # print '      |-_ .-. _-|'
     # print '      |  (*^*)  |'
     # print '      |_-"|H|"-_|'
-    print }
+    # print
+}
 
 print_banner
 
@@ -45,9 +46,7 @@ path+=$scriptsdir
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 
 active_githook=$1
-aye "=== ${(U)active_githook} ==="
-
-aye "Loadin the whole ship's arsenal to the gunwales: $PWD/$captfile\n"
+aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
 
 # Built-in convenience checkers
 # keys are for lookups
@@ -81,11 +80,12 @@ setup_changes() {
         main_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
     fi
     dbg "main_branch: $main_branch"
-    aye "Main branch bein compared against: $main_branch"
+    aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
     CAPT_FILES_CHANGED=( $(git diff --name-only --cached $main_branch) )
     aye "Files changed in yer stage ($#CAPT_FILES_CHANGED):"
-    for f in $CAPT_FILES_CHANGED; do aye "- $f"; done
+    for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
+    print
 }
 
 capt_play_alert() {
@@ -103,11 +103,14 @@ setup_changes
 
 # Run the scripts from control file
 run_scripts () {
-    # TODO check for existence of specified hook
+    # TODO check for existence of specified hook and print meaningful message if no/empty hook
+    if [[ -z $@ ]]; then aye "No checks to be run."; return; fi
     aye "Execution awaits!"
     # Print out all the scripts about to be run
     for line in $@; do
-        [[ $line == *:* ]] && aye "- ${${(@s/:/)line}[1]}" || aye "- $line"
+        [[ $line == *:* ]] &&
+            aye "- $bold_color${${(@s/:/)line}[1]}$reset_color" ||
+            aye "- $bold_color$line$reset_color"
     done
     for line in $@; do
         inv=( ${(@s: :)line} ) # split on spaces to get first
@@ -119,7 +122,7 @@ run_scripts () {
         # Built-in has filter already, or specified filter
         print_name=$(sed 's/(.*//' <<<$name)
         print
-        aye "??? ${(U)print_name} ???"
+        aye "$fg[yellow]??? ${(U)print_name} ???$reset_color"
         if [[ ! $name == *: ]]; then
             dbg "built-in checker:" $name
             prog=$inv[1]
@@ -162,7 +165,7 @@ run_scripts () {
             else
                 aye "Files under siege:" $#CAPT_FILES_CHANGED
                 dbg "files:" $filtered_files
-                aye "Ahoy! Aimin yer cannon with yer files: $name" $cmd
+                aye "Ahoy! Aimin yer cannon with yer files: $name" $bold_color$cmd$reset_color
             fi
         else
             aye "Ye took care of file selection yerself, or no files needin fer sayin."
@@ -187,7 +190,7 @@ run_scripts () {
         if [[ $es -ne 0 ]]; then
             aye '<>_<> (-_- ;) \(ˆ˚ˆ)/  くコ:彡 ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else
-            aye "✓✓✓ SURVIVAL! (time: ${tfinal}${units}) ✓✓✓"
+            aye "$fg_bold[green]✓✓✓ SURVIVAL! (time: ${tfinal}${units}) ✓✓✓$reset_color"
         fi
     done
     print
@@ -209,6 +212,7 @@ select_hook() {
 ### Main
 
 # Run team-wide repo hooks
+aye "Loadin the whole ship's arsenal to the gunwales: $PWD/$captfile\n"
 source $captfile
 select_hook
 
@@ -245,5 +249,5 @@ if [[ -f $captfilelocal ]]; then
 fi
 
 # Show successful completion
-print
-aye 'Show a leg!' # => wake up, we're done, succussfully!
+# print
+# aye 'Show a leg!' # => wake up, we're done, succussfully!
