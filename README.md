@@ -27,7 +27,7 @@ enabling its checks. (You won't be impacted if you do nothing.)
 
 ```shell
 # point git to the new hooks
-git config core.hooksPath .capthooks
+git config core.hooksPath .capt/hooks
 # Install the capt command (a small shell script)
 cd /somewhere/on/your/PATH
 wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt
@@ -38,7 +38,7 @@ git commit # Captain at yer service! ...
 ```
 
 If there are any "checkers" (linters, formatters, etc) being invoked that you
-don't have installed yet, Captain will kindly let you more details.
+don't have installed yet, Captain will kindly let you know more details.
 
 OR, if you're looking to be the one to bring Captain git-hook management to a
 project, read on....
@@ -77,10 +77,10 @@ Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 [Overcommit](https://github.com/sds/overcommit), Captain is:
 
 - Simple: workflow is just calling commands or the scripts you already have
-- No dependencies: if you have Zsh installed, you're already done
+- No dependencies: if you have Zsh installed (it's everywhere!), you're already done
 - Client-compatible: other managers don't play nice with some git clients (eg, magit)
-- Basic: config is just a `capt.zsh` control file with arrays of scripts for each hook (no yaml etc)
-- Clear: your standard git-hooks become one-line calls to `capt`
+- Basic: config is just a `.capt/share.sh` control file with shell arrays of scripts for each hook (no yaml etc)
+- Clear and concise: your standard git-hooks become one-line calls to `capt`
 - Fun: get ideas for new checks and be entertained by the Captain!
 - All documentation right here: this readme is all you need
 - Tiny and transparent: read and understand the whole code base (one file) in minutes
@@ -97,13 +97,15 @@ Captain also has most of the features of other managers:
 
 ## Installation
 
-Each developer of your code base is encouraged to install Captain, so
-violations can be caught before code changes go to CI.
+Each developer of your code base is encouraged to install Captain (point them
+to the *One-minute guide* above), so violations can be caught before code
+changes go to CI.
 
-1. Put the `capt` zsh script on your `path`
+1. Put the `capt` script on your `path`
+1. `cd your-project`
 1. Run the for-loop below to create any git-hooks you want
-1. Create a `capt.zsh` control file (or copy the one below)
-1. Create a `captlocal.zsh` control file for your personal additional checks (optional)
+1. Create a `.capt/share.sh` control file (or copy the one below)
+1. [optional] Create a `.capt/local.sh` control file for your personal additional checks
 
 The `capt` command is invoked with a single argument: the git-hook to run;
 e.g., as `capt pre-commit`; that will run all the pre-commit checks. You can
@@ -118,8 +120,8 @@ each developer upon cloning the project repo:
 
 ```shell
 ## If you want to commit the hooks to repo, and everyone sets hooksPath
-hookdir=.capthooks
-mkdir $hookdir
+hookdir=.capt/hooks
+mkdir -p $hookdir
 git config core.hooksPath $hookdir
 ## OR, use git's default location, not in repo; everyone has to do the hook creation
 # hookdir=.git/hooks
@@ -133,7 +135,7 @@ done
 Now your `$hookdir` looks like this:
 
 ```text
-.capthooks/  # or .git/hooks/
+.capt/hooks/  # or .git/hooks/
 ├── commit-message
 ├── post-checkout
 ├── post-commit
@@ -143,8 +145,8 @@ Now your `$hookdir` looks like this:
 And each of those just contains a one-line invocation of the `capt` command.
 That enables git to do its default thing: next time you (or anyone) does a
 `git commit`, git will fire its default `pre-commit` script (you just created
-that) which calls `capt` with git's args. Then `capt` does its job of
-finding the `capt.zsh` control file (and optionally `captlocal.zsh`) that you
+that) which calls `capt` with git's args. Then `capt` does its job of finding
+the `.capt/share.sh` control file (and optionally `.capt/local.sh`) that you
 created.
 
 Now you can put all those trivial one-liner git-hooks into your project's
@@ -159,7 +161,7 @@ That saves all your fellow developers from having to do anything but set:
 `git config core.hooksPath $hookdir`, and you can simply point to the
 *One-minute* instructions above.
 
-Now onto the simple `capt.zsh` control file at the root of your repo (which
+Now onto the simple `.capt/share.sh` control file at the root of your repo (which
 should also be committed), containing a set of "checks" for each hook:
 
 ```shell
@@ -192,27 +194,27 @@ clean_up=(
 Some things to notice in that file:
 
 - All the hooks/checks are short and live in a single place
-- Each "hook section" is just a Zsh array named for git's conventions (but underscores)
+- Each "hook section" is just a shell array named for git's conventions (but underscores)
 - Some checks are a line with a `somename:` "name" prefix, then the eval'd command
 - After a `name` is an optional "filter": `cljfmt` will only look at `.cljs` and `.clj` files
 - The `lint` and `format` are run in parallel by being backgrounded (`&`)
 - It doesn't generally matter whether you single- or double-quote commands
 - The `$CAPT_CHANGES` is the convenient list of files that are part of the commit
 - The `test-suite` is a local script not on `path`; Captain figures that out
-- `capt.zsh` gets put into git at your project-root and is used by all devs on the project
+- `.capt/share.sh` gets put into git at your project-root and is used by all devs on the project
 - The last `clean_up` hook isn't a git hook, but you can run it directly with `capt` cli
 
 ## User-local additional hooks
 
 Suppose you have even higher personal standards than the rest of your team.
 E.g., you have OCD about line length. You can ensure that all of *your*
-commits conform by creating another local-only `captlocal.zsh` control file as:.
+commits conform by creating another local-only `.capt/local.sh` control file as:.
 
-``` zsh
+``` shell
 pre_commit=( 'line-length-nazi: check-line-length' ... other-custom-checkers... )
 ```
 
-Then you should add `captlocal.zsh` to the `.gitignore`.
+Then you should add `.capt/local.sh` to the `.gitignore`.
 
 ## Sample run
 
@@ -228,7 +230,7 @@ correspond to checks shown above). This shows a couple of team-shared checks
       |  (*^*)  |
       |_-"|H|"-_|
 
-(◕‿-) Loadin the gunwales: /home/mde/work/fooproj/capt.zsh
+(◕‿-) Loadin the gunwales: /home/mde/work/fooproj/.capt/share.sh
 
 (◕‿-) === PRE-COMMIT ===
 
@@ -263,7 +265,7 @@ Add matches with `git config --add hooks.confirm.match "string-to-match"`
          ||
 
 (◕‿-) Next on the plank: user-local hook scripts
-(◕‿-) Loadin the gunwales: /home/mde/work/cc/captlocal.zsh
+(◕‿-) Loadin the gunwales: /home/mde/work/cc/.capt/local.sh
 
 (◕‿-) Execution awaits!
 (◕‿-) - something
@@ -283,7 +285,7 @@ hint: Waiting for your editor to close the file...
 ## Migrating your existing git-hooks
 
 You can either take the plunge and clean up, separate, and move your existing
-hooks into `capt.zsh`, OR keep existing git-hooks intact, and just add this to
+hooks into `.capt/share.sh`, OR keep existing git-hooks intact, and just add this to
 the bottom of each you care about:
 
 ```shell
@@ -302,7 +304,7 @@ something of a task collector.
 
 To run a hook:
 
-``` zsh
+``` shell
 capt pre-commit # git standard
 ## OR
 capt my-weird-collection
@@ -312,7 +314,7 @@ capt my-weird-collection
 
 Try using a new hook locally on your own for a while. Once you're confident it
 does its thing well, confirm with the team that you're moving it into the
-shared `.captscripts/` dir. If this is a script that will block their commit
+shared `.capt/scripts/` dir. If this is a script that will block their commit
 or build, you want to make sure everyone is aware and knows how to comply with
 it.
 
@@ -337,7 +339,6 @@ regardless of language:
 - [markdownlint](https://github.com/igorshubovych/markdownlint-cli)
 - [git-confirm](https://github.com/pimterry/git-confirm): fixmes, etc
 - audible notifications
--
 
 ```text
   \\

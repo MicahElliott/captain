@@ -27,10 +27,12 @@ if grep -q '[ .]$' <<<$line1; then
     exit 1
 fi
 
-print "\n\nmsg: $msg\n"
+# print "\n\nmsg: $msg\n"
 
 if (( $(wc -l <<< $msg) < 3 )); then
     print 'WARNING: you are encouraged to write a paragraph describing your change'
+    print 'But otherwise commit message looks good enough, so letting through!'
+    print 'Amend wording to add a paragraph.'
+else
+    print 'Commit message looks good!'
 fi
-
-print 'Commit message looks good!'

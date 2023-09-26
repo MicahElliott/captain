@@ -128,6 +128,7 @@ run_scripts () {
             prog=$inv[1]
             just_buitins=${(k)builtin_cannons}
             if ! (($just_buitins[(Ie)$name])); then aye "Unable to find built-in:" $name; exit 1; fi
+            # FIXME something wrong here with markdownlint -> mdl
             dsl=$builtin_cannons[$name]
             filter=$(sed 's/).*/)/' <<<$dsl)
             cmd=$(sed -r 's/^\([^)]+\)//' <<<$dsl) # non-greedy
@@ -180,7 +181,7 @@ run_scripts () {
         if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd
         elif type $prog >/dev/null;    then eval $cmd
         # Just skip this one hook if ccommand not found
-        else aye "Skippin on yer $name $prog be lost at sea."
+        else aye "Skippin on yer $name; $prog be lost at sea."
         fi
         es=$?
         wait # don't process until background scripts are finished
@@ -188,7 +189,7 @@ run_scripts () {
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 ]]; then
-            aye '<>_<> (-_- ;) \(ˆ˚ˆ)/  くコ:彡 ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
+            aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else
             aye "$fg_bold[green]✓✓✓ SURVIVAL! (time: ${tfinal}${units}) ✓✓✓$reset_color"
         fi
