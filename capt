@@ -25,7 +25,7 @@ fi
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
     # print ""
-    print "$fg_bold[blue](◕‿-) [$(date +%T)] CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    print "\n$fg_bold[blue](◕‿-) [$(date +%T)] CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     # print '       _________ '
     # print '      |-_ .-. _-|'
     # print '      |  (*^*)  |'
@@ -133,7 +133,7 @@ run_scripts () {
             if [[ $active_githook =~ 'commit-msg' ]]; then
                 :
             elif [[ $#filtered_files < 1 ]]; then
-                aye "Not seein any files staged, skippin."
+                aye "Not seein any matching files staged, skippin."
                 continue
             else
                 cmd="$cmd $filtered_files"
@@ -148,7 +148,7 @@ run_scripts () {
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
             filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") )
             CAPT_FILES_CHANGED=$filtered_files
-            if [[ $#filtered_files < 1 ]]; then aye "Not seein any files staged, skippin."; continue
+            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matching files staged, skippin."; continue
             else
                 aye "Filtered files under siege:" $#filtered_files
                 dbg "files:" $filtered_files
@@ -157,7 +157,7 @@ run_scripts () {
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then
             dbg "unfiltered checker"
             filtered_files=( $CAPT_FILES_CHANGED )
-            if [[ $#filtered_files < 1 ]]; then aye "Not seein any files staged, skippin."; continue
+            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matching files staged, skippin."; continue
             else
                 aye "Files under siege:" $#CAPT_FILES_CHANGED
                 dbg "files:" $filtered_files

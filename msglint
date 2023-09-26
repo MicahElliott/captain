@@ -4,6 +4,7 @@
 
 example=':books: (#1234) [i18n] Add proper diacritics'
 msg=$1
+msg=$(sed '/^#/d' <<<$msg) # remove comment lines
 line1=$(head -1 <<< $msg)
 
 if ! grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*' <<<$line1; then
