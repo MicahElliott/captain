@@ -24,6 +24,8 @@ fi
 
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
+    print ""
+    print "\n$fg_bold[blue](◕‿-) $(date)"
     print "\n$fg_bold[blue](◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print '       _________'
     print '      |-_ .-. _-|'
