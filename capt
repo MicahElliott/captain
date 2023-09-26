@@ -24,21 +24,22 @@ fi
 
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
-    print ""
-    print "\n$fg_bold[blue](◕‿-) $(date)"
-    print "\n$fg_bold[blue](◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
-    print '       _________'
-    print '      |-_ .-. _-|'
-    print '      |  (*^*)  |'
-    print '      |_-"|H|"-_|'
+    # print ""
+    print "$fg_bold[blue](◕‿-) [$(date +%T)] CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    # print '       _________ '
+    # print '      |-_ .-. _-|'
+    # print '      |  (*^*)  |'
+    # print '      |_-"|H|"-_|'
     print }
 
 print_banner
 
 hooksdir=${CAPT_HOOKSDIR-.git/hooks}
-scriptsdir=${CAPT_SCRIPTSDIR-.captscripts}
-captfile=${CAPT_FILE-capt.zsh}
-captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
+scriptsdir=${CAPT_SCRIPTSDIR-.capt/scripts}
+# captfile=${CAPT_FILE-capt.zsh}
+captfile=${CAPT_FILE-.capt/share.sh}
+# captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
+captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
 path+=$scriptsdir
 
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
