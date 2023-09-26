@@ -43,10 +43,11 @@ captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
 path+=$scriptsdir
 
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
-aye "Loadin the gunwales: $PWD/$captfile\n"
 
 active_githook=$1
 aye "=== ${(U)active_githook} ==="
+
+aye "Loadin the whole ship's arsenal to the gunwales: $PWD/$captfile\n"
 
 # Built-in convenience checkers
 # keys are for lookups
@@ -211,12 +212,14 @@ select_hook() {
 source $captfile
 select_hook
 
-exit_gracefully() { aye "No captfilelocal found, so finishin now."; exit }
+exit_gracefully() { aye $@; exit }
 
-[[ -f $captfilelocal ]] && source $captfilelocal || exit_gracefully
+# dbg "captfilelocal: $captfilelocal"
+if [[ -f $captfilelocal ]]; then source $captfilelocal
+else exit_gracefully "No captfilelocal found, so finishin now."; fi
 
 dbg active_githook: $active_githook
-dbg post_checkout: $post_checkout
+# dbg post_checkout: $post_checkout
 # eval "unset ${active_githook:gs/-/_}"
 if [[ $active_githook == 'pre-commit'         && -z $pre_commit ]] ||
    [[ $active_githook == 'commit-msg'         && -z $commit_msg ]] ||
@@ -235,9 +238,9 @@ if [[ -f $captfilelocal ]]; then
     print "      ___(()___"
     print "         ||"
     print
-    date
-    aye "Next on the plank: user-local hook scripts"
-    aye "Loadin the gunwales: $PWD/$captfilelocal\n"
+    # date
+    # aye "Next on the plank: user-local hook scripts"
+    aye "Now loadin yer local muskets: $PWD/$captfilelocal\n"
     select_hook
 fi
 
