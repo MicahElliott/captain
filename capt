@@ -7,7 +7,7 @@ autoload colors; colors
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 
-dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[grey]DEBUG:" $@$reset_color }
+dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
 # aye() { print '(◕‿-)' $@ }
 aye() { print "$fg_bold[blue](◕‿-)$reset_color" $@ }
 
@@ -33,8 +33,6 @@ print_banner() {
     # print
 }
 
-print_banner
-
 hooksdir=${CAPT_HOOKSDIR-.git/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-.capt/scripts}
 # captfile=${CAPT_FILE-capt.zsh}
@@ -46,7 +44,7 @@ path+=$scriptsdir
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 
 active_githook=$1
-aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
+print_banner
 
 # Built-in convenience checkers
 # keys are for lookups
@@ -55,7 +53,7 @@ typeset -A builtin_cannons=(
     'markdownlint' '(md|mkd|markdown)mdl'
     'kondo'        '(clj|cljc|cljs)clj-kondo'
     # 'gommit'       'gommit check message "$(cat $1)"'
-    'msglint'       'msglint "$(cat $GITARG1)"'
+    'msglint'      'msglint "$(cat $GITARG1)"'
     'cljfmt'       '(clj)cljfmt check'
 )
 
@@ -104,7 +102,7 @@ setup_changes
 # Run the scripts from control file
 run_scripts () {
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
-    if [[ -z $@ ]]; then aye "No checks to be run."; return; fi
+    if [[ -z $@ ]]; then aye "No hooks to be run."; return; fi
     aye "Execution awaits!"
     # Print out all the scripts about to be run
     for line in $@; do
@@ -177,7 +175,7 @@ run_scripts () {
         # [[ $active_githook =~ 'commit-msg' ]] && cmd+=' $1 $2'
         t0=$(date +%s%3N) # start timer
         # Work with either a local script or something found on path
-        dbg "cmd: "$cmd
+        dbg "cmd2: "$cmd
         if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd
         elif type $prog >/dev/null;    then eval $cmd
         # Just skip this one hook if ccommand not found
@@ -213,7 +211,7 @@ select_hook() {
 ### Main
 
 # Run team-wide repo hooks
-aye "Loadin the whole ship's arsenal to the gunwales: $PWD/$captfile\n"
+aye "Loadin the whole ship’s arsenal to the gunwales: $PWD/$captfile\n"
 source $captfile
 select_hook
 

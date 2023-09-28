@@ -1,8 +1,8 @@
 # Captain
 
 Captain is a simple and convenient approach to client-side git-hook
-management, with just a single tiny script to download. Suited for a sharing
-across a team, extensible for individuals.
+management, with just a single tiny shell script to download. Suited for a
+sharing across a team, extensible for individuals.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
@@ -20,7 +20,7 @@ across a team, extensible for individuals.
 ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀
 ```
 
-## One-minute quick-start guide
+## One-minute Quick-Start Guide
 
 *SITUATION*: Captain was set up in a repo you use, and you want to start
 enabling its checks. (You won't be impacted if you do nothing.)
@@ -112,7 +112,7 @@ e.g., as `capt pre-commit`; that will run all the pre-commit checks. You can
 optionally run `capt` directly to see/debug output, and then have all of
 git-hooks call it.
 
-## Setup and configuration
+## Setup and Configuration
 
 Say you want to enable some git-hooks. Here's how you would create the them,
 just like you may have done in the past with git. This step can be done by
@@ -153,38 +153,57 @@ Now you can put all those trivial one-liner git-hooks into your project's
 repo:
 
 ```shell
-git add $hookdir
-git commit -m 'Add capt-driven git hooks (PSA: install capt and set hooksPath)'
+echo '.capt/local.sh' >>.gitignore # discussed below
+git add .capt
+git commit -m 'Add capt-driven git hooks etc (PSA: install capt and set hooksPath)'
 ```
 
 That saves all your fellow developers from having to do anything but set:
 `git config core.hooksPath $hookdir`, and you can simply point to the
 *One-minute* instructions above.
 
-Now onto the simple `.capt/share.sh` control file at the root of your repo (which
-should also be committed), containing a set of "checks" for each hook:
+## Control File Spec
+
+Now onto the simple `.capt/share.sh` control file at the root of your repo
+(which should also be committed), containing a set of "checks" for each hook.
+(Note that git-hooks purposes are written about
+[here](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks).)
 
 ```shell
 ### Captain git-hook manager control file
 
+# params: NONE
 # Standard hook with checks for linting, formatting, and running tests
 pre_commit=(
-    'lint:        clj-kondo $CAPT_CHANGES &' # linting of files being committed
-    'format(clj): cljfmt &'                  # reformat or check for poor formatting
-    'fixmes:      git-confirm.sh'            # look for/prompt on FIXMEs
-    markdownlint                         # built-in config with filter
-    'test-suite:  run-minimal-test-suite $CAPT_CHANGES'
+    'lint:             clj-kondo $CAPT_CHANGES &' # linting of files being committed
+    'format(clj|cljc): cljfmt &'                  # reformat or check for poor formatting
+    'fixmes:           git-confirm.sh'            # look for/prompt on FIXMEs etc
+    markdownlint                                  # built-in config with implicit filter
+    'test-suite:       run-minimal-test-suite $CAPT_CHANGES'
 )
+# params: tmp-message-file-path, commit-type, sha
+# Build a commit message based on branch name standardized format.
+prepare_commit_msg=(
+    # you/TEAM-123_FIX_lang_undo-the-widget-munging => fix(lang): Undo the widget munging #123
+    branch2message
+)
+# params: tmp-message-file-path
 commit_msg=(
-    commitlint  # ensure log message meets standards
+    'commitlint: msglint $GITARG1'  # ensure log message meets standards
 )
+# params: NONE
+# Examples: moving in large binary files that you don’t want source
+# controlled, auto-generating documentation, etc
 post_commit=(
     "stimulate: play-post-commit-sound.sh"           # happy music on successful commit
     "colorize:  commit-colors $(git rev-parse HEAD)" # more confirmation rewards
 )
+# params: NONE
+# General informative notices, no parameters
 post_checkout=(
     "mig-alert(sql): alert-migrations-pending.zsh" # inform that action is needed
 )
+# Not a git hook!
 clean_up=(
     'tmpclean: rm **/*.tmp'
     'artclean: rm tmp/*artifact*'
@@ -196,11 +215,12 @@ Some things to notice in that file:
 - All the hooks/checks are short and live in a single place
 - Each "hook section" is just a shell array named for git's conventions (but underscores)
 - Some checks are a line with a `somename:` "name" prefix, then the eval'd command
-- After a `name` is an optional "filter": `cljfmt` will only look at `.cljs` and `.clj` files
+- After a `name` is an optional "filter": `cljfmt` will only look at `.clj` and `.cljc` files
 - The `lint` and `format` are run in parallel by being backgrounded (`&`)
-- It doesn't generally matter whether you single- or double-quote commands
+- You generally should use single-quote commands, even with env vars
 - The `$CAPT_CHANGES` is the convenient list of files that are part of the commit
-- The `test-suite` is a local script not on `path`; Captain figures that out
+- The `$GITARG1` is the first available param passed from git to a hook script
+- The `test-suite` is a local script (in `.capt/scripts/`) not on `path`; Captain figures that out
 - `.capt/share.sh` gets put into git at your project-root and is used by all devs on the project
 - The last `clean_up` hook isn't a git hook, but you can run it directly with `capt` cli
 
@@ -208,15 +228,15 @@ Some things to notice in that file:
 
 Suppose you have even higher personal standards than the rest of your team.
 E.g., you have OCD about line length. You can ensure that all of *your*
-commits conform by creating another local-only `.capt/local.sh` control file as:.
+commits conform by creating another local-only `.capt/local.sh` control file:
 
 ``` shell
 pre_commit=( 'line-length-nazi: check-line-length' ... other-custom-checkers... )
 ```
 
-Then you should add `.capt/local.sh` to the `.gitignore`.
+Then you should add `.capt/local.sh` to your `.gitignore` file.
 
-## Sample run
+## Sample Run
 
 Rather than a live demo, here's an example of a `pre-commit` run (doesn't
 correspond to checks shown above). This shows a couple of team-shared checks
@@ -339,6 +359,40 @@ regardless of language:
 - [markdownlint](https://github.com/igorshubovych/markdownlint-cli)
 - [git-confirm](https://github.com/pimterry/git-confirm): fixmes, etc
 - audible notifications
+
+## Running Hook Scripts in CI
+
+So you have all these great hook scripts in `.capt/scripts` now, but do you
+also want to run them as part of your Continuous Integration? Well, it can be
+done. Captain was conceived more as a dev-side tool, but you don't want
+to reinvent a bunch of checks to run in CI too, so there are a couple options for
+setting up the scripts in CI; eg, services like
+[Github Actions](https://docs.github.com/en/actions):
+
+1. install `zsh` (github sorely lacks it) and `capt` during the CI run, OR
+1. call the scripts directly without the Captain-provided niceties
+
+My undertanding is that doing (1) may add ~20 seconds to your CI run. If
+that's fine, it could be nice to have the consistency with what you run
+locally. Your invocations of those scripts can look like:
+
+```yaml
+    # fire all the pre-commit scripts (yes, it's already committed)
+    run: capt pre-commit
+```
+
+However, (2) should work fine since some of Captain's value isn't as relevant
+in CI:
+
+- there are fewer checks needing to be done
+- it's explicitly action-driven rather than git-hooks
+- timing and other details are apparent from CI
+
+If you care about optimizing the amount of work the scripts do, you may need
+to have them be smart about file filtering (file-name extensions, which files
+changed in the commit, etc). In practice, the filtering often isn't too
+important with the CI runs, since there you might want to go ahead and run all
+your tests and analyzers, etc, over your whole code base anyway.
 
 ```text
   \\
