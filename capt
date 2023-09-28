@@ -25,7 +25,9 @@ fi
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
     # print ""
-    print "\n$fg_bold[blue](◕‿-) [$(date +%T)] CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    print
+    aye "$fg_bold[white][$(date +%T)] $bold_color=== ${(U)active_githook} ===$reset_color $bold_colorCAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    # aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
     # print '       _________ '
     # print '      |-_ .-. _-|'
     # print '      |  (*^*)  |'
@@ -81,8 +83,8 @@ setup_changes() {
     aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
     CAPT_FILES_CHANGED=( $(git diff --name-only --cached $main_branch) )
-    aye "Files changed in yer stage ($#CAPT_FILES_CHANGED):"
-    for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
+    aye "Files changed in yer stage ($#CAPT_FILES_CHANGED): $bold_color$CAPT_FILES_CHANGED$reset_color"
+    # for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
     print
 }
 
@@ -101,85 +103,98 @@ setup_changes
 
 # Run the scripts from control file
 run_scripts () {
+    # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
     if [[ -z $@ ]]; then aye "No hooks to be run."; return; fi
-    aye "Execution awaits!"
     # Print out all the scripts about to be run
+    executors=()
     for line in $@; do
         [[ $line == *:* ]] &&
-            aye "- $bold_color${${(@s/:/)line}[1]}$reset_color" ||
-            aye "- $bold_color$line$reset_color"
+            executors+=", $bold_color${${(@s/:/)line}[1]}$reset_color" ||
+            executors+=", $bold_color$line$reset_color"
     done
+    aye "Execution awaits! $executors"
+
+    # for line in $@; do
+    #     [[ $line == *:* ]] &&
+    #         aye "- $bold_color${${(@s/:/)line}[1]}$reset_color" ||
+    #         aye "- $bold_color$line$reset_color"
+    # done
+
     for line in $@; do
-        inv=( ${(@s: :)line} ) # split on spaces to get first
+        inv=( ${(@s: :)line} ) # split on spaces to get first, discard beyond second
         name=$inv[1]
-        prog=$inv[2]
-        cmd=${line#* } # remove up to first space
-        dbg "line: $line"
+        script=$inv[2]
+        cmd=${line#* } # remove up to first space, keeping all the rest
+        dbg "inv:" $inv[1] "::" $inv[2] "::" $inv[3] "::"
+        cmd0=${cmd%% *} # keep only first part, the command name
+        dbg "line: $line :: cmd0: $cmd0 :: cmd: $cmd"
 
         # Built-in has filter already, or specified filter
-        print_name=$(sed 's/(.*//' <<<$name)
+        print_name=$(sed 's/[:(].*//' <<<$name)
         print
         aye "$fg[yellow]??? ${(U)print_name} ???$reset_color"
-        if [[ ! $name == *: ]]; then
-            dbg "built-in checker:" $name
-            prog=$inv[1]
+        if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
+            # Need to fix up cmd since no spec, and maybe include filtered files
+            script=$inv[1]
             just_buitins=${(k)builtin_cannons}
             if ! (($just_buitins[(Ie)$name])); then aye "Unable to find built-in:" $name; exit 1; fi
-            # FIXME something wrong here with markdownlint -> mdl
+            #              NAME        FILTER    CMD
+            # User spec is like:    markdownlint(md|mkd): mdl ...
+            # DSL is actually like: (md|mkd)mdl ...
             dsl=$builtin_cannons[$name]
             filter=$(sed 's/).*/)/' <<<$dsl)
-            cmd=$(sed -r 's/^\([^)]+\)//' <<<$dsl) # non-greedy
-            dbg "cmd1: "$cmd
+            # non-greedy, just the very first part up to (, and remove ending arg(s)
+            cmd=$(sed -r -e 's/^\([^)]+\)//' <<<$dsl)
+            cmd0=$(sed -r 's/ .*//' <<<$cmd)
+            dbg "cmd0: "$cmd0
             # filtered_files=( $(grep -E "\.$builtin_cannons[$name]" <<<$CAPT_FILES_CHANGED) )
             filtered_files=( $(grep -E "\.$filter" <<<$CAPT_FILES_CHANGED) )
             if [[ $active_githook =~ 'commit-msg' ]]; then
                 :
-            elif [[ $#filtered_files < 1 ]]; then
-                aye "Not seein any matching files staged, skippin."
-                continue
+            elif [[ $#filtered_files < 1 ]]; then aye "Not seein any matchin files staged, skippin."; continue
             else
-                cmd="$cmd $filtered_files"
+                cmd="$cmd0 $filtered_files"
                 aye "Filtered files under siege:" $#filtered_files
                 dbg "files:" $filtered_files
-                aye "Aimin our built-in cannon: $name"
+                aye "Aimin the captain’s built-in cannon: $name"
             fi
-        elif [[ $name == *\(*\)* ]]; then
-            dbg "filtered checker"
+        elif [[ $name == *\(*\)* ]]; then dbg "filtered checker"
             filter=$(sed 's/.*(/(/;s/://' <<<$name) # remove front name and trailing :
             dbg filter: $filter
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
             filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") )
-            CAPT_FILES_CHANGED=$filtered_files
-            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matching files staged, skippin."; continue
+            CAPT_FILES_CHANGED=( $filtered_files )
+            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matchin files staged, skippin."; continue
             else
                 aye "Filtered files under siege:" $#filtered_files
                 dbg "files:" $filtered_files
-                aye "Aimin yer custom-rigged cannon: $name $cmd"
+                aye "Aimin yer custom-rigged cannon: $name :: $bold_color$cmd$reset_color"
             fi
-        elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then
-            dbg "unfiltered checker"
+        elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
             filtered_files=( $CAPT_FILES_CHANGED )
-            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matching files staged, skippin."; continue
+            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matchin files staged, skippin."; continue
             else
                 aye "Files under siege:" $#CAPT_FILES_CHANGED
                 dbg "files:" $filtered_files
-                aye "Ahoy! Aimin yer cannon with yer files: $name" $bold_color$cmd$reset_color
+                aye "Ahoy! Aimin yer cannon with yer files: $name" :: $bold_color$cmd$reset_color
             fi
         else
             aye "Ye took care of file selection yerself, or no files needin fer sayin."
-            aye "Ahoy! Aimin yer cannon: $name" $cmd
+            aye "Ahoy! Aimin yer cannon: $name" :: $bold_color$cmd$reset_color
         fi
 
         # Add args to pass from git if it's one of the arg-accepting hooks
         # [[ $active_githook =~ 'commit-msg' ]] && cmd+=' $1 $2'
         t0=$(date +%s%3N) # start timer
         # Work with either a local script or something found on path
-        dbg "cmd2: "$cmd
-        if [[ -f $scriptsdir/$prog ]]; then eval $scriptsdir/$cmd
-        elif type $prog >/dev/null;    then eval $cmd
-        # Just skip this one hook if ccommand not found
-        else aye "Skippin on yer $name; $prog be lost at sea."
+        dbg "cmd: $cmd, cmd0: $cmd0"
+        dbg "script: $scriptsdir/$script"
+        # Try to find script or command
+        if [[ -f $scriptsdir/$script ]]; then eval $scriptsdir/$cmd
+        elif type $cmd0 >/dev/null;      then eval $cmd
+        # Just skip this one hook if command not found
+        else aye "WARNING: Skippin on yer $name; $cmd0 and $script be lost at sea."
         fi
         es=$?
         wait # don't process until background scripts are finished
@@ -187,7 +202,22 @@ run_scripts () {
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 ]]; then
-            aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
+            print
+            print '    ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀'
+            print '    ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀'
+            print '    ⠀⣠⣤⣶⣶⣿⣿⣿⣿⣯⠀⠀⣽⣿⣿⣿⣿⣷⣶⣤⣄⠀'
+            print '    ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡅⠉⠉⢨⣿⣿⣿⣿⣿⣿⣿⣿⡇'
+            print '    ⠈⠻⣿⣿⣿⣿⣿⣿⣿⣥⣴⣦⣬⣿⣿⣿⣿⣿⣿⣿⠟⠁'
+            print '    ⠀⠀⢸⣿⡿⠿⠿⠿⠿⠿⠿⠿⢿⣿⣿⣿⠿⢿⣿⡇⠀⠀'
+            print '    ⠀⣠⣾⣿⠂⠀⠀⣤⣄⠀⠀⢰⣿⣿⣿⣿⡆⠐⣿⣷⣄⠀'
+            print '    ⠀⣿⣿⡀⠀⠀⠈⠿⠟⠀⠀⠈⠻⣿⣿⡿⠃⠀⢀⣿⣿⠀'
+            print '    ⠀⠘⠻⢿⣷⡀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⢀⣾⡿⠟⠃⠀'
+            print '    ⠀⠀⠀⠸⣿⣿⣷⣦⣾⣿⣿⣿⣿⣦⣴⣾⣿⣿⡇⠀⠀⠀Down to Davey Jones’ locker!'
+            print '    ⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀Status:' $es
+            print '    ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀'
+            print '    ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀  '
+            exit $es
+            # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else
             aye "$fg_bold[green]✓✓✓ SURVIVAL! (time: ${tfinal}${units}) ✓✓✓$reset_color"
         fi
