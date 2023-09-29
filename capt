@@ -165,8 +165,9 @@ run_scripts () {
             dbg "cmd0: "$cmd0
             # filtered_files=( $(grep -E "\.$builtin_cannons[$name]" <<<$CAPT_FILES_CHANGED) )
             filtered_files=( $(grep -E "\.$filter" <<<$CAPT_FILES_CHANGED) )
+            # Special casing for specific hooks needing special treatment
             if [[ $active_githook =~ 'commit-msg' ]]; then
-                :
+                print
             elif [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
                 cmd="$cmd0 $filtered_files"
