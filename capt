@@ -2,6 +2,8 @@
 
 # capt: a very simple git-hook manager
 
+# Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ◴◵◶◷
+
 autoload colors; colors
 
 # Save the incoming git-hook arg(s)
@@ -9,7 +11,8 @@ GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 
 dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
 # aye() { print '(◕‿-)' $@ }
-aye() { print "$fg_bold[blue](◕‿-)$reset_color" $@ }
+aye()  { print "$fg_bold[blue](◕‿-)$reset_color" $@ }
+ayen() { print -n "$fg_bold[blue](◕‿-)$reset_color" $@ } # no newline
 
 reporoot=$(git rev-parse --show-toplevel 2>/dev/null)
 if [[ $? -ne 0 ]]; then
@@ -26,7 +29,10 @@ print_banner() {
     # print '(◕‿-) Shiver me timbers!'
     # print ""
     print
-    aye "$fg_bold[white][$(date +%T)] $bold_color=== ${(U)active_githook} ===$reset_color $bold_colorCAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    # aye "$fg_bold[white][$(date +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    print -n "$fg_bold[blue](◕‿-)$reset_color" \
+          "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
+          "$fg_bold[white][◷ $(date +%T)]"
     # aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
     # print '       _________ '
     # print '      |-_ .-. _-|'
@@ -46,7 +52,12 @@ path+=$scriptsdir
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 
 active_githook=$1
-print_banner
+if [[ -z $active_githook ]]; then
+    print "no hook configured in $captfile or $captfilelocal for $1"
+    # exit
+else
+    print "ok got an active_githook: $active_githook"
+fi
 
 # Built-in convenience checkers
 # keys are for lookups
@@ -72,20 +83,23 @@ setup_changes() {
     fi
     if [[ ! $main_branch == (main|master) ]]; then
         # This approach is better but slow to reach remote so like to avoid
-        aye "Discoverin yer MAIN branch remotely, since couldn't determine locally."
+        aye "\nDiscoverin yer MAIN branch remotely, since couldn't determine locally."
         aye "You could set CAPT_MAIN_BRANCH to avoid the stall."
         # https://stackoverflow.com/a/67170894/326516SX
-        aye "You should also run this registration sincXSe your repo is not a clone:"
+        aye "You should also run this registration since your repo is not a clone:"
         aye "git remote set-head origin -a"
         main_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
     fi
     dbg "main_branch: $main_branch"
-    aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
+    # aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
+    print -n " $fg_bold[magenta][⎇ $main_branch]$reset_color"
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
     CAPT_FILES_CHANGED=( $(git diff --name-only --cached $main_branch) )
-    aye "Files changed in yer stage ($#CAPT_FILES_CHANGED): $bold_color$CAPT_FILES_CHANGED$reset_color"
+    # aye "[Δ Staged files changed ($#CAPT_FILES_CHANGED)]: $bold_color$CAPT_FILES_CHANGED$reset_color"
+    (( $#CAPT_FILES_CHANGED > 0 )) &&
+        print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color"
     # for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
-    print
+    # print
 }
 
 capt_play_alert() {
@@ -99,8 +113,6 @@ capt_play_alert() {
     fi
     $player $@ }
 
-setup_changes
-
 # Run the scripts from control file
 run_scripts () {
     # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
@@ -110,10 +122,12 @@ run_scripts () {
     executors=()
     for line in $@; do
         [[ $line == *:* ]] &&
-            executors+=", $bold_color${${(@s/:/)line}[1]}$reset_color" ||
-            executors+=", $bold_color$line$reset_color"
+            executors+="$fg_bold[grey]${${(@s/:/)line}[1]}$reset_color" ||
+            executors+="$fg_bold[grey]$line$reset_color"
     done
-    aye "Execution awaits! $executors"
+    # print; aye "$fg_bold[cyan][$runlevel]$reset_color Execution awaits! $executors"
+    # printf '\xc'; print "" # no luck with printing line for pagebreak/formfeed in magit
+    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg_bold[grey][⚳ $executors]$reset_color"
 
     # for line in $@; do
     #     [[ $line == *:* ]] &&
@@ -132,13 +146,13 @@ run_scripts () {
 
         # Built-in has filter already, or specified filter
         print_name=$(sed 's/[:(].*//' <<<$name)
-        print
-        aye "$fg[yellow]??? ${(U)print_name} ???$reset_color"
+        # print
+        ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color"
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
             # Need to fix up cmd since no spec, and maybe include filtered files
             script=$inv[1]
             just_buitins=${(k)builtin_cannons}
-            if ! (($just_buitins[(Ie)$name])); then aye "Unable to find built-in:" $name; exit 1; fi
+            if ! (($just_buitins[(Ie)$name])); then aye "WARNING: Unable to find built-in:" $name; exit 1; fi
             #              NAME        FILTER    CMD
             # User spec is like:    markdownlint(md|mkd): mdl ...
             # DSL is actually like: (md|mkd)mdl ...
@@ -152,12 +166,13 @@ run_scripts () {
             filtered_files=( $(grep -E "\.$filter" <<<$CAPT_FILES_CHANGED) )
             if [[ $active_githook =~ 'commit-msg' ]]; then
                 :
-            elif [[ $#filtered_files < 1 ]]; then aye "Not seein any matchin files staged, skippin."; continue
+            elif [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
                 cmd="$cmd0 $filtered_files"
-                aye "Filtered files under siege:" $#filtered_files
+                # print; aye "Filtered files under siege:" $#filtered_files
+                print " $fg[yellow][$filtered_files]$reset_color"
                 dbg "files:" $filtered_files
-                aye "Aimin the captain’s built-in cannon: $name"
+                aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
             fi
         elif [[ $name == *\(*\)* ]]; then dbg "filtered checker"
             filter=$(sed 's/.*(/(/;s/://' <<<$name) # remove front name and trailing :
@@ -165,23 +180,26 @@ run_scripts () {
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
             filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") )
             CAPT_FILES_CHANGED=( $filtered_files )
-            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matchin files staged, skippin."; continue
+            if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
-                aye "Filtered files under siege:" $#filtered_files
+                # print; aye "Filtered files under siege:" $#filtered_files
+                print " $fg[yellow][$filtered_files]$reset_color"
                 dbg "files:" $filtered_files
-                aye "Aimin yer custom-rigged cannon: $name :: $bold_color$cmd$reset_color"
+                aye "Blimey! Aimin yer custom-rigged $print_name: $bold_color$cmd$reset_color"
             fi
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
             filtered_files=( $CAPT_FILES_CHANGED )
-            if [[ $#filtered_files < 1 ]]; then aye "Not seein any matchin files staged, skippin."; continue
+            if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
-                aye "Files under siege:" $#CAPT_FILES_CHANGED
-                dbg "files:" $filtered_files
-                aye "Ahoy! Aimin yer cannon with yer files: $name" :: $bold_color$cmd$reset_color
+                # print; aye "Files under siege:" $#CAPT_FILES_CHANGED
+                print " $fg[yellow][$CAPT_FILES_CHANGED]$reset_color"
+                dbg "files:" $CAPT_FILES_CHANGED
+                aye "Aimin yer cutlass $print_name with yer files: $bold_color$cmd$reset_color"
             fi
         else
-            aye "Ye took care of file selection yerself, or no files needin fer sayin."
-            aye "Ahoy! Aimin yer cannon: $name" :: $bold_color$cmd$reset_color
+            # print; aye "Ye took care of file selection yerself, or no files needin fer sayin."
+            print " $fg[yellow][∞]$reset_color"
+            aye "Doubloons! Aimin yer $print_name: $bold_color$cmd$reset_color"
         fi
 
         # Add args to pass from git if it's one of the arg-accepting hooks
@@ -198,33 +216,33 @@ run_scripts () {
         fi
         es=$?
         wait # don't process until background scripts are finished
-        tfinal=$(( $(date +%s%3N) - $t0 )) units=ms
-        if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; fi
+        tfinal=$(( $(date +%s%3N) - $t0 )) units=ms units_color=white
+        if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 ]]; then
             print
-            print '    ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀'
-            print '    ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀'
-            print '    ⠀⣠⣤⣶⣶⣿⣿⣿⣿⣯⠀⠀⣽⣿⣿⣿⣿⣷⣶⣤⣄⠀'
-            print '    ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡅⠉⠉⢨⣿⣿⣿⣿⣿⣿⣿⣿⡇'
-            print '    ⠈⠻⣿⣿⣿⣿⣿⣿⣿⣥⣴⣦⣬⣿⣿⣿⣿⣿⣿⣿⠟⠁'
-            print '    ⠀⠀⢸⣿⡿⠿⠿⠿⠿⠿⠿⠿⢿⣿⣿⣿⠿⢿⣿⡇⠀⠀'
-            print '    ⠀⣠⣾⣿⠂⠀⠀⣤⣄⠀⠀⢰⣿⣿⣿⣿⡆⠐⣿⣷⣄⠀'
-            print '    ⠀⣿⣿⡀⠀⠀⠈⠿⠟⠀⠀⠈⠻⣿⣿⡿⠃⠀⢀⣿⣿⠀'
-            print '    ⠀⠘⠻⢿⣷⡀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⢀⣾⡿⠟⠃⠀'
-            print '    ⠀⠀⠀⠸⣿⣿⣷⣦⣾⣿⣿⣿⣿⣦⣴⣾⣿⣿⡇⠀⠀⠀Down to Davey Jones’ locker!'
-            print '    ⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀Status:' $es
-            print '    ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀'
-            print '    ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀  '
+            print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀"
+            print "$fg[red]    ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀"
+            print "$fg[red]    ⠀⣠⣤⣶⣶⣿⣿⣿⣿⣯⠀⠀⣽⣿⣿⣿⣿⣷⣶⣤⣄⠀"
+            print "$fg[red]    ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡅⠉⠉⢨⣿⣿⣿⣿⣿⣿⣿⣿⡇"
+            print "$fg[red]    ⠈⠻⣿⣿⣿⣿⣿⣿⣿⣥⣴⣦⣬⣿⣿⣿⣿⣿⣿⣿⠟⠁"
+            print "$fg[red]    ⠀⠀⢸⣿⡿⠿⠿⠿⠿⠿⠿⠿⢿⣿⣿⣿⠿⢿⣿⡇⠀⠀"
+            print "$fg[red]    ⠀⣠⣾⣿⠂⠀⠀⣤⣄⠀⠀⢰⣿⣿⣿⣿⡆⠐⣿⣷⣄⠀"
+            print "$fg[red]    ⠀⣿⣿⡀⠀⠀⠈⠿⠟⠀⠀⠈⠻⣿⣿⡿⠃⠀⢀⣿⣿⠀"
+            print "$fg[red]    ⠀⠘⠻⢿⣷⡀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⢀⣾⡿⠟⠃⠀"
+            print "$fg[red]    ⠀⠀⠀⠸⣿⣿⣷⣦⣾⣿⣿⣿⣿⣦⣴⣾⣿⣿⡇⠀⠀⠀Down to Davey Jones’ locker!"
+            print "$fg[red]    ⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀Status:" $es
+            print "$fg[red]    ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀"
+            print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀  $reset_color"
             exit $es
             # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else
-            aye "$fg_bold[green]✓✓✓ SURVIVAL! (time: ${tfinal}${units}) ✓✓✓$reset_color"
+            aye "$fg[green]⚔⚔⚔ SURVIVAL! ⚔⚔⚔$reset_color" \
+                "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"
         fi
     done
-    print
 
-    aye 'Ye survived the barrage. Must have been a fluke.'
+    aye "$fg_bold[green]⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑$reset_color"
 }
 
 # Run a set of scripts based on which hook is active
@@ -235,17 +253,23 @@ select_hook() {
         post-commit)        run_scripts $post_commit;        unset post_commit ;;
         prepare-commit-msg) run_scripts $prepare_commit_msg; unset prepare_commit_msg ;;
         post-checkout)      run_scripts $post_checkout;      unset post_checkout ;;
+         # for alt tasks
         *)                  run_scripts $1 ;;
     esac }
 
 ### Main
 
+print_banner
+setup_changes
+
+# aye "Loadin the whole ship’s arsenal to the gunwales: $captfile\n" # $PWD/$captfile\n
 # Run team-wide repo hooks
-aye "Loadin the whole ship’s arsenal to the gunwales: $PWD/$captfile\n"
+runlevel=$captfile
 source $captfile
 select_hook
 
 exit_gracefully() { aye $@; exit }
+# exit_gracefully() { [[ -n $@ ]] && aye $@; exit }
 
 # dbg "captfilelocal: $captfilelocal"
 if [[ -f $captfilelocal ]]; then source $captfilelocal
@@ -265,15 +289,16 @@ fi
 # Optionally run user hooks if they exist
 if [[ -f $captfilelocal ]]; then
     # Run user-local hooks
-    print
-    print "         \\"
-    print "         (o> "
-    print "      ___(()___"
-    print "         ||"
-    print
+    # print
+    # print "         \\"
+    # print "         (o> "
+    # print "      ___(()___"
+    # print "         ||"
+    # print
     # date
     # aye "Next on the plank: user-local hook scripts"
-    aye "Now loadin yer local muskets: $PWD/$captfilelocal\n"
+    # aye "Now loadin yer local muskets: $PWD/$captfilelocal\n"
+    runlevel=$captfilelocal
     select_hook
 fi
 
