@@ -51,15 +51,19 @@ path+=$scriptsdir
 
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 
+# FIXME This could possibly go into print_banner, if `source`ing run first,
+# but unlikely since need to source both capt files
 active_githook=$1
-active_gh_var=$(eval ${(U)active_githook})
-print active_gh_var: $active_gh_var
-if [[ -z $active_githook ]]; then
-    print "no hook configured in $captfile or $captfilelocal for $1"
-    # exit
-else
-    print "ok got an active_githook: $active_githook"
-fi
+# aghu=$(sed 's/-/_/g' <<<$active_githook)
+# print aghu: $aghu
+# [[ -n $"$(eval 'print $aghu')" ]] && print yes: $aghu || print no1
+# [[ -n $"$aghu" ]] && print yes: $aghu || print no2
+# if [[ -z $active_githook ]]; then
+#     print "no hook configured in $captfile or $captfilelocal for $1"
+#     # exit
+# else
+#     print "ok got an active_githook: $active_githook"
+# fi
 
 # Built-in convenience checkers
 # keys are for lookups
@@ -250,6 +254,7 @@ run_scripts () {
 }
 
 # Run a set of scripts based on which hook is active
+
 select_hook() {
     case $active_githook in
         pre-commit)         run_scripts $pre_commit;         unset pre_commit ;;
