@@ -52,6 +52,8 @@ path+=$scriptsdir
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 
 active_githook=$1
+active_gh_var=$(eval ${(U)active_githook})
+print active_gh_var: $active_gh_var
 if [[ -z $active_githook ]]; then
     print "no hook configured in $captfile or $captfilelocal for $1"
     # exit
