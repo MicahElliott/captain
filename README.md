@@ -1,6 +1,6 @@
 # Captain
 
-Captain is a simple and convenient approach to client-side git-hook
+Captain is a simple and convenient opt-in approach to client-side git-hook
 management, with just a single tiny shell script to download. Suited for a
 sharing across a team, extensible for individuals.
 
@@ -22,13 +22,13 @@ sharing across a team, extensible for individuals.
 
 ## One-minute Quick-Start Guide
 
-*SITUATION*: Captain was set up in a repo you use, and you want to start
-enabling its checks. (You won't be impacted if you do nothing.)
+*SITUATION*: Captain was already set up in a repo you use, and you want to
+start enabling its checks. (You won't be impacted if you do nothing.)
 
 ```shell
 # point git to the new hooks
 git config core.hooksPath .capt/hooks
-# Install the capt command (a small shell script)
+# Install the capt command (a small swfhell script)
 cd /somewhere/on/your/PATH
 wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt
 chmod +x capt
@@ -37,15 +37,16 @@ cd your-project-root
 git commit # Captain at yer service! ...
 ```
 
-If there are any "checkers" (linters, formatters, etc) being invoked that you
-don't have installed yet, Captain will kindly let you know more details.
+If there are any "checkers" (linters, formatters, informers, etc) being
+invoked that you don't have installed yet, Captain will kindly let you know
+more details.
 
 OR, if you're looking to be the one to bring Captain git-hook management to a
 project, read on....
 
 ## Do I need a hook manager?
 
-Without a hook manager, it's challenging to have a single set of checks
+_Without a hook manager_, it's challenging to have a single set of checks
 (linters, formatters, cleaners, etc) that all developers agree on. Also,
 having multiple objectives/tasks in a single hook file gets slow and ugly.
 Managers give you organization, concurrency, shortcut facilities, clarity,
@@ -53,22 +54,22 @@ consistency, and more. Over time, you come up with more ideas for things that
 can run automatically as checks, and eventually your standard hook files can
 get unmanageable and messy.
 
-Specifically, here are some of Captain's features you don't want to have to
-invent, write, and/or wrap around every tool you run:
+Specifically, here are some of **Captain's features** you don't want to have
+to invent, write, and/or wrap around every tool you run:
 
-- checking for existence/installation of tool being run
-- timing info of each run
-- consistent and clear output of each tool
-- detection and precise control of files changed from master/main
-- file filtering by extension
-- a single file organization of all scripts specs for whole team to control/use
-- user-local scripts support for individual developer use
-- one-word built-in configs (linters, etc) with pre-defined filters
-- a few add-on provided linters for optional use
-- OS-agnostic commands
-- controllable parallel execution of each tool
-- debugging aids for writing your own new scripts
-- a place to collect custom scripts in your repo
+- **checking for existence**/installation of tool being run
+- **timing** info of each run
+- consistent and **clear output** of each tool
+- detection and precise control of **files changed** from master/main
+- **file filtering** by extension
+- a **single file organization** of all hook/script specs for whole team to control/use
+- **user-local scripts** support for individual developer use
+- one-word **built-in** configs (linters, etc) with pre-defined filters
+- a few provided **add-on linters** for optional use
+- **OS-agnostic** commands
+- controllable **parallel** execution of each tool
+- **debugging** aids for writing your own new scripts
+- a place to collect **custom scripts** in your repo
 
 ## Why Captain instead of another hook manager?
 
@@ -76,24 +77,22 @@ Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 [Husky](https://typicode.github.io/husky/), and
 [Overcommit](https://github.com/sds/overcommit), Captain is:
 
+- Tiny, transparent, no deps: read and understand the whole code base (one small Zsh file) in minutes
 - Simple: workflow is just calling commands or the scripts you already have
-- No dependencies: if you have Zsh installed (it's everywhere!), you're already done
 - Client-compatible: other managers don't play nice with some git clients (eg, magit)
 - Basic: config is just a `.capt/share.sh` control file with shell arrays of scripts for each hook (no yaml etc)
 - Clear and concise: your standard git-hooks become one-line calls to `capt`
 - Fun: get ideas for new checks and be entertained by the Captain!
 - All documentation right here: this readme is all you need
-- Tiny and transparent: read and understand the whole code base (one file) in minutes
-- Language/tool agnostic: don't need to know npm, yum, gem, pip, etc
-- Hands-off: Captain doesn't try to install things for you
+- Language/tool agnostic: don't need to know npm, yum, gem, pip, etc; works with any code base
+- Hands-off: Captain doesn't try to install things for you (see _External Tools Installation_ below)
 - Extensible, custom for each dev: run your own checks in addition to standards
 
 Captain also has most of the features of other managers:
 
 - Shareable: your whole team has a set of common hooks/checks
-- Batteries: vars for which files changed, multi-OS functions
-- Customizeable: run checks in parallel, with verbosity, etc; run from personal
-  dirs or team's
+- Batteries: vars for which files changed, multi-OS functions, extra built-in hooks
+- Customizeable: run checks in parallel, with verbosity, etc; run from personal dirs or team's
 
 ## Installation
 
@@ -161,6 +160,15 @@ git commit -m 'Add capt-driven git hooks etc (PSA: install capt and set hooksPat
 That saves all your fellow developers from having to do anything but set:
 `git config core.hooksPath $hookdir`, and you can simply point to the
 *One-minute* instructions above.
+
+### Note on External Tools Installation
+
+It is outside Captain's scope to install all your team's checker tools on
+every dev's machine. However, this repo provides an example script that should
+demonstrate common practice for teams, to get everyone on the same page.
+Basically, a project should have a script (or at least a doc) for getting all
+the tooling installed. It might be just a bunch of dnf/apt-get/pacman/brew
+commands, or it could even be an ansible file.
 
 ## Control File Spec
 

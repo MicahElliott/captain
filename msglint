@@ -8,6 +8,10 @@ msg=$(sed '/^#/d' <<<$msg) # remove comment lines
 line1=$(head -1 <<< $msg)
 
 if ! grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*' <<<$line1; then
+    print "Message:"
+    print '>>>'
+    print $msg
+    print '<<<'
     print 'Message does not match pattern'
     print 'Acceptable subjects: (books|sparkles|bug|wrench|cop|check|lock|bomb|tada)'
     print 'Optional specs: (#123) [topic]'
