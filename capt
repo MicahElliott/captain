@@ -96,8 +96,9 @@ setup_changes() {
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
     CAPT_FILES_CHANGED=( $(git diff --name-only --cached $main_branch) )
     # aye "[Δ Staged files changed ($#CAPT_FILES_CHANGED)]: $bold_color$CAPT_FILES_CHANGED$reset_color"
-    (( $#CAPT_FILES_CHANGED > 0 )) &&
+    if (( $#CAPT_FILES_CHANGED > 0 )); then
         print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color"
+    else print; fi
     # for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
     # print
 }
@@ -268,8 +269,8 @@ runlevel=$captfile
 source $captfile
 select_hook
 
-exit_gracefully() { aye $@; exit }
-# exit_gracefully() { [[ -n $@ ]] && aye $@; exit }
+# exit_gracefully() { aye $@; exit }
+exit_gracefully() { if (( $#@ > 0 )); then aye $@; fi; exit }
 
 # dbg "captfilelocal: $captfilelocal"
 if [[ -f $captfilelocal ]]; then source $captfilelocal
