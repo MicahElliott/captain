@@ -164,11 +164,12 @@ That saves all your fellow developers from having to do anything but set:
 ### Note on External Tools Installation
 
 It is outside Captain's scope to install all your team's checker tools on
-every dev's machine. However, this repo provides an example script that should
-demonstrate common practice for teams, to get everyone on the same page.
-Basically, a project should have a script (or at least a doc) for getting all
-the tooling installed. It might be just a bunch of dnf/apt-get/pacman/brew
-commands, or it could even be an ansible file.
+every dev's machine. However, this repo provides an [example
+script](install-standard-checkers.zsh) that should demonstrate common practice
+for teams, to get everyone on the same page. Basically, a project should have
+a script (or at least a doc) for getting all the tooling installed. It might
+be just a bunch of dnf/apt-get/pacman/brew commands, or it could even be an
+ansible file.
 
 ## Control File Spec
 
@@ -176,6 +177,21 @@ Now onto the simple `.capt/share.sh` control file at the root of your repo
 (which should also be committed), containing a set of "checks" for each hook.
 (Note that git-hooks purposes are written about
 [here](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks).)
+
+### Check Spec
+
+There is a tiny DSL that is used for each "check" in a control file.
+
+```
+    'lint(clj|cljs):   clj-kondo $CAPT_CHANGES &'      # linting of files
+     ^^^^ ^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^ ^       ^^^^^^^^^^^^^^^^^^
+     NAME  FILTERS             COMMAND     CONCURRENCY    COMMENT
+```
+
+Note that this syntax looks almost exactly like the standard [git conventional
+commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13) DSL.
+
+### Example Team Control File
 
 ```shell
 ### Captain git-hook manager control file
