@@ -58,7 +58,7 @@ Specifically, here are some of **Captain's features** you don't want to have
 to invent, write, and/or wrap around every tool you run:
 
 - **checking for existence**/installation of tool being run
-- **timing** info of each run
+- **timing** info of each hook run
 - consistent and **clear output** of each tool
 - detection and precise control of **files changed** from master/main
 - **file filtering** by extension
@@ -80,6 +80,8 @@ Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 - Tiny, transparent, no deps: read and understand the whole code base (one small Zsh file) in minutes
 - Simple: workflow is just calling commands or the scripts you already have
 - Client-compatible: other managers don't play nice with some git clients (eg, magit)
+- Super fast: sensitivity-colored timing details apparent everywhere
+- Any terminal (xterm etc): uses unicode indicators instead of emojis, tuned for 80-char display width
 - Basic: config is just a `.capt/share.sh` control file with shell arrays of scripts for each hook (no yaml etc)
 - Clear and concise: your standard git-hooks become one-line calls to `capt`
 - Fun: get ideas for new checks and be entertained by the Captain!
