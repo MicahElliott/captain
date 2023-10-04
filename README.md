@@ -28,7 +28,7 @@ start enabling its checks. (You won't be impacted if you do nothing.)
 ```shell
 # point git to the new hooks
 git config core.hooksPath .capt/hooks
-# Install the capt command (a small swfhell script)
+# Install the capt command (a small shell script)
 cd /somewhere/on/your/PATH
 wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt
 chmod +x capt
