@@ -92,6 +92,7 @@ typeset -A builtin_cannons=(
     # 'gommit'       'gommit check message "$(cat $1)"'
     'msglint'      'msglint "$(cat $GITARG1)"'
     'cljfmt'       '(clj)cljfmt check'
+    'colorquote'   'colorquote'
 )
 
 # Set up vars to be available in proj capt.zsh, print which files changed
@@ -249,7 +250,7 @@ run_scripts () {
             # print "$fg[red]    ⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀Status: $es"
             # print "$fg[red]    ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀"
             # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀"
-            print "$fg[red]       "'\\'
+            print "$fg[red]         "'\\\\'
             print "$fg[red]         (o>     Down to Davey Jones’ locker!"
             print "$fg[red]      ___(()___  Status $es"
             print "$fg[red]         ||"

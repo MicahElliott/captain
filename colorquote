@@ -1,0 +1,21 @@
+#! /bin/zsh
+
+quotes=(
+'May your blade always be wet, and powder dry.'
+'Under a black flag we sail and the sea shall be our empire.'
+'Ahoy matey! Let’s trouble the water!'
+'Under a black flag we shall sail.'
+'Obey the captain or learn to swim.'
+'I be ruler of the seven seas!'
+'Shiver me timbers!'
+)
+
+qi=$(( ${RANDOM} % $#quotes + 1 ))
+quote=$quotes[$qi]
+color=$(( ${RANDOM} % 256 + 1 ))
+
+print
+print  "\x1b[48;5;${color}m     \e[0m"
+print  "\x1b[48;5;${color}m     \e[0m  $quote"
+print  "\x1b[48;5;${color}m     \e[0m"
+print
