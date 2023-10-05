@@ -17,10 +17,14 @@ if [[ $OSTYPE == darwin* ]] ; then
     else
         date() { gdate $@ }
         grep() { ggrep $@ }
+        sed()  { gsed $@ }
+        player() { afplay $@ }
     fi
 else
     date() { date $@ }
     grep() { grep $@ }
+    sed()  { sed $@ }
+    player() { play $@ }
 fi
 
 dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
@@ -122,17 +126,6 @@ setup_changes() {
     # for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
     # print
 }
-
-capt_play_alert() {
-    if [[ $OSTYPE = linux-gnu ]]; then
-        player=play
-    elif [[ $OSTYPE =~ darwin ]]; then
-        player=afplay
-    else
-        aye "Can't find audio player for alerting; falling back to beep."
-        player=beep
-    fi
-    $player $@ }
 
 # Run the scripts from control file
 run_scripts () {
