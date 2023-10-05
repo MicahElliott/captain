@@ -119,7 +119,8 @@ setup_changes() {
     # aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
     print -n " $fg_bold[magenta][⎇ $main_branch]$reset_color"
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
-    CAPT_FILES_CHANGED=( $(git diff --name-only --cached $main_branch) )
+    CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached $main_branch) )
+    CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
     # aye "[Δ Staged files changed ($#CAPT_FILES_CHANGED)]: $bold_color$CAPT_FILES_CHANGED$reset_color"
     if (( $#CAPT_FILES_CHANGED > 0 )); then
         print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color"
@@ -151,6 +152,9 @@ run_scripts () {
     # done
 
     for line in $@; do
+        # Reset for each time through
+        CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
+        dbg xxx CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
         inv=( ${(@s: :)line} ) # split on spaces to get first, discard beyond second
         name=$inv[1]
         script=$inv[2]
@@ -160,29 +164,37 @@ run_scripts () {
         dbg "line: $line :: cmd0: $cmd0 :: cmd: $cmd"
 
         # Built-in has filter already, or specified filter
-        print_name=$(sed 's/[:(].*//' <<<$name)
+        # print_name=$(sed 's/[:(].*//' <<<$name)
+        print_name=$(print $name | sed 's/[:(].*//' )
         # print
         ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color"
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
             # Need to fix up cmd since no spec, and maybe include filtered files
             script=$inv[1]
             just_buitins=${(k)builtin_cannons}
-            if ! (($just_buitins[(Ie)$name])); then aye "WARNING: Unable to find built-in:" $name; exit 1; fi
+            if ! (($just_buitins[(Ie)$name])); then
+                print; aye "$fg[red]ERROR: Unable to find built-in: $bold_color$name$reset_color" ; exit 1
+            fi
             #              NAME        FILTER    CMD
             # User spec is like:    markdownlint(md|mkd): mdl ...
             # DSL is actually like: (md|mkd)mdl ...
             dsl=$builtin_cannons[$name]
-            filter=$(sed 's/).*/)/' <<<$dsl)
+            filter=$(print $dsl | sed 's/).*/)/')
             # non-greedy, just the very first part up to (, and remove ending arg(s)
-            cmd=$(sed -r -e 's/^\([^)]+\)//' <<<$dsl)
-            cmd0=$(sed -r 's/ .*//' <<<$cmd)
+            cmd=$(print $dsl | sed -r -e 's/^\([^)]+\)//')
+            cmd0=$(print $cmd | sed -r 's/ .*//')
             dbg "cmd0: "$cmd0
-            # filtered_files=( $(grep -E "\.$builtin_cannons[$name]" <<<$CAPT_FILES_CHANGED) )
-            filtered_files=( $(grep -E "\.$filter" <<<$CAPT_FILES_CHANGED) )
-            # Special casing for specific hooks needing special treatment
+            # Many antics follow to handle filters and changes for built-ins
+            if [[ $filter != '('* ]]; then filtered_files=( $CAPT_FILES_CHANGED )
+            else                           filtered_files=( $(print $CAPT_FILES_CHANGED | grep -E "\.$filter") ); fi
+            # TODO Add more! Special casing for specific hooks needing special treatment
             if [[ $active_githook =~ 'commit-msg' ]]; then
                 print
-            elif [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
+            elif [[ $#filtered_files < 1 ]]; then
+                if [[ -z $CAPT_FILES_CHANGED ]]; then :
+                else print " (Not seein any matchin files staged, skippin.)"
+                     continue
+                fi
             else
                 cmd="$cmd0 $filtered_files"
                 # print; aye "Filtered files under siege:" $#filtered_files
@@ -191,7 +203,7 @@ run_scripts () {
                 aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
             fi
         elif [[ $name == *\(*\)* ]]; then dbg "filtered checker"
-            filter=$(sed 's/.*(/(/;s/://' <<<$name) # remove front name and trailing :
+            filter=$(print $name | sed 's/.*(/(/;s/://') # remove front name and trailing :
             dbg filter: $filter
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
             filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") )
