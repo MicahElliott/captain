@@ -4,10 +4,19 @@
 
 example=':books: (#1234) [i18n] Add proper diacritics'
 msg=$1
-msg=$(sed '/^#/d' <<<$msg) # remove comment lines
-line1=$(head -1 <<< $msg)
+msg=$(print $msg | sed '/^#/d') # remove comment lines
+line1=$(print $msg | head -1)
 
-if ! grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*' <<<$line1; then
+# grep's -P option only in gnu
+if [[ $OSTYPE == darwin* ]] ; then
+    grep() { ggrep $@ }
+    wc() { gwc $@ }
+else
+    grep() { grep $@ }
+    wc() { wc $@ }
+fi
+
+if ! print $line1 | grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*'; then
     print "Message:"
     print '>>>'
     print $msg
@@ -20,20 +29,20 @@ if ! grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{
     exit 1
 fi
 
-line1len=$(wc --chars <<<$line1)
+line1len=$(print $line1 | wc --chars)
 if (( 72 < line1len )); then
     print 'First line length exceeds 72'
     exit 1
 fi
 
-if grep -q '[ .]$' <<<$line1; then
+if print $line1 | grep -q '[ .]$'; then
     print 'First line must not end with period or space'
     exit 1
 fi
 
 # print "\n\nmsg: $msg\n"
 
-if (( $(wc -l <<< $msg) < 3 )); then
+if (( $(print $msg | wc -l) < 3 )); then
     print 'WARNING: you are encouraged to write a paragraph describing your change'
     print 'But otherwise commit message looks good enough, so letting through!'
     print 'Amend wording to add a paragraph.'
