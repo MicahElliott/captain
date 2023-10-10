@@ -199,13 +199,14 @@ run_scripts () {
             # DSL is actually like: (md|mkd)mdl ...
             dsl=$builtin_cannons[$name]
             filter=$(print $dsl | sed 's/).*/)/')
+            # print xxx $filter
             # non-greedy, just the very first part up to (, and remove ending arg(s)
             cmd=$(print $dsl | sed -r -e 's/^\([^)]+\)//')
             cmd0=$(print $cmd | sed -r 's/ .*//')
             dbg "cmd0: "$cmd0
             # Many antics follow to handle filters and changes for built-ins
             if [[ $filter != '('* ]]; then filtered_files=( $CAPT_FILES_CHANGED )
-            else                           filtered_files=( $(print $CAPT_FILES_CHANGED | grep -E "\.$filter") ); fi
+            else                           filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") ); fi
             # TODO Add more! Special casing for specific hooks needing special treatment
             if [[ $active_githook =~ 'commit-msg' ]]; then
                 print
