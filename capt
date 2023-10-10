@@ -299,7 +299,7 @@ run_scripts () {
         fi
     done
 
-    aye "$fg_bold[green]⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑$reset_color"
+    aye "$fg_bold[green]⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑ $reset_color"
 }
 
 # Run a set of scripts based on which hook is active
