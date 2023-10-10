@@ -40,22 +40,23 @@ autoload colors; colors
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 
+# Use s* to mean "system" as in "sgrep" -> "system grep"
 if [[ $OSTYPE == darwin* ]] ; then
     if ! type ggrep >/dev/null; then
         print 'Detected that GNU coreutils et al are not installed. You should run:'
         print 'brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep'
         exit 1
     else
-        date() { gdate $@ }
-        grep() { ggrep $@ }
-        sed()  { gsed $@ }
-        player() { afplay $@ }
+        sdate() { gdate $@ }
+        sgrep() { ggrep $@ }
+        ssed()  { gsed $@ }
+        splayer() { afplay $@ }
     fi
 else
-    date() { date $@ }
-    grep() { grep $@ }
-    sed()  { sed $@ }
-    player() { play $@ }
+    sdate() { date $@ }
+    sgrep() { grep $@ }
+    ssed()  { sed $@ }
+    splayer() { play $@ }
 fi
 
 dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
@@ -78,10 +79,10 @@ print_banner() {
     # print '(◕‿-) Shiver me timbers!'
     # print ""
     print
-    # aye "$fg_bold[white][$(date +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print -n "$fg_bold[blue](◕‿-)$reset_color" \
           "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
-          "$fg_bold[white][◷ $(date +%T)]$reset_color"
+          "$fg_bold[white][◷ $(sdate +%T)]$reset_color"
     # aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
     # print '       _________ '
     # print '      |-_ .-. _-|'
@@ -103,7 +104,7 @@ if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1
 # FIXME This could possibly go into print_banner, if `source`ing run first,
 # but unlikely since need to source both capt files
 active_githook=$1
-# aghu=$(sed 's/-/_/g' <<<$active_githook)
+# aghu=$(ssed 's/-/_/g' <<<$active_githook)
 # print aghu: $aghu
 # [[ -n $"$(eval 'print $aghu')" ]] && print yes: $aghu || print no1
 # [[ -n $"$aghu" ]] && print yes: $aghu || print no2
@@ -119,11 +120,11 @@ setup_changes() {
     # VALUEADD Magic to figure out main v master and get changed files
     if [[ -z $CAPT_MAIN_BRANCH ]]; then
         # Fast and inaccurate https://stackoverflow.com/a/50056710/326516
-        # main_branch=$(git branch | grep '*' | cut -f2 -d' ')
+        # main_branch=$(git branch | sgrep '*' | cut -f2 -d' ')
         # https://stackoverflow.com/a/42570510/326516
-        # main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | grep '\->' | cut -d' ' -f5 | cut -d/ -f2)
+        # main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | sgrep '\->' | cut -d' ' -f5 | cut -d/ -f2)
         # https://stackoverflow.com/a/49384283/326516
-        main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | sed 's@^origin/@@')
+        main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | ssed 's@^origin/@@')
     fi
     if [[ ! $main_branch == (main|master) ]]; then
         # This approach is better but slow to reach remote so like to avoid
@@ -132,7 +133,7 @@ setup_changes() {
         # https://stackoverflow.com/a/67170894/326516SX
         aye "You should also run this registration since your repo is not a clone:"
         aye "git remote set-head origin -a"
-        main_branch=$(git remote show origin | sed -n '/HEAD branch/s/.*: //p')
+        main_branch=$(git remote show origin | ssed -n '/HEAD branch/s/.*: //p')
     fi
     dbg "main_branch: $main_branch"
     # aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
@@ -183,8 +184,8 @@ run_scripts () {
         dbg "line: $line :: cmd0: $cmd0 :: cmd: $cmd"
 
         # Built-in has filter already, or specified filter
-        # print_name=$(sed 's/[:(].*//' <<<$name)
-        print_name=$(print $name | sed 's/[:(].*//' )
+        # print_name=$(ssed 's/[:(].*//' <<<$name)
+        print_name=$(print $name | ssed 's/[:(].*//' )
         # print
         ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color"
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
@@ -198,15 +199,15 @@ run_scripts () {
             # User spec is like:    markdownlint(md|mkd): mdl ...
             # DSL is actually like: (md|mkd)mdl ...
             dsl=$builtin_cannons[$name]
-            filter=$(print $dsl | sed 's/).*/)/')
+            filter=$(print $dsl | ssed 's/).*/)/')
             # print xxx $filter
             # non-greedy, just the very first part up to (, and remove ending arg(s)
-            cmd=$(print $dsl | sed -r -e 's/^\([^)]+\)//')
-            cmd0=$(print $cmd | sed -r 's/ .*//')
+            cmd=$(print $dsl | ssed -r -e 's/^\([^)]+\)//')
+            cmd0=$(print $cmd | ssed -r 's/ .*//')
             dbg "cmd0: "$cmd0
             # Many antics follow to handle filters and changes for built-ins
             if [[ $filter != '('* ]]; then filtered_files=( $CAPT_FILES_CHANGED )
-            else                           filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") ); fi
+            else                           filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter") ); fi
             # TODO Add more! Special casing for specific hooks needing special treatment
             if [[ $active_githook =~ 'commit-msg' ]]; then
                 print
@@ -224,10 +225,10 @@ run_scripts () {
                 aye "⏵ $bold_color$cmd$reset_color"
             fi
         elif [[ $name == *\(*\)* ]]; then dbg "filtered checker"
-            filter=$(print $name | sed 's/.*(/(/;s/://') # remove front name and trailing :
+            filter=$(print $name | ssed 's/.*(/(/;s/://') # remove front name and trailing :
             dbg filter: $filter
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
-            filtered_files=( $(print -l $CAPT_FILES_CHANGED | grep -E "\.$filter") )
+            filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter") )
             CAPT_FILES_CHANGED=( $filtered_files )
             if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
@@ -256,7 +257,7 @@ run_scripts () {
 
         # Add args to pass from git if it's one of the arg-accepting hooks
         # [[ $active_githook =~ 'commit-msg' ]] && cmd+=' $1 $2'
-        t0=$(date +%s%3N) # start timer
+        t0=$(sdate +%s%3N) # start timer
         # Work with either a local script or something found on path
         dbg "cmd: $cmd, cmd0: $cmd0"
         dbg "script: $scriptsdir/$script"
@@ -268,7 +269,7 @@ run_scripts () {
         fi
         es=$?
         wait # don't process until background scripts are finished
-        tfinal=$(( $(date +%s%3N) - $t0 )) units=ms units_color=white
+        tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 ]]; then

@@ -9,14 +9,14 @@ line1=$(print $msg | head -1)
 
 # grep's -P option only in gnu
 if [[ $OSTYPE == darwin* ]] ; then
-    grep() { ggrep $@ }
-    wc() { gwc $@ }
+    sgrep() { ggrep $@ }
+    swc() { gwc $@ }
 else
-    grep() { grep $@ }
-    wc() { wc $@ }
+    sgrep() { grep $@ }
+    swc() { wc $@ }
 fi
 
-if ! print $line1 | grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*'; then
+if ! print $line1 | sgrep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*'; then
     print "Message:"
     print '>>>'
     print $msg
@@ -29,20 +29,20 @@ if ! print $line1 | grep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb
     exit 1
 fi
 
-line1len=$(print $line1 | wc --chars)
+line1len=$(print $line1 | swc --chars)
 if (( 72 < line1len )); then
     print 'First line length exceeds 72'
     exit 1
 fi
 
-if print $line1 | grep -q '[ .]$'; then
+if print $line1 | sgrep -q '[ .]$'; then
     print 'First line must not end with period or space'
     exit 1
 fi
 
 # print "\n\nmsg: $msg\n"
 
-if (( $(print $msg | wc -l) < 3 )); then
+if (( $(print $msg | swc -l) < 3 )); then
     print 'WARNING: you are encouraged to write a paragraph describing your change'
     print 'But otherwise commit message looks good enough, so letting through!'
     print 'Amend wording to add a paragraph.'
