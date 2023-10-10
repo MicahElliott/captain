@@ -1,0 +1,19 @@
+#! /bin/zsh
+
+### Pop up a notification when pending migrations detected by switching branches.
+
+migs=$(pgmig -r ./resources/migrations pending)
+migcnt=$(wc -l <<<$migs)
+msg="There are $migcnt migrations that should be run."
+
+# if (( 0 < $migcnt )); then
+if [[ $migs != '' ]] ; then
+    print $msg
+    if [[ $OSTYPE == 'linux-gnu' ]]; then
+        notify-send "Pending migrations" $msg
+    else
+        terminal-notifier -title 'Pending Migrations' -subtitle "$msg" -message "$migs" -sound Glass
+    fi
+else
+    print "no pending migrations"
+fi
