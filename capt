@@ -264,7 +264,7 @@ run_scripts () {
         if [[ -f $scriptsdir/$script ]]; then eval $scriptsdir/$cmd
         elif type $cmd0 >/dev/null;      then eval $cmd
         # Just skip this one hook if command not found
-        else aye "WARNING: Skippin on yer $print_name; $cmd0 and $script be lost at sea."
+        else aye "$fg[red]WARNING: Skippin on yer $print_name; $cmd0 and $script be lost at sea.$reset_color"
         fi
         es=$?
         wait # don't process until background scripts are finished

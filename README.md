@@ -32,6 +32,7 @@ git config core.hooksPath .capt/hooks
 cd /somewhere/on/your/PATH
 wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt
 chmod +x capt
+# OR git clone https://github.com/MicahElliott/captain (for additional tooling)
 # Make some changes and run git
 cd your-project-root
 git commit # Captain at yer service! ...
@@ -107,7 +108,7 @@ Each developer of your code base is encouraged to install Captain (point them
 to the *One-minute guide* above), so violations can be caught before code
 changes go to CI.
 
-1. Put the `capt` script on your `path`
+1. Put the `capt` script on your `path` (clone the whole repo if you also want built-in checkers)
 1. `cd your-project`
 1. Run the for-loop below to create any git-hooks you want
 1. Create a `.capt/share.sh` control file (or copy the one below)
