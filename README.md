@@ -37,6 +37,11 @@ cd your-project-root
 git commit # Captain at yer service! ...
 ```
 
+_(Note to OSX users: If you use a git client that is not started from a
+terminal, you'll need to ensure your `PATH` is set to include
+`/path/to/captain` by editing `/etc/paths`, as per
+[this](https://stackoverflow.com/a/22465399/326516).)_
+
 If there are any "checkers" (linters, formatters, informers, etc) being
 invoked that you don't have installed yet, Captain will kindly let you know
 more details.

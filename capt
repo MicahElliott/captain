@@ -4,6 +4,37 @@
 
 # Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ◴◵◶◷
 
+# Built-in convenience checkers
+# keys are for lookups
+# values are an optional filter, followed by a command to run
+typeset -A builtin_cannons=(
+    'markdownlint' '(md|mkd|markdown)mdl'
+    'cljlint'      '(clj|cljc|cljs)clj-kondo'
+    # 'gommit'       'gommit check message "$(cat $1)"'
+    'msglint'      'msglint "$(cat $GITARG1)"'
+    'cljfmt'       '(clj)cljfmt check'
+    'colorquote'   'colorquote'
+)
+
+typeset -A builtin_helps=(
+    markdownlint 'Check markdown files for various conventional violations'
+    cljlint 'Perform static analysis on Clojure/EDN files without the need of a running REPL'
+    msglint 'Ensure a commit message adheres to a specied standard format'
+    cljfmt 'Format clojure files'
+)
+
+if [[ $@[1] == 'help' ]]; then
+    print 'capt is a git-hook manager'
+    print
+    print 'Detected your shared control file:' $CAPT_FILE
+    [[ -f $CAPT_LOCALFILE ]] && print 'Detected your local personal control file:' $CAPT_LOCALFILE
+    # print $builtin_helps
+    # print ${builtin_helps[kondo]}
+    print "\nBuilt-in slashers:"
+    for b in ${(k)builtin_helps}; do printf '  %-16s%s\n' $b ${builtin_helps[$b]} ; done
+    exit
+fi
+
 autoload colors; colors
 
 # Save the incoming git-hook arg(s)
@@ -82,18 +113,6 @@ active_githook=$1
 # else
 #     print "ok got an active_githook: $active_githook"
 # fi
-
-# Built-in convenience checkers
-# keys are for lookups
-# values are an optional filter, followed by a command to run
-typeset -A builtin_cannons=(
-    'markdownlint' '(md|mkd|markdown)mdl'
-    'kondo'        '(clj|cljc|cljs)clj-kondo'
-    # 'gommit'       'gommit check message "$(cat $1)"'
-    'msglint'      'msglint "$(cat $GITARG1)"'
-    'cljfmt'       '(clj)cljfmt check'
-    'colorquote'   'colorquote'
-)
 
 # Set up vars to be available in proj capt.zsh, print which files changed
 setup_changes() {
