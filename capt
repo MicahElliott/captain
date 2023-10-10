@@ -220,7 +220,8 @@ run_scripts () {
                 # print; aye "Filtered files under siege:" $#filtered_files
                 print " $fg[yellow][$filtered_files]$reset_color"
                 dbg "files:" $filtered_files
-                aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
+                # aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
+                aye "→ $bold_color$cmd$reset_color"
             fi
         elif [[ $name == *\(*\)* ]]; then dbg "filtered checker"
             filter=$(print $name | sed 's/.*(/(/;s/://') # remove front name and trailing :
@@ -233,7 +234,8 @@ run_scripts () {
                 # print; aye "Filtered files under siege:" $#filtered_files
                 print " $fg[yellow][$filtered_files]$reset_color"
                 dbg "files:" $filtered_files
-                aye "Blimey! Aimin yer custom-rigged $print_name: $bold_color$cmd$reset_color"
+                # aye "Blimey! Aimin yer custom-rigged $print_name: $bold_color$cmd$reset_color"
+                aye "→ $bold_color$cmd$reset_color"
             fi
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
             filtered_files=( $CAPT_FILES_CHANGED )
@@ -242,12 +244,14 @@ run_scripts () {
                 # print; aye "Files under siege:" $#CAPT_FILES_CHANGED
                 print " $fg[yellow][$CAPT_FILES_CHANGED]$reset_color"
                 dbg "files:" $CAPT_FILES_CHANGED
-                aye "Aimin yer cutlass $print_name with yer files: $bold_color$cmd$reset_color"
+                # aye "Aimin yer cutlass $print_name with yer files: $bold_color$cmd$reset_color"
+                aye "→ $bold_color$cmd$reset_color"
             fi
         else
             # print; aye "Ye took care of file selection yerself, or no files needin fer sayin."
             print " $fg[yellow][∞]$reset_color"
-            aye "Doubloons! Aimin yer $print_name: $bold_color$cmd$reset_color"
+            # aye "Doubloons! Aimin yer $print_name: $bold_color$cmd$reset_color"
+            aye "→ $bold_color$cmd$reset_color"
         fi
 
         # Add args to pass from git if it's one of the arg-accepting hooks
