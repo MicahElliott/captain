@@ -1,8 +1,11 @@
 # Captain
 
 Captain is a simple and convenient opt-in approach to client-side git-hook
-management, with just a single tiny shell script to download. Suited for a
-sharing across a team, extensible for individuals.
+management, with just a single tiny shell script to download, and likely
+nothing to install. Suited for a sharing across a team, extensible for
+individuals. Supports all types of git hooks! Works with Linux, OSX, BSDs,
+probably WSL. Language-agnositic — no npm, ruby, yaml or anything to wrestle
+with.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
@@ -47,7 +50,7 @@ If there are any "checkers" (linters, formatters, informers, etc) being
 invoked that you don't have installed yet, Captain will kindly let you know
 more details.
 
-OR, if you're looking to be the one to bring Captain git-hook management to a
+OR, if you're looking to be the one to introduce Captain git-hook management to a
 project, read on....
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
@@ -93,7 +96,7 @@ to invent, write, and/or wrap around every tool you run:
 - **file filtering** by extension
 - a **single file organization** of all hook/script specs for whole team to control/use
 - **user-local scripts** support for individual developer use
-- one-word **built-in** configs (linters, etc) with pre-defined filters
+- one-word **built-in** checkers (linters, etc) with pre-defined filters
 - a few provided **add-on linters** for optional use
 - **OS-agnostic** commands
 - controllable **parallel** execution of each tool
@@ -286,7 +289,7 @@ E.g., you have OCD about line length. You can ensure that all of *your*
 commits conform by creating another local-only `.capt/local.sh` control file:
 
 ``` shell
-pre_commit=( 'line-length-nazi: check-line-length' ... other-custom-checkers... )
+pre_commit=( 'line-length-pedant: check-line-length' ... other-custom-checkers... )
 ```
 
 Then you should add `.capt/local.sh` to your `.gitignore` file.
