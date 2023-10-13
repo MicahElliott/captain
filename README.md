@@ -392,6 +392,12 @@ regardless of language:
 - [git-confirm](https://github.com/pimterry/git-confirm): fixmes, etc
 - audible notifications
 
+## Magit Tips
+
+Use [page-break-lines](https://github.com/purcell/page-break-lines) for nice,
+clear sectioning, turning page-breaks (`^L`) into colored lines. Those lines
+can also be navigated with `C-x [` (prev) and `C-x ]` (next).
+
 ## Running Hook Scripts in CI
 
 So you have all these great hook scripts in `.capt/scripts` now, but do you

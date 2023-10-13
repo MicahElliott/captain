@@ -77,8 +77,8 @@ fi
 
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
-    # print ""
     print
+    print ""
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print -n "$fg_bold[blue](◕‿-)$reset_color" \
           "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
@@ -202,7 +202,7 @@ run_scripts () {
             filter=$(print $dsl | ssed 's/).*/)/')
             # print xxx $filter
             # non-greedy, just the very first part up to (, and remove ending arg(s)
-            cmd=$(print $dsl | ssed -r -e 's/^\([^)]+\)//')
+            cmd=$(print $dsl | ssed -r 's/^\([^)]+\)//')
             cmd0=$(print $cmd | ssed -r 's/ .*//')
             dbg "cmd0: "$cmd0
             # Many antics follow to handle filters and changes for built-ins
@@ -217,7 +217,7 @@ run_scripts () {
                      continue
                 fi
             else
-                cmd="$cmd0 $filtered_files"
+                cmd="$cmd $filtered_files"
                 # print; aye "Filtered files under siege:" $#filtered_files
                 print " $fg[yellow][$filtered_files]$reset_color"
                 dbg "files:" $filtered_files
