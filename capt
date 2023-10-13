@@ -187,7 +187,7 @@ run_scripts () {
         # print_name=$(ssed 's/[:(].*//' <<<$name)
         print_name=$(print $name | ssed 's/[:(].*//' )
         # print
-        ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color"
+        ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color" # hooks
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
             # Need to fix up cmd since no spec, and maybe include filtered files
             script=$inv[1]
@@ -208,22 +208,20 @@ run_scripts () {
             # Many antics follow to handle filters and changes for built-ins
             if [[ $filter != '('* ]]; then filtered_files=( $CAPT_FILES_CHANGED )
             else                           filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") ); fi
-            # TODO Add more! Special casing for specific hooks needing special treatment
-            if [[ $active_githook =~ 'commit-msg' ]]; then
-                print
-            elif [[ $#filtered_files < 1 ]]; then
-                if [[ -z $CAPT_FILES_CHANGED ]]; then :
-                else print " (Not seein any matchin files staged, skippin.)"
-                     continue
-                fi
-            else
-                cmd="$cmd $filtered_files"
-                # print; aye "Filtered files under siege:" $#filtered_files
-                print " $fg[yellow][$filtered_files]$reset_color"
-                dbg "files:" $filtered_files
-                # aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
-                aye "▶ $bold_color$cmd$reset_color"
+            if [[ $#filtered_files < 1 && -n $CAPT_FILES_CHANGED ]]; then
+                print " (Not seein any matchin files staged, skippin.)"
+                continue
             fi
+            # TODO Add special casing for specific hooks needing special treatment
+            if [[ $active_githook =~ 'commit-msg' ]]; then : ; fi
+
+            cmd="$cmd $filtered_files"
+            # print; aye "Filtered files under siege:" $#filtered_files
+            print " $fg[yellow][$filtered_files]$reset_color"
+            dbg "files:" $filtered_files
+            # aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
+            aye "▶ $bold_color$cmd$reset_color"
+
         elif [[ $name == *\(*\)* ]]; then dbg "filtered checker"
             filter=$(print $name | ssed 's/.*(/(/;s/://') # remove front name and trailing :
             dbg filter: $filter
