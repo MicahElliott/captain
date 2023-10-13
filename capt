@@ -207,7 +207,7 @@ run_scripts () {
             dbg "cmd0: "$cmd0
             # Many antics follow to handle filters and changes for built-ins
             if [[ $filter != '('* ]]; then filtered_files=( $CAPT_FILES_CHANGED )
-            else                           filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter") ); fi
+            else                           filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") ); fi
             # TODO Add more! Special casing for specific hooks needing special treatment
             if [[ $active_githook =~ 'commit-msg' ]]; then
                 print
@@ -228,7 +228,7 @@ run_scripts () {
             filter=$(print $name | ssed 's/.*(/(/;s/://') # remove front name and trailing :
             dbg filter: $filter
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
-            filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter") )
+            filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") )
             CAPT_FILES_CHANGED=( $filtered_files )
             if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
