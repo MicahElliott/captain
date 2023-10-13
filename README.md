@@ -50,6 +50,29 @@ more details.
 OR, if you're looking to be the one to bring Captain git-hook management to a
 project, read on....
 
+<!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->
+**Table of Contents**
+
+- [Captain](#captain)
+    - [One-minute Quick-Start Guide](#one-minute-quick-start-guide)
+    - [Do I need a hook manager?](#do-i-need-a-hook-manager)
+    - [Why Captain instead of another hook manager?](#why-captain-instead-of-another-hook-manager)
+    - [Installation](#installation)
+    - [Setup and Configuration](#setup-and-configuration)
+        - [Note on External Tools Installation](#note-on-external-tools-installation)
+    - [Control File Spec](#control-file-spec)
+        - [Check Spec](#check-spec)
+        - [Example Team Control File](#example-team-control-file)
+    - [User-local additional hooks](#user-local-additional-hooks)
+    - [Sample Run](#sample-run)
+    - [Migrating your existing git-hooks](#migrating-your-existing-git-hooks)
+    - [Use Captain directly outside of git](#use-captain-directly-outside-of-git)
+    - [How to bring Captain to your team](#how-to-bring-captain-to-your-team)
+    - [Treasure trove of hooks](#treasure-trove-of-hooks)
+    - [Running Hook Scripts in CI](#running-hook-scripts-in-ci)
+
+<!-- markdown-toc end -->
+
 ## Do I need a hook manager?
 
 _Without a hook manager_, it's challenging to have a single set of checks
