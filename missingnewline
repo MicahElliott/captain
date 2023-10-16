@@ -1,0 +1,24 @@
+#! /bin/zsh
+
+# Detect if input file is missing a newline at end of file
+# https://unix.stackexchange.com/a/542520/101165
+
+allok=true
+nlcheck() {
+    filename=$1
+    if [ ! -s "$filename" ]; then
+        echo "$filename is empty"
+    elif [ -z "$(tail -c 1 <"$filename")" ]; then
+        : echo "$filename ends with a newline or with a null byte"
+    else
+        echo "$filename does not end with a newline nor with a null byte"
+        unset allok
+    fi
+}
+
+for f in $@; do nlcheck $f; done
+
+if [[ -z $allok ]]; then
+    # print 'Found probs, exiting non-zero'
+    exit 1
+fi

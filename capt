@@ -7,12 +7,15 @@
 # Built-in convenience checkers
 # keys are for lookups
 # values are an optional filter, followed by a command to run
+# TODO May need a way/syntax to let checks run but ignore that they fail; IOW, proceed despite failure
 typeset -A builtin_cannons=(
     'markdownlint' '(md|mkd|markdown)mdl'
-    'cljlint'      '(clj|cljc|cljs)clj-kondo'
-    # 'gommit'       'gommit check message "$(cat $1)"'
     'msglint'      'msglint "$(cat $GITARG1)"'
+    'missingnewline' 'missingnewline $CAPT_FILES_CHANGED'
+    # 'gommit'       'gommit check message "$(cat $1)"'
+    'cljlint'      '(clj|cljc|cljs)clj-kondo --lint $CAPT_FILES_CHANGED'
     'cljfmt'       '(clj)cljfmt check'
+    'cljsplint'    '(clj)splint -o clj-kondo $CAPT_FILES_CHANGED'
     'colorquote'   'colorquote'
 )
 
