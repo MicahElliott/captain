@@ -422,7 +422,9 @@ regardless of language:
 
 Use [page-break-lines](https://github.com/purcell/page-break-lines) for nice,
 clear sectioning, turning page-breaks (`^L`) into colored lines. Those lines
-can also be navigated with `C-x [` (prev) and `C-x ]` (next).
+can also be navigated with `C-x [` (prev) and `C-x ]` (next). Add
+`magit-process-mode` to `page-break-lines-modes` to make them visible in
+`magit-process`.
 
 ## Running Hook Scripts in CI
 
@@ -466,3 +468,9 @@ ___V_/_____
    ||
    ||
 ```
+
+## License
+
+Copyright © Micah Elliott.
+
+Distributed under the Eclipse Public License v2.0. See LICENSE.
