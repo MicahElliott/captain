@@ -61,8 +61,8 @@ fi
 
 dbg() { [[ -n $CAPT_VERBOSE ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
 # aye() { print '(◕‿-)' $@ }
-aye()  { print "$fg_bold[blue](◕‿-)$reset_color" $@ }
-ayen() { print -n "$fg_bold[blue](◕‿-)$reset_color" $@ } # no newline
+aye()  { print    "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ }
+ayen() { print -n "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ } # no newline
 
 reporoot=$(git rev-parse --show-toplevel 2>/dev/null)
 if [[ $? -ne 0 ]]; then
@@ -118,28 +118,40 @@ active_githook=$1
 # Set up vars to be available in proj capt.zsh, print which files changed
 setup_changes() {
     # VALUEADD Magic to figure out main v master and get changed files
+    print
+    print ""
     if [[ -z $CAPT_MAIN_BRANCH ]]; then
         # Fast and inaccurate https://stackoverflow.com/a/50056710/326516
         # main_branch=$(git branch | sgrep '*' | cut -f2 -d' ')
         # https://stackoverflow.com/a/42570510/326516
         # main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | sgrep '\->' | cut -d' ' -f5 | cut -d/ -f2)
         # https://stackoverflow.com/a/49384283/326516
-        main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | ssed 's@^origin/@@')
+        # Setting upstream branch: https://stackoverflow.com/a/37770744/326516
+        # main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | ssed 's@^origin/@@')
+        upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || {
+            aye "$fg[red]WARNING: Detected that git upstream is not set for this branch. (https://stackoverflow.com/a/37770744/326516)$reset_color"
+            upstream=$(git branch -vv | sgrep '^\*' | cut -f2 -d' ')
+        }
     fi
-    if [[ ! $main_branch == (main|master) ]]; then
-        # This approach is better but slow to reach remote so like to avoid
-        aye "\nDiscoverin yer MAIN branch remotely, since couldn't determine locally."
-        aye "You could set CAPT_MAIN_BRANCH to avoid the stall."
-        # https://stackoverflow.com/a/67170894/326516SX
-        aye "You should also run this registration since your repo is not a clone:"
-        aye "git remote set-head origin -a"
-        main_branch=$(git remote show origin | ssed -n '/HEAD branch/s/.*: //p')
-    fi
-    dbg "main_branch: $main_branch"
+    # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
+    print -n "$fg_bold[blue](◕‿-)$reset_color" \
+          "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
+          "$fg_bold[white][◷ $(sdate +%T)]$reset_color"
+
+    # if [[ ! $main_branch == (main|master) ]]; then
+    #     # This approach is better but slow to reach remote so like to avoid
+    #     aye "\nDiscoverin yer MAIN branch remotely, since couldn't determine locally."
+    #     aye "You could set CAPT_MAIN_BRANCH to avoid the stall."
+    #     # https://stackoverflow.com/a/67170894/326516SX
+    #     aye "You should also run this registration since your repo is not a clone:"
+    #     aye "git remote set-head origin -a"
+    #     main_branch=$(git remote show origin | ssed -n '/HEAD branch/s/.*: //p')
+    # fi
+    dbg "upstream: $upstream"
     # aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
-    print -n " $fg_bold[magenta][⎇ $main_branch]$reset_color"
+    print -n " $fg_bold[magenta][⎇ $upstream]$reset_color"
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
-    CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached $main_branch) )
+    CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached $upstream) )
     CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
     # aye "[Δ Staged files changed ($#CAPT_FILES_CHANGED)]: $bold_color$CAPT_FILES_CHANGED$reset_color"
     if (( $#CAPT_FILES_CHANGED > 0 )); then
@@ -316,7 +328,7 @@ select_hook() {
 
 ### Main
 
-print_banner
+# print_banner
 setup_changes
 
 # aye "Loadin the whole ship’s arsenal to the gunwales: $captfile\n" # $PWD/$captfile\n
