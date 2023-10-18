@@ -4,6 +4,13 @@
 
 # Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ◴◵◶◷
 
+# Bail out immediately if in a rebase
+branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
+[[ $branch =~ '\* \(no branch, rebasing' ]] && {
+    print 'must be in a rebase, exiting'
+    exit
+}
+
 autoload colors; colors
 
 # Built-in convenience checkers
