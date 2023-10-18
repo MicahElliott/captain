@@ -4,17 +4,19 @@
 
 # Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ◴◵◶◷
 
+autoload colors; colors
+
 # Built-in convenience checkers
 # keys are for lookups
 # values are an optional filter, followed by a command to run
 # TODO May need a way/syntax to let checks run but ignore that they fail; IOW, proceed despite failure
 typeset -A builtin_cannons=(
-    'markdownlint' '(md|mkd|markdown)mdl'
+    'markdownlint' '(md|mkd|markdown)mdl $CAPT_FILES_CHANGED'
     'msglint'      'msglint "$(cat $GITARG1)"'
     'missingnewline' 'missingnewline $CAPT_FILES_CHANGED'
     # 'gommit'       'gommit check message "$(cat $1)"'
     'cljlint'      '(clj|cljc|cljs)clj-kondo --lint $CAPT_FILES_CHANGED'
-    'cljfmt'       '(clj)cljfmt check'
+    'cljfmt'       '(clj)cljfmt check $CAPT_FILES_CHANGED'
     'cljsplint'    '(clj)splint -o clj-kondo $CAPT_FILES_CHANGED'
     'colorquote'   'colorquote'
 )
@@ -37,8 +39,6 @@ if [[ $@[1] == 'help' ]]; then
     for b in ${(k)builtin_helps}; do printf '  %-16s%s\n' $b ${builtin_helps[$b]} ; done
     exit
 fi
-
-autoload colors; colors
 
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
@@ -85,7 +85,7 @@ print_banner() {
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print -n "$fg_bold[blue](◕‿-)$reset_color" \
           "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
-          "$fg_bold[white][◷ $(sdate +%T)]$reset_color"
+          "$fg_bold[white][◷ $(sdate +%T)]$reset_color" # skull
     # aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
     # print '       _________ '
     # print '      |-_ .-. _-|'
@@ -117,6 +117,23 @@ active_githook=$1
 # else
 #     print "ok got an active_githook: $active_githook"
 # fi
+
+shortnames() {
+    for f in $@; do
+        local parts=( ${(s:/:)f} )
+        if [[ $#parts > 2 ]]
+        then print …${(j:/:)${parts[-2,$#parts]}}
+        else print $f
+        fi
+    done
+}
+
+print_filtereds() {
+    dbg "filtered files:" $@
+    local shorts=( $(shortnames $@) )
+    # print " $fg[yellow][${@$(shortnames $@)}]$reset_color"
+    print " $fg[yellow][$shorts]$reset_color"
+}
 
 # Set up vars to be available in proj capt.zsh, print which files changed
 setup_changes() {
@@ -154,11 +171,16 @@ setup_changes() {
     # aye "Branch yer changes are bein compared against: $bold_color$main_branch$reset_color"
     print -n " $fg_bold[magenta][⎇ $upstream]$reset_color"
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
-    CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached $upstream) )
+    # CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached $upstream) )
+    CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached) )
     CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
     # aye "[Δ Staged files changed ($#CAPT_FILES_CHANGED)]: $bold_color$CAPT_FILES_CHANGED$reset_color"
     if (( $#CAPT_FILES_CHANGED > 0 )); then
-        print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color"
+        # Print only truncated file names (split on /, take last two of path, join with ellipsis on front)
+        # print xxx CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
+        local shorts=( $(shortnames $CAPT_FILES_CHANGED) )
+        # print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color" # delta
+        print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $shorts]$reset_color" # delta
     else print; fi
     # for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
     # print
@@ -221,8 +243,10 @@ run_scripts () {
             cmd0=$(print $cmd | ssed -r 's/ .*//')
             dbg "cmd0: "$cmd0
             # Many antics follow to handle filters and changes for built-ins
-            if [[ $filter != '('* ]]; then filtered_files=( $CAPT_FILES_CHANGED )
-            else                           filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") ); fi
+            if [[ $filter != '('* ]]
+               # FIXME Remove filtered_files altogether and just keep rewriting CAPT_FILES_CHANGED
+            then filtered_files=( $CAPT_FILES_CHANGED )
+            else filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") ); fi
             if [[ $#filtered_files < 1 && -n $CAPT_FILES_CHANGED ]]; then
                 print " (Not seein any matchin files staged, skippin.)"
                 continue
@@ -230,14 +254,13 @@ run_scripts () {
             # TODO Add special casing for specific hooks needing special treatment
             if [[ $active_githook =~ 'commit-msg' ]]; then : ; fi
 
-            cmd="$cmd $filtered_files"
-            # print; aye "Filtered files under siege:" $#filtered_files
-            print " $fg[yellow][$filtered_files]$reset_color"
-            dbg "files:" $filtered_files
+            CAPT_FILES_CHANGED=( $filtered_files )
+            # cmd="$cmd $filtered_files"
+            print_filtereds $filtered_files
             # aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
-            aye "▶ $bold_color$cmd$reset_color"
+            aye "♠ $bold_color$cmd$reset_color" # spade
 
-        elif [[ $name == *\(*\)* ]]; then dbg "filtered checker"
+        elif [[ $name == *\(*\)* ]]; then dbg "custom-rigged filtered checker"
             filter=$(print $name | ssed 's/.*(/(/;s/://') # remove front name and trailing :
             dbg filter: $filter
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
@@ -245,27 +268,22 @@ run_scripts () {
             CAPT_FILES_CHANGED=( $filtered_files )
             if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
-                # print; aye "Filtered files under siege:" $#filtered_files
-                print " $fg[yellow][$filtered_files]$reset_color"
-                dbg "files:" $filtered_files
-                # aye "Blimey! Aimin yer custom-rigged $print_name: $bold_color$cmd$reset_color"
-                aye "▶ $bold_color$cmd$reset_color"
+                print_filtereds $filtered_files
+                aye "♥ $bold_color$cmd$reset_color" # heart
             fi
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
             filtered_files=( $CAPT_FILES_CHANGED )
             if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
             else
-                # print; aye "Files under siege:" $#CAPT_FILES_CHANGED
-                print " $fg[yellow][$CAPT_FILES_CHANGED]$reset_color"
-                dbg "files:" $CAPT_FILES_CHANGED
-                # aye "Aimin yer cutlass $print_name with yer files: $bold_color$cmd$reset_color"
-                aye "▶ $bold_color$cmd$reset_color"
+                print_filtereds $CAPT_FILES_CHANGED
+                aye "♦ $bold_color$cmd$reset_color" # diamond
             fi
         else
             # print; aye "Ye took care of file selection yerself, or no files needin fer sayin."
-            print " $fg[yellow][∞]$reset_color"
+            print_filtereds ∞
+            # print " $fg[yellow][∞]$reset_color"
             # aye "Doubloons! Aimin yer $print_name: $bold_color$cmd$reset_color"
-            aye "▶ $bold_color$cmd$reset_color"
+            aye "♣ $bold_color$cmd$reset_color" # club
         fi
 
         # Add args to pass from git if it's one of the arg-accepting hooks

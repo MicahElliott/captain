@@ -1,11 +1,11 @@
 # Captain
 
-Captain is a simple and convenient opt-in approach to client-side git-hook
-management, with just a single tiny shell script to download, and likely
-nothing to install. Suited for a sharing across a team, extensible for
-individuals. Supports all types of git hooks! Works with Linux, OSX, BSDs,
-probably WSL. Language-agnositic — no npm, ruby, yaml or anything to wrestle
-with.
+_Captain_ is a simple and convenient opt-in approach to client-side **git-hook
+management**, with just a single, tiny, dependency-free shell script to
+download, and likely nothing to install. Suited for a sharing across a team,
+extensible for individuals. Supports all types of git hooks! Works with Linux,
+MacOS, BSDs, probably WSL. Language-agnositic — no npm, ruby, yaml or anything
+to wrestle with.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀

@@ -4,6 +4,7 @@
 pre_commit=(
     'doclint(md|mkd): mdl $CAPT_FILES_CHANGED' # redundant with markdownlint but good for testing
     markdownlint
+    # -markdownlint
     missingnewline
     "fixmes: git-confirm.sh"
 )
