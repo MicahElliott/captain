@@ -1,0 +1,26 @@
+name: install-zsh-test
+run-name: ${{ github.actor }} is learning GitHub Actions
+on: [push]
+
+jobs:
+  test-zsh-install:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install zsh
+        run: sudo apt-get update; sudo apt-get install zsh
+      - name: Zsh-huh
+        run: |
+          # print "in zsh, name, version: $ZSH_NAME, $ZSH_VERSION"
+          which zsh || echo "No which zsh"
+          command -v zsh || echo "No command zsh"
+          pwd
+          ls
+          tree
+          ./capt help
+          ls -la /usr/bin/zsh || echo "No zsh at /usr/bin"
+          ls -la /bin/zsh || echo "No zsh at /bin/zsh"
+      # - name: Run a zsh script as proof
+      #   # run: .github/bin/zsh_proof.sh
+      #   run: tree
+      #   shell: /usr/bin/zsh{0}
