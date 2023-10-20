@@ -4,6 +4,24 @@
 
 # Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ◴◵◶◷
 
+# Save the incoming git-hook arg(s)
+GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
+print all args: $@
+print all args: $GITARG1 $GITARG2 $GITARG3
+
+hooksdir=${CAPT_HOOKSDIR-.git/hooks}
+scriptsdir=${CAPT_SCRIPTSDIR-.capt/scripts}
+# captfile=${CAPT_FILE-capt.zsh}
+captfile=${CAPT_FILE-.capt/share.sh}
+# captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
+captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
+path+=$scriptsdir
+
+if [[ -n $CAPT_DISABLE ]]; then
+    print 'Aborting due to CAPT_DISABLE being set.'
+    exit
+fi
+
 # Bail out immediately if in a rebase
 branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
 [[ $branch =~ '\* \(no branch, rebasing' ]] && {
@@ -26,6 +44,7 @@ typeset -A builtin_cannons=(
     'cljfmt'       '(clj)cljfmt check $CAPT_FILES_CHANGED'
     'cljsplint'    '(clj)splint -o clj-kondo $CAPT_FILES_CHANGED'
     'colorquote'   'colorquote'
+    'br2msg'       'br2msg $GITARG1 $GITARG2 $GITARG3'
 )
 
 typeset -A builtin_helps=(
@@ -35,20 +54,39 @@ typeset -A builtin_helps=(
     cljfmt 'Format clojure files'
 )
 
+typeset -A command_helps=(
+    help 'show help with descriptions of built-in triggers'
+    list 'list the active hooks'
+    edit 'open the share.sh control file'
+    editlocal 'open the local.sh personal control file'
+)
+
 if [[ $@[1] == 'help' ]]; then
-    print 'capt is a git-hook manager'
+    print 'capt is a git-hook manager, featuring multiple triggers per hook'
     print
-    print 'Detected your shared control file:' $CAPT_FILE
-    [[ -f $CAPT_LOCALFILE ]] && print 'Detected your local personal control file:' $CAPT_LOCALFILE
+    print "Detected a shared control file:            $captfile"
+    [[ -f $captfilelocal ]] &&
+    print "Detected your local personal control file: $captfilelocal"
     # print $builtin_helps
     # print ${builtin_helps[kondo]}
-    print "\nBuilt-in slashers:"
+    print "\nBuilt-in available triggers:"
     for b in ${(k)builtin_helps}; do printf '  %-16s%s\n' $b ${builtin_helps[$b]} ; done
+    print 'For a list of all active hooks: capt list'
+    print 'To see all active triggers: capt edit'
     exit
 fi
 
-# Save the incoming git-hook arg(s)
-GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
+if [[ $@[1] == 'COMPLETIONS' ]]; then
+    for c in ${(k)command_helps}; do print $c -- $command_helps[$c]; done
+    # TODO scan/load both control files, omit settings if any
+    print '(NOTE: these are fake and NYI)'
+    print 'pre_commit (share)'
+    print 'commit_msg (both)'
+    print 'post_commit (local)'
+    print 'release (share)'
+    print 'integration (share)'
+    exit
+fi
 
 # Use s* to mean "system" as in "sgrep" -> "system grep"
 if [[ $OSTYPE == darwin* ]] ; then
@@ -100,14 +138,6 @@ print_banner() {
     # print '      |_-"|H|"-_|'
     # print
 }
-
-hooksdir=${CAPT_HOOKSDIR-.git/hooks}
-scriptsdir=${CAPT_SCRIPTSDIR-.capt/scripts}
-# captfile=${CAPT_FILE-capt.zsh}
-captfile=${CAPT_FILE-.capt/share.sh}
-# captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
-captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
-path+=$scriptsdir
 
 if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1; fi
 
