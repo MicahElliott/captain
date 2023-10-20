@@ -1,11 +1,11 @@
 # Captain
 
-_Captain_ is a simple and convenient opt-in approach to client-side **git-hook
-management**, with just a single, tiny, dependency-free shell script to
-download, and likely nothing to install. Suited for a sharing across a team,
-extensible for individuals. Supports all types of git hooks! Works with Linux,
-MacOS, BSDs, probably WSL. Language-agnositic — no npm, ruby, yaml or anything
-to wrestle with.
+> _Captain_ is a simple, convenient, transparent opt-in approach to client- and
+> CI-side **git-hook management**, with just a single, tiny, dependency-free
+> shell script to download, and likely nothing to install. Suited for a sharing
+> across a team, extensible for individuals. Supports all types of git hooks!
+> Works with Linux, MacOS, BSDs, probably WSL. Language-agnositic — no npm,
+> ruby, yaml or anything to wrestle with.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
@@ -23,31 +23,38 @@ to wrestle with.
 ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀
 ```
 
-## One-minute Quick-Start Guide
+## One-minute E-Z Quick-Start Guide (very easy, point your team here)
 
 *SITUATION*: Captain was already set up in a repo you use, and you want to
-start enabling its checks. (You won't be impacted if you do nothing.)
+start enabling its checks. (Or you're a curmudgeon: You won't be impacted if
+you do nothing; then `capt` will not be invoked — but you will miss out on the
+fun!)
 
 ```shell
-# point git to the new hooks
-git config core.hooksPath .capt/hooks
-# Install the capt command (a small shell script)
-cd /somewhere/on/your/PATH
-wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt
-chmod +x capt
-# OR git clone https://github.com/MicahElliott/captain (for additional tooling)
-# Make some changes and run git
-cd your-project-root
-git commit # Captain at yer service! ...
+# Install the capt command (a small zsh script)
+cd ~/src # or somewhere like that where you keep clones
+git clone https://github.com/MicahElliott/captain  # to get all tooling
+print 'path+=~/src/captain/bin' >> ~/.zshrc  # or something/somewhere like that
+# OR, put that ^^^ into a .envrc file and use https://github.com/direnv/direnv for your proj
+# OR, for just the capt script (sufficient for some projects that don't need extra goodies):
+# cd /somewhere/on/your/PATH
+# wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt && chmod +x capt
+
+# Point git to the new hooks
+cd your-project-root # like you always do
+git config core.hooksPath .capt/hooks  # THIS IS THE BIGGIE!!
+# Make some project file changes, and
+git commit # etc, just like always, nothing you do changed except NOW CLEAN CODE
+# Captain at yer service! ...
 ```
 
-_(Note to OSX users: If you use a git client that is not started from a
+_(Note to MacOS users: If you use a git client/IDE that is not started from a
 terminal, you'll need to ensure your `PATH` is set to include
 `/path/to/captain` by editing `/etc/paths`, as per
 [this](https://stackoverflow.com/a/22465399/326516).)_
 
 If there are any "checkers" (linters, formatters, informers, etc) being
-invoked that you don't have installed yet, Captain will kindly let you know
+invoked that you don't have installed yet, Captain should kindly let you know
 more details.
 
 OR, if you're looking to be the one to introduce Captain git-hook management to a
@@ -78,36 +85,40 @@ project, read on....
 
 ## Do I need a hook manager?
 
+Short answer: Yes!!
+
 _Without a hook manager_, it's challenging to have a single set of checks
 (linters, formatters, cleaners, etc) that all developers agree on. Also,
 having multiple objectives/tasks in a single hook file gets slow and ugly.
 Managers give you organization, concurrency, shortcut facilities, clarity,
-consistency, and more. Over time, you come up with more ideas for things that
-can run automatically as checks, and eventually your standard hook files can
-get unmanageable and messy.
+consistency, and much more. Over time, you come up with more ideas for things
+that can run automatically as checks, and eventually your standard _unmanaged_
+hook files get messy.
+
+### Captain’s key features
 
 Specifically, here are some of **Captain's features** you don't want to have
 to invent, write, and/or wrap around every tool you run:
 
-- **checking for existence**/installation of tool being run
-- **timing** info of each hook run
-- consistent and **clear output** of each tool
-- detection and precise control of **files changed** from master/main
-- **file filtering** by extension
-- a **single file organization** of all hook/script specs for whole team to control/use
-- **user-local scripts** support for individual developer use
-- one-word **built-in** checkers (linters, etc) with pre-defined filters
-- a few provided **add-on linters** for optional use
+- **Checking for existence** and guiding installation of tool being run
+- **Timing** info of each hook run
+- **Clear output** made consistent for each tool
+- **Files changed** precise detection and control
+- **File filtering** by file type/extension
+- **Single file organization** of all hook/script specs for whole team to control/use
+- **User-Local scripts** support for individual developer use
+- **Built-In** one-word checkers (linters, etc) with pre-defined filters
+- **Add-On linters** provided for optional use
 - **OS-agnostic** commands
-- controllable **parallel** execution of each tool
-- **debugging** aids for writing your own new scripts
-- a place to collect **custom scripts** in your repo
+- **Parallel execution** control of each tool
+- **Debugging** aids for writing your own new scripts
+- **Custom scripts** location for collecting in your repo
 
 ## Why Captain instead of another hook manager?
 
 Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 [Husky](https://typicode.github.io/husky/), and
-[Overcommit](https://github.com/sds/overcommit), Captain is:
+[Overcommit](https://github.com/sds/overcommit), _Captain is_:
 
 - Tiny, transparent, no deps: read and understand the whole code base (one small Zsh file) in minutes
 - Simple: workflow is just calling commands or the scripts you already have
@@ -115,10 +126,10 @@ Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 - Super fast: sensitivity-colored timing details apparent everywhere
 - Any terminal (xterm etc): uses unicode indicators instead of emojis, tuned for 80-char display width
 - Basic: config is just a `.capt/share.sh` control file with shell arrays of scripts for each hook (no yaml etc)
-- Clear and concise: your standard git-hooks become one-line calls to `capt`
+- Clean, clear, and concise: your standard git-hooks become one-line calls to `capt` (not cluttered messes)
 - Fun: get ideas for new checks and be entertained by the Captain!
 - All documentation right here: this readme is all you need
-- Language/tool agnostic: don't need to know npm, yum, gem, pip, etc; works with any code base
+- Language/tool agnostic: don't need npm, yarn/2, gem, pip, etc; works with any code base
 - Hands-off: Captain doesn't try to install things for you (see _External Tools Installation_ below)
 - Extensible, custom for each dev: run your own checks in addition to standards
 
@@ -129,6 +140,16 @@ Captain also has most of the features of other managers:
 - Customizeable: run checks in parallel, with verbosity, etc; run from personal dirs or team's
 
 ## Installation
+
+### Sneaking it in
+
+It’s worth noting that no one needs to know you’ve enlisted the Captain. You
+can do all the following and put `capt` to work for just yourself to start out
+with. You’ll commit a `.capt/` dir with some innocuous tiny files and point
+your own `git` config to use the Captain’s hooks instead of the pedestrian
+hooks you may have in `.git/hooks`.
+
+### Get it all working
 
 Each developer of your code base is encouraged to install Captain (point them
 to the *One-minute guide* above), so violations can be caught before code
