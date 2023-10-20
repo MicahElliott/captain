@@ -402,8 +402,8 @@ select_hook() {
         post-commit)        run_scripts $post_commit;        unset post_commit ;;
         prepare-commit-msg) run_scripts $prepare_commit_msg; unset prepare_commit_msg ;;
         post-checkout)      run_scripts $post_checkout;      unset post_checkout ;;
-         # for alt tasks
-        *)                  run_scripts $1 ;;
+        # for alt tasks
+        *)                  run_scripts ${(P)1} ;; # interpolate arg to get array contents
     esac }
 
 ### Main
@@ -415,7 +415,8 @@ setup_changes
 # Run team-wide repo hooks
 runlevel=$captfile
 source $captfile
-select_hook
+# FIXME non-hook tasks not being seen
+select_hook $1
 
 # exit_gracefully() { aye $@; exit }
 exit_gracefully() { if (( $#@ > 0 )); then print; aye $@; fi; exit }
