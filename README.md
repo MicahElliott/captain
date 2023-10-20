@@ -287,6 +287,14 @@ clean_up=(
     'tmpclean: rm **/*.tmp'
     'artclean: rm tmp/*artifact*'
 )
+
+
+# IDEA: maybe let user specify install recipes
+installables=(
+    'splint(linux)' 'bbin splint'
+    'splint(macos)' 'brew install splint'
+)
+
 ```
 
 Some things to notice in that file:
@@ -302,6 +310,12 @@ Some things to notice in that file:
 - The `test-suite` is a local script (in `.capt/scripts/`) not on `path`; Captain figures that out
 - `.capt/share.sh` gets put into git at your project-root and is used by all devs on the project
 - The last `clean_up` hook isn't a git hook, but you can run it directly with `capt` cli
+
+TODO will likely add these soon
+
+- disabled (#, commented out from start)
+- fail-ok mode (leading -)
+- description (trailing :: or # some text explaining hook)
 
 ## User-local additional hooks
 

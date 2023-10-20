@@ -267,6 +267,12 @@ run_scripts () {
         dbg xxx CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
         inv=( ${(@s: :)line} ) # split on spaces to get first, discard beyond second
         name=$inv[1]
+        # TODO(#1) failok mode
+        # If name starts with - then remove it and treat the run as in fail-ok mode
+        if [[ $name[1] = '-' ]]; then
+            name=${name[2,$#name]} # remove first char
+            failok=1
+        fi
         script=$inv[2]
         cmd=${line#* } # remove up to first space, keeping all the rest
         dbg "inv:" $inv[1] "::" $inv[2] "::" $inv[3] "::"
