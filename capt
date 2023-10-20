@@ -187,7 +187,16 @@ setup_changes() {
         # main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | ssed 's@^origin/@@')
         upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || {
             aye "$fg[red]WARNING: Detected that git upstream is not set for this branch. (https://stackoverflow.com/a/37770744/326516)$reset_color"
+            # git branch -vv # voluminous output!! grep matches first line which shows:
+            # * (no branch, rebasing mde/SCRUM-42885_FEAT_billcov_bwr-comms-endpoint) a9fc3cfe00 Kjo/docrevertrcfix master/scrum 44067 (#10103)
             upstream=$(git branch -vv | sgrep '^\*' | cut -f2 -d' ')
+            # Should not ever get here since rebases get aborted immediately
+            if [[ $upstream = '(no' ]]; then # must be in a rebase
+                upstream=$(git symbolic-ref --short refs/remotes/origin/HEAD)
+                print 'hmm, maybe in a rebase; setting upstream to:' $upstream
+                print 'but actually exiting because prolly dont wanna be active now'
+                exit
+            fi
         }
     fi
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
