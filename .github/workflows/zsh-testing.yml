@@ -11,6 +11,15 @@ jobs:
         run: sudo apt-get update; sudo apt-get install zsh
       - name: Set path in env
         run: echo "PATH=$PATH:/home/runner/work/captain/captain" >> $GITHUB_ENV
+      - name: Set capt verbose mode for diagnostics
+        run: echo "CAPT_VERBOSE=1" >> $GITHUB_ENV
+      - uses: actions/checkout@v4
+      - uses: ruby/setup-ruby@ec02537da5712d66d4d50a0f33b7eb52773b5ed1
+        with:
+          ruby-version: '3.1'
+          bundler-cache: true
+      - name: Install markdownlint
+        run: gem install mdl
       - name: Zsh-huh
         run: |
           # print "in zsh, name, version: $ZSH_NAME, $ZSH_VERSION"
@@ -22,7 +31,7 @@ jobs:
           pwd
           ls
           tree
-          ./capt pre-commit
+          ./capt integration
       # - name: Run a zsh script as proof
       #   # run: .github/bin/zsh_proof.sh
       #   run: tree

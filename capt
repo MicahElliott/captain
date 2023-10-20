@@ -218,7 +218,14 @@ setup_changes() {
     print -n " $fg_bold[magenta][⎇ $upstream]$reset_color"
     # CAPT_FILES_CHANGED=( $(git diff --name-only --cached origin/$main_branch) )
     # CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached $upstream) )
-    CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached) )
+    if [[ $active_githook = 'integration' ]]; then
+        # special_integration_upstream=$upstream # remains unset as no-arg for next line
+        print
+        aye "Using special upstream for integration run: $bold_color$upstream$reset_color"
+        CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only $upstream) )
+    else
+        CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached) )
+    fi
     CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
     # aye "[Δ Staged files changed ($#CAPT_FILES_CHANGED)]: $bold_color$CAPT_FILES_CHANGED$reset_color"
     if (( $#CAPT_FILES_CHANGED > 0 )); then
@@ -270,13 +277,13 @@ run_scripts () {
         # print_name=$(ssed 's/[:(].*//' <<<$name)
         print_name=$(print $name | ssed 's/[:(].*//' )
         # print
-        ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color" # hooks
+        ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color" # uhooks
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
             # Need to fix up cmd since no spec, and maybe include filtered files
             script=$inv[1]
             just_buitins=${(k)builtin_cannons}
             if ! (($just_buitins[(Ie)$name])); then
-                print; aye "$fg[red]ERROR: Unable to find built-in: $bold_color$name$reset_color" ; exit 1
+                print; aye "$fg[red]ERROR: Unable to find built-in trigger: $bold_color$name$reset_color" ; exit 1
             fi
             #              NAME        FILTER    CMD
             # User spec is like:    markdownlint(md|mkd): mdl ...
@@ -294,7 +301,7 @@ run_scripts () {
             then filtered_files=( $CAPT_FILES_CHANGED )
             else filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") ); fi
             if [[ $#filtered_files < 1 && -n $CAPT_FILES_CHANGED ]]; then
-                print " (Not seein any matchin files staged, skippin.)"
+                print " (♠ Not seein any matchin files staged, skippin.)"
                 continue
             fi
             # TODO Add special casing for specific hooks needing special treatment
@@ -312,14 +319,14 @@ run_scripts () {
             dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
             filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") )
             CAPT_FILES_CHANGED=( $filtered_files )
-            if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
+            if [[ $#filtered_files < 1 ]]; then print " (♥ Not seein any matchin files staged, skippin.)"; continue
             else
                 print_filtereds $filtered_files
                 aye "♥ $bold_color$cmd$reset_color" # heart
             fi
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
             filtered_files=( $CAPT_FILES_CHANGED )
-            if [[ $#filtered_files < 1 ]]; then print " (Not seein any matchin files staged, skippin.)"; continue
+            if [[ $#filtered_files < 1 ]]; then print " (♦ Not seein any matchin files staged, skippin.)"; continue
             else
                 print_filtereds $CAPT_FILES_CHANGED
                 aye "♦ $bold_color$cmd$reset_color" # diamond
