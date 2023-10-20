@@ -1,0 +1,6 @@
+#! /bin/zsh
+
+# Trivial hello world echo test of args
+# Useful for testing args, capt vars, etc, as a basic trigger
+
+print hello: $@

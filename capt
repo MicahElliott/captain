@@ -236,7 +236,7 @@ setup_changes() {
 run_scripts () {
     # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
-    if [[ -z $@ ]]; then aye "No hooks to be run."; return; fi
+    if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
     # Print out all the scripts about to be run
     executors=()
     for line in $@; do
