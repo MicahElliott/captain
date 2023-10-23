@@ -2,10 +2,10 @@
 
 > _Captain_ is a simple, convenient, transparent opt-in approach to client-
 > and CI-side **git-hook management**, with just a single, tiny,
-> dependency-free shell script to download, and likely nothing to install.
-> Suited for sharing across a team, extensible for individuals. Supports all
-> [common got hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
-> (and maybe all types)! Works with Linux, MacOS, BSDs, probably WSL.
+> dependency-free shell script to download. Suited for sharing across a team,
+> extensible for individuals. Supports all
+> [common git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
+> (and probably more)! Works with Linux, MacOS, BSDs, probably WSL.
 > Language-agnositic — no npm, ruby, yaml or anything to wrestle with.
 
 ```text
