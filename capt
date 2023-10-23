@@ -177,10 +177,10 @@ setup_changes() {
     print
     print ""
     if [[ $active_githook == 'integration' ]]; then
-        print 'Seems we’re in integration mode (but maybe not doing anything about it)'
+        dbg 'Seems we’re in integration mode (but maybe not doing anything about it)'
     fi
     if [[ -n $CAPT_MAIN_BRANCH ]]; then
-        print "Using $CAPT_MAIN_BRANCH as CAPT_MAIN_BRANCH (upstream) since it was set"
+        aye "Using $CAPT_MAIN_BRANCH as CAPT_MAIN_BRANCH (upstream) since it was set"
         upstream=$CAPT_MAIN_BRANCH
     else
         # Fast and inaccurate https://stackoverflow.com/a/50056710/326516
@@ -253,12 +253,12 @@ run_scripts () {
     executors=()
     for line in $@; do
         [[ $line == *:* ]] &&
-            executors+="$fg_bold[grey]${${(@s/:/)line}[1]}$reset_color" ||
-            executors+="$fg_bold[grey]$line$reset_color"
+            executors+="$fg_bold[gryy]${${(@s/:/)line}[1]}$reset_color" ||
+            executors+="$fg_bold[gray]$line$reset_color"
     done
     # print; aye "$fg_bold[cyan][$runlevel]$reset_color Execution awaits! $executors"
     # printf '\xc'; print "" # no luck with printing line for pagebreak/formfeed in magit
-    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg_bold[grey][⚳ $executors]$reset_color"
+    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg_bold[gray][⚳ $executors$fg_bold[gray]]$reset_color" # ucloud
 
     # for line in $@; do
     #     [[ $line == *:* ]] &&
@@ -322,7 +322,7 @@ run_scripts () {
             # cmd="$cmd $filtered_files"
             print_filtereds $filtered_files
             # aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
-            aye "♠ $bold_color$cmd$reset_color" # spade
+            aye "♠ $fg_bold[yellow]$cmd$reset_color" # spade
 
         elif [[ $name == *\(*\)* ]]; then dbg "custom-rigged filtered checker"
             filter=$(print $name | ssed 's/.*(/(/;s/://') # remove front name and trailing :
@@ -333,21 +333,21 @@ run_scripts () {
             if [[ $#filtered_files < 1 ]]; then print " (♥ Not seein any matchin files staged, skippin.)"; continue
             else
                 print_filtereds $filtered_files
-                aye "♥ $bold_color$cmd$reset_color" # heart
+                aye "♥ $fg_bold[yellow]$cmd$reset_color" # heart
             fi
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
             filtered_files=( $CAPT_FILES_CHANGED )
             if [[ $#filtered_files < 1 ]]; then print " (♦ Not seein any matchin files staged, skippin.)"; continue
             else
                 print_filtereds $CAPT_FILES_CHANGED
-                aye "♦ $bold_color$cmd$reset_color" # diamond
+                aye "♦ $fg_bold[yellow]$cmd$reset_color" # diamond
             fi
         else
             # print; aye "Ye took care of file selection yerself, or no files needin fer sayin."
             print_filtereds ∞
             # print " $fg[yellow][∞]$reset_color"
             # aye "Doubloons! Aimin yer $print_name: $bold_color$cmd$reset_color"
-            aye "♣ $bold_color$cmd$reset_color" # club
+            aye "♣ $fg_bold[yellow]$cmd$reset_color" # club
         fi
 
         # Add args to pass from git if it's one of the arg-accepting hooks
