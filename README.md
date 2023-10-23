@@ -27,9 +27,9 @@
 ## One-minute E-Z Quick-Start Guide (very easy, point your team here)
 
 *SITUATION*: Captain was already set up in a repo you use, and you want to
-start enabling its checks. (Or you're a curmudgeon: You won't be impacted if
-you do nothing; then `capt` will not be invoked — but you will miss out on the
-fun!)
+start enabling its checks (AKA triggers). (Or you're a curmudgeon: You won't
+be impacted if you do nothing; then `capt` will not be invoked — but you will
+miss out on the fun!)
 
 ```shell
 # Install the capt command (a small zsh script)
@@ -54,7 +54,7 @@ terminal, you'll need to ensure your `PATH` is set to include
 `/path/to/captain` by editing `/etc/paths`, as per
 [this](https://stackoverflow.com/a/22465399/326516).)_
 
-If there are any "checkers" (linters, formatters, informers, etc) being
+If there are any "triggers" (linters, formatters, informers, etc) being
 invoked that you don't have installed yet, Captain should kindly let you know
 more details.
 
@@ -115,7 +115,7 @@ to invent, write, and/or wrap around every tool you run:
 - **File filtering** by file type/extension
 - **Single file organization** of all hook/script specs for whole team to control/use
 - **User-Local scripts** support for individual developer use
-- **Built-In** one-word checkers (linters, etc) with pre-defined filters
+- **Built-In** one-word triggers (linters, etc) with pre-defined filters
 - **Add-On linters** provided for optional use
 - **OS-agnostic** commands
 - **Parallel execution** control of each tool
@@ -140,17 +140,17 @@ Compared to [Lefthook](https://github.com/evilmartians/lefthook),
 - Any terminal (xterm etc): uses unicode indicators instead of emojis, tuned for 80-char display width
 - Basic: config is just a `.capt/share.sh` control file with shell arrays of scripts for each hook (no yaml etc)
 - Clean, clear, and concise: your standard git-hooks become one-line calls to `capt` (not cluttered messes)
-- Fun: get ideas for new checks and be entertained by the Captain!
+- Fun: get ideas for new triggers and be entertained by the Captain!
 - All documentation right here: this readme is all you need
 - Language/tool agnostic: don't need npm, yarn/2, gem, pip, etc; works with any code base
 - Hands-off: Captain doesn't try to install things for you (see _External Tools Installation_ below)
-- Extensible, custom for each dev: run your own checks in addition to standards
+- Extensible, custom for each dev: run your own triggers in addition to standards
 
 Captain also has most of the features of other managers:
 
-- Shareable: your whole team has a set of common hooks/checks
+- Shareable: your whole team has a set of common hooks/triggers
 - Batteries: vars for which files changed, multi-OS functions, extra built-in hooks
-- Customizeable: run checks in parallel, with verbosity, etc; run from personal dirs or team's
+- Customizeable: run triggers in parallel, with verbosity, etc; run from personal dirs or team's
 
 ## Installation
 
@@ -168,14 +168,14 @@ Each developer of your code base is encouraged to install Captain (point them
 to the *One-minute guide* above), so violations can be caught before code
 changes go to CI.
 
-1. Put the `capt` script on your `path` (clone the whole repo if you also want built-in checkers)
+1. Put the `capt` script on your `path` (clone the whole repo if you also want built-in triggers)
 1. `cd your-project`
 1. Run the for-loop below to create any git-hooks you want
 1. Create a `.capt/share.sh` control file (or copy the one below)
-1. [optional] Create a `.capt/local.sh` control file for your personal additional checks
+1. [optional] Create a `.capt/local.sh` control file for your personal additional triggers
 
 The `capt` command is invoked with a single argument: the git-hook to run;
-e.g., as `capt pre-commit`; that will run all the pre-commit checks. You can
+e.g., as `capt pre-commit`; that will run all the pre-commit triggers. You can
 optionally run `capt` directly to see/debug output, and then have all of
 git-hooks call it.
 
@@ -231,9 +231,9 @@ That saves all your fellow developers from having to do anything but set:
 
 ### Note on External Tools Installation
 
-It is outside Captain's scope to install all your team's checker tools on
+It is outside Captain's scope to install all your team's trigger tools on
 every dev's machine. However, this repo provides an [example
-script](install-standard-checkers.zsh) that should demonstrate common practice
+script](install-standard-triggers.zsh) that should demonstrate common practice
 for teams, to get everyone on the same page. Basically, a project should have
 a script (or at least a doc) for getting all the tooling installed. It might
 be just a bunch of dnf/apt-get/pacman/brew commands, or it could even be an
@@ -242,13 +242,13 @@ ansible file.
 ## Control File Spec
 
 Now onto the simple `.capt/share.sh` control file at the root of your repo
-(which should also be committed), containing a set of "checks" for each hook.
+(which should also be committed), containing a set of "triggers" for each hook.
 (Note that git-hooks purposes are written about
 [here](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks).)
 
-### Check Spec
+### Trigger Spec
 
-There is a tiny DSL that is used for each "check" in a control file.
+There is a tiny DSL that is used for each "trigger" in a control file.
 
 ```
     'lint(clj|cljs):   clj-kondo $CAPT_CHANGES &'      # linting of files
@@ -265,7 +265,7 @@ commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13) DSL.
 ### Captain git-hook manager control file
 
 # params: NONE
-# Standard hook with checks for linting, formatting, and running tests
+# Standard hook with triggers for linting, formatting, and running tests
 pre_commit=(
     'lint:             clj-kondo $CAPT_CHANGES &' # linting of files being committed
     'format(clj|cljc): cljfmt &'                  # reformat or check for poor formatting
@@ -312,9 +312,9 @@ installables=(
 
 Some things to notice in that file:
 
-- All the hooks/checks are short and live in a single place
+- All the triggers are short and live in a single place
 - Each "hook section" is just a shell array named for git's conventions (but underscores)
-- Some checks are a line with a `somename:` "name" prefix, then the eval'd command
+- Some triggers are a line with a `somename:` "name" prefix, then the eval'd command
 - After a `name` is an optional "filter": `cljfmt` will only look at `.clj` and `.cljc` files
 - The `lint` and `format` are run in parallel by being backgrounded (`&`)
 - You generally should use single-quote commands, even with env vars
@@ -337,7 +337,7 @@ E.g., you have OCD about line length. You can ensure that all of *your*
 commits conform by creating another local-only `.capt/local.sh` control file:
 
 ``` shell
-pre_commit=( 'line-length-pedant: check-line-length' ... other-custom-checkers... )
+pre_commit=( 'line-length-pedant: check-line-length' ... other-custom-triggers... )
 ```
 
 Then you should add `.capt/local.sh` to your `.gitignore` file.
@@ -364,9 +364,9 @@ There are also arrrgs you can utilize from your control files:
 ## Sample Run
 
 Rather than a live demo, here's an example of a `pre-commit` run (doesn't
-correspond to checks shown above). This shows a couple of team-shared checks
+correspond to triggers shown above). This shows a couple of team-shared checks
 (clj-kondo and fixmes), and then after the parrot, a single user-local
-`something` check:
+`something` trigger:
 
 ```text
 (◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!
