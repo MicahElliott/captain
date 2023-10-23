@@ -6,7 +6,7 @@
 
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
-# print all args: $@ :: gitargs: $GITARG1 $GITARG2 $GITARG3
+# print all args: $@
 
 hooksdir=${CAPT_HOOKSDIR-.git/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-.capt/scripts}
@@ -240,8 +240,7 @@ setup_changes() {
         # print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color" # delta
         print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $shorts]$reset_color" # delta
     else print; fi
-    # for f in $CAPT_FILES_CHANGED; do aye "- $bold_color$f$reset_color"; done
-    # print
+    dbg "git-hook arrrgs: $GITARG1 $GITARG2 $GITARG3"
 }
 
 # Run the scripts from control file
@@ -253,7 +252,7 @@ run_scripts () {
     executors=()
     for line in $@; do
         [[ $line == *:* ]] &&
-            executors+="$fg_bold[gryy]${${(@s/:/)line}[1]}$reset_color" ||
+            executors+="$fg_bold[gray]${${(@s/:/)line}[1]}$reset_color" ||
             executors+="$fg_bold[gray]$line$reset_color"
     done
     # print; aye "$fg_bold[cyan][$runlevel]$reset_color Execution awaits! $executors"
