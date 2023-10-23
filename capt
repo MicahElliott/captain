@@ -181,23 +181,29 @@ setup_changes() {
         # Fast and inaccurate https://stackoverflow.com/a/50056710/326516
         # main_branch=$(git branch | sgrep '*' | cut -f2 -d' ')
         # https://stackoverflow.com/a/42570510/326516
-        # main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | sgrep '\->' | cut -d' ' -f5 | cut -d/ -f2)
+        main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | sgrep '\->' | cut -d' ' -f5 | cut -d/ -f2)
         # https://stackoverflow.com/a/49384283/326516
         # Setting upstream branch: https://stackoverflow.com/a/37770744/326516
         # main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | ssed 's@^origin/@@')
-        upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || {
-            aye "$fg[red]WARNING: Detected that git upstream is not set for this branch. (https://stackoverflow.com/a/37770744/326516)$reset_color"
-            # git branch -vv # voluminous output!! grep matches first line which shows:
-            # * (no branch, rebasing mde/SCRUM-42885_FEAT_billcov_bwr-comms-endpoint) a9fc3cfe00 Kjo/docrevertrcfix master/scrum 44067 (#10103)
-            upstream=$(git branch -vv | sgrep '^\*' | cut -f2 -d' ')
-            # Should not ever get here since rebases get aborted immediately
-            if [[ $upstream = '(no' ]]; then # must be in a rebase
-                upstream=$(git symbolic-ref --short refs/remotes/origin/HEAD)
-                print 'hmm, maybe in a rebase; setting upstream to:' $upstream
-                print 'but actually exiting because prolly dont wanna be active now'
-                exit
-            fi
-        }
+        # TODO manual CAPT_UPSTREAM support
+        if [[ $active_githook == 'integration' ]]; then
+            print "Using $main_branch as upstream since in integration mode."
+            upstream=$main_branch
+        else
+            upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || {
+                aye "$fg[red]WARNING: Detected that git upstream is not set for this branch. (https://stackoverflow.com/a/37770744/326516)$reset_color"
+                # git branch -vv # voluminous output!! grep matches first line which shows:
+                # * (no branch, rebasing mde/SCRUM-42885_FEAT_billcov_bwr-comms-endpoint) a9fc3cfe00 Kjo/docrevertrcfix master/scrum 44067 (#10103)
+                upstream=$(git branch -vv | sgrep '^\*' | cut -f2 -d' ')
+                # Should not ever get here since rebases get aborted immediately
+                if [[ $upstream = '(no' ]]; then # must be in a rebase
+                    upstream=$(git symbolic-ref --short refs/remotes/origin/HEAD)
+                    print 'hmm, maybe in a rebase; setting upstream to:' $upstream
+                    print 'but actually exiting because prolly dont wanna be active now'
+                    exit
+                fi
+            }
+        fi
     fi
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print -n "$fg_bold[blue](◕‿-)$reset_color" \
