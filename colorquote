@@ -63,8 +63,8 @@ quote=$quotes[$qi]
 color=$(( ${RANDOM} % 256 + 1 ))
 c=$(card)
 
-print
-print  "\x1b[48;5;${color}m      \e[0m"
-print  "\x1b[48;5;${color}m  $c  \e[0m  $quote"
-print  "\x1b[48;5;${color}m      \e[0m"
-print
+# print
+print  "\x1b[48;5;${color}m╭────╮\e[0m"
+print  "\x1b[48;5;${color}m│ $c │\e[0m  $quote"
+print  "\x1b[48;5;${color}m╰────╯\e[0m"
+# print

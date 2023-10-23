@@ -6,8 +6,7 @@
 
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
-print all args: $@
-print all args: $GITARG1 $GITARG2 $GITARG3
+# print all args: $@ :: gitargs: $GITARG1 $GITARG2 $GITARG3
 
 hooksdir=${CAPT_HOOKSDIR-.git/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-.capt/scripts}
@@ -227,8 +226,7 @@ setup_changes() {
     # CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached $upstream) )
     if [[ $active_githook = 'integration' ]]; then
         # special_integration_upstream=$upstream # remains unset as no-arg for next line
-        print
-        aye "Using special upstream for integration run: $bold_color$upstream$reset_color"
+        dbg "Using special upstream for integration run: $bold_color$upstream$reset_color"
         CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only $upstream) )
     else
         CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached) )
