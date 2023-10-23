@@ -177,18 +177,20 @@ setup_changes() {
     # VALUEADD Magic to figure out main v master and get changed files
     print
     print ""
-    if [[ -z $CAPT_MAIN_BRANCH ]]; then
+    CAPT_MAIN_BRANCH=origin/main
+    if [[ -n $CAPT_MAIN_BRANCH ]]; then
+        print "Using $CAPT_MAIN_BRANCH as upstream since in integration mode."
+        upstream=$CAPT_MAIN_BRANCH
+    else
         # Fast and inaccurate https://stackoverflow.com/a/50056710/326516
         # main_branch=$(git branch | sgrep '*' | cut -f2 -d' ')
         # https://stackoverflow.com/a/42570510/326516
-        main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | sgrep '\->' | cut -d' ' -f5 | cut -d/ -f2)
+        # main_branch=$(git branch -r --points-at refs/remotes/origin/HEAD | sgrep '\->' | cut -d' ' -f5 | cut -d/ -f2)
         # https://stackoverflow.com/a/49384283/326516
         # Setting upstream branch: https://stackoverflow.com/a/37770744/326516
         # main_branch=$(git symbolic-ref --short refs/remotes/origin/HEAD | ssed 's@^origin/@@')
-        # TODO manual CAPT_UPSTREAM support
         if [[ $active_githook == 'integration' ]]; then
-            print "Using $main_branch as upstream since in integration mode."
-            upstream=$main_branch
+            print 'Seems we’re in integration mode'
         else
             upstream=$(git rev-parse --abbrev-ref --symbolic-full-name '@{u}' 2>/dev/null) || {
                 aye "$fg[red]WARNING: Detected that git upstream is not set for this branch. (https://stackoverflow.com/a/37770744/326516)$reset_color"
