@@ -1,6 +1,6 @@
-name: install-zsh-test
+name: captain-ci
 # run-name: ${{ github.actor }} is learning GitHub Actions
-run-name: Captain CI
+run-name: Captain Integrations
 on: [push]
 
 jobs:
