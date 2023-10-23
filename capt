@@ -177,7 +177,7 @@ setup_changes() {
     # VALUEADD Magic to figure out main v master and get changed files
     print
     print ""
-    CAPT_MAIN_BRANCH=origin/main
+    # CAPT_MAIN_BRANCH=origin/main
     if [[ -n $CAPT_MAIN_BRANCH ]]; then
         print "Using $CAPT_MAIN_BRANCH as upstream since in integration mode."
         upstream=$CAPT_MAIN_BRANCH
