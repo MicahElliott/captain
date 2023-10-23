@@ -180,10 +180,8 @@ setup_changes() {
     if [[ $active_githook == 'integration' ]]; then
         print 'Seems we’re in integration mode (but maybe not doing anything about it)'
     fi
-    # CAPT_MAIN_BRANCH=origin/main
     if [[ -n $CAPT_MAIN_BRANCH ]]; then
-    # if [[ -n $GITHUB_HEAD_REF ]]; then
-        print "Using $CAPT_MAIN_BRANCH as upstream since in integration mode."
+        print "Using $CAPT_MAIN_BRANCH as CAPT_MAIN_BRANCH (upstream) since it was set"
         upstream=$CAPT_MAIN_BRANCH
     else
         # Fast and inaccurate https://stackoverflow.com/a/50056710/326516

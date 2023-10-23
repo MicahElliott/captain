@@ -14,4 +14,4 @@ commit_msg=( msglint )
 
 post_commit=( colorquote )
 
-integration=( colorquote 'hi: hello' )
+integration=( colorquote 'hi: hello' markdownlint )
