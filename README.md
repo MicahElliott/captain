@@ -465,29 +465,27 @@ can also be navigated with `C-x [` (prev) and `C-x ]` (next). Add
 
 So you have all these great hook scripts in `.capt/scripts` now, but do you
 also want to run them as part of your Continuous Integration? Well, it can be
-done. Captain was conceived more as a dev-side tool, but you don't want
-to reinvent a bunch of checks to run in CI too, so there are a couple options for
-setting up the scripts in CI; eg, services like
-[Github Actions](https://docs.github.com/en/actions):
+done! Captain was originally conceived more as a dev-side tool, but you don't
+want to reinvent a bunch of checks to run in CI too, so here is a recipe for
+setting up the scripts in CI (specifically [Github
+Actions](https://docs.github.com/en/actions), but should work with other CIs
+too):
 
 1. install `zsh` (github sorely lacks it) and `capt` during the CI run, OR
-1. call the scripts directly without the Captain-provided niceties
+1. set the `CAPT_MAIN_BRANCH` when invoking `capt`
 
-My undertanding is that doing (1) may add ~20 seconds to your CI run. If
+My experience is that doing (1) may add ~12 seconds to your CI run (if you
+don’t do some package caching, in which case it should be ~1 second). If
 that's fine, it could be nice to have the consistency with what you run
 locally. Your invocations of those scripts can look like:
 
 ```yaml
     # fire all the pre-commit scripts (yes, it's already committed)
-    run: capt pre-commit
+    run: CAPT_MAIN_BRANCH=origin/main capt integration
 ```
 
-However, (2) should work fine since some of Captain's value isn't as relevant
-in CI:
-
-- there are fewer checks needing to be done
-- it's explicitly action-driven rather than git-hooks
-- timing and other details are apparent from CI
+See the example
+[workflows/zsh-testing.yml](.github/workflows/zsh-testing.yml) file.
 
 If you care about optimizing the amount of work the scripts do, you may need
 to have them be smart about file filtering (file-name extensions, which files

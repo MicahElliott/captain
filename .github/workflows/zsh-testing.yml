@@ -13,8 +13,8 @@ jobs:
         run: git fetch origin main:refs/remotes/origin/main
       - name: Set path in env
         run: echo "PATH=$PATH:/home/runner/work/captain/captain" >> $GITHUB_ENV
-      - name: Set capt verbose mode for diagnostics
-        run: echo "CAPT_VERBOSE=1" >> $GITHUB_ENV
+      # - name: Set capt verbose mode for diagnostics
+      #   run: echo "CAPT_VERBOSE=1" >> $GITHUB_ENV
       - name: Set capt main branch
         run: echo "CAPT_MAIN_BRANCH=origin/main" >> $GITHUB_ENV
       - name: Show env
