@@ -485,7 +485,7 @@ locally. Your invocations of those scripts can look like:
 ```
 
 See the example
-[workflows/zsh-testing.yml](.github/workflows/zsh-testing.yml) file.
+[workflows `capt.yml`](.github/workflows/capt.yml) file.
 
 If you care about optimizing the amount of work the scripts do, you may need
 to have them be smart about file filtering (file-name extensions, which files

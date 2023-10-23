@@ -1,9 +1,10 @@
 name: install-zsh-test
-run-name: ${{ github.actor }} is learning GitHub Actions
+# run-name: ${{ github.actor }} is learning GitHub Actions
+run-name: Captain CI
 on: [push]
 
 jobs:
-  test-zsh-install:
+  capt-hooks:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -13,7 +14,7 @@ jobs:
         run: git fetch origin main:refs/remotes/origin/main
       - name: Set path in env
         run: echo "PATH=$PATH:/home/runner/work/captain/captain" >> $GITHUB_ENV
-      # - name: Set capt verbose mode for diagnostics
+      # - name: Set capt verbose mode for debug diagnostics
       #   run: echo "CAPT_VERBOSE=1" >> $GITHUB_ENV
       - name: Set capt main branch
         run: echo "CAPT_MAIN_BRANCH=origin/main" >> $GITHUB_ENV
@@ -26,17 +27,17 @@ jobs:
           bundler-cache: true
       - name: Install markdownlint
         run: gem install mdl
-      - name: Zsh-huh
+      - name: Captain hooks
         run: |
           # print "in zsh, name, version: $ZSH_NAME, $ZSH_VERSION"
-          which zsh || echo "No which zsh"
-          ls -la /usr/bin/zsh || echo "No zsh at /usr/bin"
-          ls -la /bin/zsh || echo "No zsh at /bin/zsh"
-          command -v zsh || echo "No command zsh"
-          echo PATH: $PATH
-          pwd
-          ls
-          tree
+          # which zsh || echo "No which zsh"
+          # ls -la /usr/bin/zsh || echo "No zsh at /usr/bin"
+          # ls -la /bin/zsh || echo "No zsh at /bin/zsh"
+          # command -v zsh || echo "No command zsh"
+          # echo PATH: $PATH
+          # pwd
+          # ls
+          # tree
           CAPT_MAIN_BRANCH=origin/main ./capt integration
       # - name: Run a zsh script as proof
       #   # run: .github/bin/zsh_proof.sh
