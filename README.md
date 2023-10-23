@@ -1,11 +1,12 @@
 # Captain
 
-> _Captain_ is a simple, convenient, transparent opt-in approach to client- and
-> CI-side **git-hook management**, with just a single, tiny, dependency-free
-> shell script to download, and likely nothing to install. Suited for sharing
-> across a team, extensible for individuals. Supports all types of git hooks!
-> Works with Linux, MacOS, BSDs, probably WSL. Language-agnositic — no npm,
-> ruby, yaml or anything to wrestle with.
+> _Captain_ is a simple, convenient, transparent opt-in approach to client-
+> and CI-side **git-hook management**, with just a single, tiny,
+> dependency-free shell script to download, and likely nothing to install.
+> Suited for sharing across a team, extensible for individuals. Supports all
+> [common got hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
+> (and maybe all types)! Works with Linux, MacOS, BSDs, probably WSL.
+> Language-agnositic — no npm, ruby, yaml or anything to wrestle with.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
@@ -64,22 +65,29 @@ project, read on....
 **Table of Contents**
 
 - [Captain](#captain)
-    - [One-minute Quick-Start Guide](#one-minute-quick-start-guide)
+    - [One-minute E-Z Quick-Start Guide (very easy, point your team here)](#one-minute-e-z-quick-start-guide-very-easy-point-your-team-here)
     - [Do I need a hook manager?](#do-i-need-a-hook-manager)
+        - [Captain’s key features](#captains-key-features)
     - [Why Captain instead of another hook manager?](#why-captain-instead-of-another-hook-manager)
     - [Installation](#installation)
+        - [Sneaking it in](#sneaking-it-in)
+        - [Get it all working](#get-it-all-working)
     - [Setup and Configuration](#setup-and-configuration)
         - [Note on External Tools Installation](#note-on-external-tools-installation)
     - [Control File Spec](#control-file-spec)
         - [Check Spec](#check-spec)
         - [Example Team Control File](#example-team-control-file)
     - [User-local additional hooks](#user-local-additional-hooks)
+    - [Settings](#settings)
     - [Sample Run](#sample-run)
     - [Migrating your existing git-hooks](#migrating-your-existing-git-hooks)
     - [Use Captain directly outside of git](#use-captain-directly-outside-of-git)
     - [How to bring Captain to your team](#how-to-bring-captain-to-your-team)
     - [Treasure trove of hooks](#treasure-trove-of-hooks)
+    - [Magit Tips](#magit-tips)
     - [Running Hook Scripts in CI](#running-hook-scripts-in-ci)
+    - [Troubleshooting](#troubleshooting)
+    - [License](#license)
 
 <!-- markdown-toc end -->
 
@@ -342,7 +350,7 @@ You can fine-tune Captain’s behavior with several environment variables.
 - `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
 - `CAPT_MAIN_BRANCH` :: Useful for running in CI since default will be feature branch
 - `CAPT_FILE` :: Team-shared control file containing global hooks/triggers
-- `CAPT_LOCALFILE` :: User-local personal control file each dev may have (not in version control)
+- `CAPT_LOCALFILE` :: User-local personal control file each dev may have (not in git control)
 - `CAPT_HOOKSDIR` :: Defaults to `.capt/hooks`, for pointing `git` to
 - `CAPT_SCRIPTSDIR` :: Defaults to `.capt/scripts`, for storing team-shared triggers
 
