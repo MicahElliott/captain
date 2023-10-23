@@ -2,7 +2,7 @@
 
 > _Captain_ is a simple, convenient, transparent opt-in approach to client- and
 > CI-side **git-hook management**, with just a single, tiny, dependency-free
-> shell script to download, and likely nothing to install. Suited for a sharing
+> shell script to download, and likely nothing to install. Suited for sharing
 > across a team, extensible for individuals. Supports all types of git hooks!
 > Works with Linux, MacOS, BSDs, probably WSL. Language-agnositic — no npm,
 > ruby, yaml or anything to wrestle with.
@@ -113,6 +113,11 @@ to invent, write, and/or wrap around every tool you run:
 - **Parallel execution** control of each tool
 - **Debugging** aids for writing your own new scripts
 - **Custom scripts** location for collecting in your repo
+
+You can think of Captain as like moving your fancy CI setup into everyone’s
+local control. The output is reminiscent of Github Actions, but way easier to
+set up, runs automatically whenever you use git, and delivers the red and
+green a kajillion times faster.
 
 ## Why Captain instead of another hook manager?
 
@@ -329,6 +334,25 @@ pre_commit=( 'line-length-pedant: check-line-length' ... other-custom-checkers..
 
 Then you should add `.capt/local.sh` to your `.gitignore` file.
 
+## Settings
+
+You can fine-tune Captain’s behavior with several environment variables.
+
+- `CAPT_VERBOSE` :: Set to `1` to enable debug mode
+- `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
+- `CAPT_MAIN_BRANCH` :: Useful for running in CI since default will be feature branch
+- `CAPT_FILE` :: Team-shared control file containing global hooks/triggers
+- `CAPT_LOCALFILE` :: User-local personal control file each dev may have (not in version control)
+- `CAPT_HOOKSDIR` :: Defaults to `.capt/hooks`, for pointing `git` to
+- `CAPT_SCRIPTSDIR` :: Defaults to `.capt/scripts`, for storing team-shared triggers
+
+There are also arrrgs you can utilize from your control files:
+
+- `CAPT_FILES_CHANGED` :: Array of files changed on branch
+- `GIT_ARG1` :: First arg git sends to hook
+- `GIT_ARG2` :: Second arg git sends to hook
+- `GIT_ARG3` :: Third arg git sends to hook
+
 ## Sample Run
 
 Rather than a live demo, here's an example of a `pre-commit` run (doesn't
@@ -461,6 +485,9 @@ can also be navigated with `C-x [` (prev) and `C-x ]` (next). Add
 `magit-process-mode` to `page-break-lines-modes` to make them visible in
 `magit-process`.
 
+Set environment variables that `capt` will read with `M-x setenv`. Eg, if you
+want to enable verbose logging mode, set `CAPT_VEBOSE` to `1` with that.
+
 ## Running Hook Scripts in CI
 
 So you have all these great hook scripts in `.capt/scripts` now, but do you
@@ -492,6 +519,10 @@ to have them be smart about file filtering (file-name extensions, which files
 changed in the commit, etc). In practice, the filtering often isn't too
 important with the CI runs, since there you might want to go ahead and run all
 your tests and analyzers, etc, over your whole code base anyway.
+
+## Troubleshooting
+
+If for any reason you need to bypass Captain, set this: `export CAPT_DISABLE=1`
 
 ```text
   \\

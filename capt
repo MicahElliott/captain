@@ -8,18 +8,14 @@
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 # print all args: $@
 
-hooksdir=${CAPT_HOOKSDIR-.git/hooks}
-scriptsdir=${CAPT_SCRIPTSDIR-.capt/scripts}
-# captfile=${CAPT_FILE-capt.zsh}
-captfile=${CAPT_FILE-.capt/share.sh}
-# captfilelocal=${CAPT_LOCALFILE-captlocal.zsh}
+captdir=${CAPT_DIR-.capt}
+hooksdir=${CAPT_HOOKSDIR-$captdir/hooks} # not actually used
+scriptsdir=${CAPT_SCRIPTSDIR-$captdir/scripts}
+captfile=${CAPT_FILE-$captdir/share.sh}
 captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
 path+=$scriptsdir
 
-if [[ -n $CAPT_DISABLE ]]; then
-    print 'Aborting due to CAPT_DISABLE being set.'
-    exit
-fi
+[[ -n $CAPT_DISABLE ]] && { print 'Sailin right past yer captain with CAPT_DISABLE bein set.'; exit }
 
 # Bail out immediately if in a rebase
 branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
