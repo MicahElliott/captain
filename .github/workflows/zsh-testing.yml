@@ -16,7 +16,9 @@ jobs:
       - name: Set capt verbose mode for diagnostics
         run: echo "CAPT_VERBOSE=1" >> $GITHUB_ENV
       - name: Set capt main branch
-        run: echo "CAPT_MAIN_BRANCH=${{github.head_ref}}" >> $GITHUB_ENV
+        run: echo "CAPT_MAIN_BRANCH=origin/main" >> $GITHUB_ENV
+      - name: Show env
+        run: env
       - uses: actions/checkout@v4
       - uses: ruby/setup-ruby@ec02537da5712d66d4d50a0f33b7eb52773b5ed1
         with:
@@ -35,7 +37,7 @@ jobs:
           pwd
           ls
           tree
-          CAPT_MAIN_BRANCH=${{github.head_ref}} ./capt integration
+          CAPT_MAIN_BRANCH=origin/main ./capt integration
       # - name: Run a zsh script as proof
       #   # run: .github/bin/zsh_proof.sh
       #   run: tree
