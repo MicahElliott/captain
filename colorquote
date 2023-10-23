@@ -60,11 +60,16 @@ card() {
 
 qi=$(( ${RANDOM} % $#quotes + 1 ))
 quote=$quotes[$qi]
-color=$(( ${RANDOM} % 256 + 1 ))
+# color=$(( ${RANDOM} % 256 + 1 ))
+color=$(( ${RANDOM} % 8 ))
+invert=$(( ( ${RANDOM} % 2 ) * 10 + 30 ))
 c=$(card)
 
-# print
-print  "\x1b[48;5;${color}m╭────╮\e[0m"
-print  "\x1b[48;5;${color}m│ $c │\e[0m  $quote"
-print  "\x1b[48;5;${color}m╰────╯\e[0m"
-# print
+# # print
+# print  "\x1b[48;5;${color}m╭──╮\e[0m"
+# print  "\x1b[48;5;${color}m│$c│\e[0m  $quote"
+# print  "\x1b[48;5;${color}m╰──╯\e[0m"
+
+print  "\033[${$((color + invert))};1m╭──╮\e[0m"
+print  "\033[${$((color + invert))};1m│$c│\e[0m $quote"
+print  "\033[${$((color + invert))};1m╰──╯\e[0m"
