@@ -103,6 +103,22 @@ consistency, and much more. Over time, you come up with more ideas for things
 that can run automatically as checks, and eventually your standard _unmanaged_
 hook files get messy.
 
+Take a `pre-commit` hook for example. You’ll want (for all devs on each
+commit):
+
+- a variety of tools (linters, formatters, scanners, testers) to be active
+- those tools to run on various OSs with inconsistent deps installed
+- selectivity of which files are run against (not the whole code base!)
+- timing info of each tool
+- consistent and clear output
+- ignorability of some things on some systems
+
+You can’t have all that without a manager — you end up cooking that yourself,
+half-baked. And the problem applies to a few other hooks types too. Yes, you
+can simply set that all up in your CI (and you should!), but you don’t want
+your devs waiting 15 minutes to see if their commit passed. Instead, you want
+them to wait a few seconds for all that to run locally.
+
 ### Captain’s key features
 
 Specifically, here are some of **Captain's features** you don't want to have
