@@ -507,7 +507,15 @@ regardless of language:
 - [git-confirm](https://github.com/pimterry/git-confirm): fixmes, etc
 - audible notifications
 
-## Magit Tips
+## Tooling Tips
+
+### Browser notifications
+
+Try out
+[notifier for github](https://github.com/sindresorhus/notifier-for-github)
+to get real-time desktop pop-up notifications about your builds completing.
+
+### Magit
 
 Use [page-break-lines](https://github.com/purcell/page-break-lines) for nice,
 clear sectioning, turning page-breaks (`^L`) into colored lines. Those lines
