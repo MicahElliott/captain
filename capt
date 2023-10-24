@@ -20,7 +20,7 @@ path+=$scriptsdir
 # Bail out immediately if in a rebase
 branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
 [[ $branch =~ '\* \(no branch, rebasing' ]] && {
-    print 'must be in a rebase, exiting'
+    aye 'Must be in a rebase, exiting.'
     exit
 }
 

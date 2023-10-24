@@ -75,7 +75,7 @@ project, read on....
     - [Setup and Configuration](#setup-and-configuration)
         - [Note on External Tools Installation](#note-on-external-tools-installation)
     - [Control File Spec](#control-file-spec)
-        - [Check Spec](#check-spec)
+        - [Trigger Spec](#trigger-spec)
         - [Example Team Control File](#example-team-control-file)
     - [User-local additional hooks](#user-local-additional-hooks)
     - [Settings](#settings)
@@ -87,7 +87,7 @@ project, read on....
     - [Magit Tips](#magit-tips)
     - [Running Hook Scripts in CI](#running-hook-scripts-in-ci)
     - [Troubleshooting](#troubleshooting)
-    - [License](#license)
+    - [Featured Projects Using Captain](#featured-projects-using-captain)
 
 <!-- markdown-toc end -->
 
@@ -181,14 +181,19 @@ hooks you may have in `.git/hooks`.
 ### Get it all working
 
 Each developer of your code base is encouraged to install Captain (point them
-to the *One-minute guide* above), so violations can be caught before code
-changes go to CI.
+to the **[One-minute
+guide](#one-minute-e-z-quick-start-guide-very-easy-point-your-team-here)**
+above), so violations can be caught before code changes go to CI.
 
-1. Put the `capt` script on your `path` (clone the whole repo if you also want built-in triggers)
+1. `git clone https://github.com/MicahElliott/captain`
+1. Try it out! Add your project/company to the
+   [Featured Projects](#featured-projects-using-captain) section and run `capt`.
+1. Put the `capt` script on your `path`
 1. `cd your-project`
 1. Run the for-loop below to create any git-hooks you want
 1. Create a `.capt/share.sh` control file (or copy the one below)
-1. [optional] Create a `.capt/local.sh` control file for your personal additional triggers
+1. [optional] Create a `.capt/local.sh` control file for your personal
+   additional triggers
 
 The `capt` command is invoked with a single argument: the git-hook to run;
 e.g., as `capt pre-commit`; that will run all the pre-commit triggers. You can
@@ -241,9 +246,10 @@ git add .capt
 git commit -m 'Add capt-driven git hooks etc (PSA: install capt and set hooksPath)'
 ```
 
-That saves all your fellow developers from having to do anything but set:
-`git config core.hooksPath $hookdir`, and you can simply point to the
-*One-minute* instructions above.
+That saves all your fellow developers from having to do anything but set: `git
+config core.hooksPath $hookdir`, and you can simply point to the
+[One-minute](#one-minute-e-z-quick-start-guide-very-easy-point-your-team-here)
+instructions above.
 
 ### Note on External Tools Installation
 
@@ -547,6 +553,10 @@ your tests and analyzers, etc, over your whole code base anyway.
 ## Troubleshooting
 
 If for any reason you need to bypass Captain, set this: `export CAPT_DISABLE=1`
+
+## Featured Projects Using Captain
+
+- [Dividend Finance](https://www.dividendfinance.com/) (Clojure projects)
 
 ```text
   \\
