@@ -214,7 +214,7 @@ git config core.hooksPath $hookdir
 ## OR, use git's default location, not in repo; everyone has to do the hook creation
 # hookdir=.git/hooks
 ## Create the standard executable git hook files
-for hookfile in pre-commit prepare-commit-msg commit-msg post-commit post-checkout; do
+for hookfile in pre-commit prepare-commit-msg commit-msg post-commit post-checkout pre-push post-rewrite; do
     echo 'capt $(basename $0) $@' > $hookdir/$hookfile
     chmod +x $hookdir/$hookfile
 done
@@ -227,7 +227,10 @@ Now your `$hookdir` looks like this:
 ├── commit-message
 ├── post-checkout
 ├── post-commit
+├── post-rewrite
 └── pre-commit
+└── pre-commit-msg
+└── pre-push
 ```
 
 And each of those just contains a one-line invocation of the `capt` command.

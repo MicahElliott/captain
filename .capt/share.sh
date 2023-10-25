@@ -12,6 +12,24 @@ pre_commit=(
 
 commit_msg=( msglint )
 
+prepare_commit_msg=( # br2msg
+    
+)
+
 post_commit=( colorquote )
+
+post_checkout=(
+    # migalert
+    # bundler
+)
+
+# after a commit is modified by an amend or rebase
+post_rewrite=( # migalert
+)
+
+pre_push=(
+    # run-test-suite
+    # nvd
+)
 
 integration=( colorquote 'hi: hello some test params' markdownlint )
