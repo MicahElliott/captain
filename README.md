@@ -290,7 +290,7 @@ commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13) DSL.
 ### Captain git-hook manager control file
 
 # params: NONE
-# Standard hook with triggers for linting, formatting, and running tests
+# Common hook with several triggers for linting, formatting, and running tests
 pre_commit=(
     'lint:             clj-kondo $CAPT_CHANGES &' # linting of files being committed
     'format(clj|cljc): cljfmt &'                  # reformat or check for poor formatting
@@ -305,20 +305,30 @@ prepare_commit_msg=(
     branch2message
 )
 # params: tmp-message-file-path
+# Validate your project state or commit message before allowing a commit to go through
 commit_msg=(
     'commitlint: msglint $GITARG1'  # ensure log message meets standards
 )
 # params: NONE
 # Examples: moving in large binary files that you don’t want source
 # controlled, auto-generating documentation, etc
+# General informative notices, no parameters
 post_commit=(
     "stimulate: play-post-commit-sound.sh"           # happy music on successful commit
     "colorize:  commit-colors $(git rev-parse HEAD)" # more confirmation rewards
 )
+# params: command that triggered rewrite, plus stdin for list of rewrites
+# Run by commands that replace commits, (amend/rebase); same uses as post-checkout, post-merge
+post_rewrite=(
+)
+
 # params: NONE
-# General informative notices, no parameters
+# Set up your working directory properly for your project environment
 post_checkout=(
     "mig-alert(sql): alert-migrations-pending.zsh" # inform that action is needed
+)
+# Use to validate a set of ref updates before a push occurs
+pre_push=(
 )
 # Not a git hook!
 clean_up=(

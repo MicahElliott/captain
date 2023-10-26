@@ -74,8 +74,8 @@ if [[ $@[1] == 'help' ]]; then
     for b in ${(k)builtin_helps}; do printf '  %-16s%s\n' $b ${builtin_helps[$b]} ; done
     print '\nCommands:'
     print "  ${bold_color}list$reset_color   list of all active hooks"
-    print "  ${bold_color}edit$reset_color   see all active triggers"
-    print "  ${bold_color}setup$reset_color  initialize captain files newly into project"
+    print "  ${bold_color}edit$reset_color   see all active triggers in EDITOR"
+    print "  ${bold_color}setup$reset_color  initialize captain files into project (idempotent)"
     exit
 fi
 
