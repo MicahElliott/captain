@@ -1,0 +1,15 @@
+#compdef capt
+
+local -a subcmds=(
+'pre-commit:(hook) Common hook with several triggers for linting, formatting, and running tests'
+'prepare-commit_msg:(hook) Build a commit message based on branch name standardized format'
+'commit-msg:(hook) Validate your project state or commit message before allowing a commit to go through'
+'post-commit:(hook) For notifications'
+'post-rewrite:(hook) Run by commands that replace commits, (amend/rebase); same uses as post-checkout, post-merge'
+'post-checkout:(hook) Set up your working directory properly for your project environment'
+'pre-push:(hook) Use to validate a set of ref updates before a push occurs'
+'list:(cmd) List all active hooks'
+'edit:(cmd) See all active triggers and open EDITOR on their control files'
+'init:(cmd) Initialize Captain files into a project (ok to run multiple times)'
+)
+_describe 'command' subcmds
