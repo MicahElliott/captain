@@ -59,15 +59,23 @@ typeset -A command_helps=(
 if [[ $@[1] == 'help' ]]; then
     print 'capt is a git-hook manager, featuring multiple triggers per hook'
     print
-    print "Detected a shared control file:            $captfile"
+    if [[ -f $captfile ]]; then
+        print "Detected a team shared control file:       $bold_color$captfile$reset_color"
+    else
+        print "Unable to detect a shared contol file: $bold_color$captfile$reset_color"
+        print "You can create one by hand, or use: ${bold_color}capt setup$reset_color"
+    fi
     [[ -f $captfilelocal ]] &&
-    print "Detected your local personal control file: $captfilelocal"
+    print "Detected your local personal control file: $bold_color$captfilelocal$reset_color"
+    print "\nUse to view/edit hooks/triggers in control files: ${bold_color}capt edit$reset_color"
     # print $builtin_helps
     # print ${builtin_helps[kondo]}
     print "\nBuilt-in available triggers:"
     for b in ${(k)builtin_helps}; do printf '  %-16s%s\n' $b ${builtin_helps[$b]} ; done
-    print 'For a list of all active hooks: capt list'
-    print 'To see all active triggers: capt edit'
+    print '\nCommands:'
+    print "  ${bold_color}list$reset_color   list of all active hooks"
+    print "  ${bold_color}edit$reset_color   see all active triggers"
+    print "  ${bold_color}setup$reset_color  initialize captain files newly into project"
     exit
 fi
 
@@ -115,7 +123,7 @@ elif [[ $reporoot != $PWD ]]; then
 fi
 
 if [[ $#@ < 1 ]]; then
-    aye 'Captain needs an arrrg! Try passing a git-hook name, like "pre-commit".'; exit 1
+    aye 'Captain needs an arrrg! Try passing a git-hook name, like "pre-commit", or pass "help".'; exit 1
 fi
 
 print_banner() {

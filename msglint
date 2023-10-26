@@ -2,6 +2,11 @@
 
 # Check commit message for adherence to hard-coded style
 
+# Could parameterize for options:
+# - message_length
+# - exclude_merge_commits
+# - summary_max_length (russial novel)
+
 example=':books: (#1234) [i18n] Add proper diacritics'
 msg=$1
 msg=$(print $msg | sed '/^#/d') # remove comment lines

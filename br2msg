@@ -7,7 +7,7 @@ COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
 SHA1=$3
 
-print $1 :: $2 :: $3
+# print $1 :: $2 :: $3
 
 if [[ $OSTYPE == darwin* ]]
 then ssed() { gsed $@ }
@@ -19,6 +19,11 @@ ex=mde/SCRUM-12345_FEAT_some-detail-words
 becomes='feat: (SCRUM-12345) [mytopic] Some detail words'
 
 branch=$(git rev-parse --abbrev-ref HEAD)
+
+if [[ $branch =~ 'master|main|dev|development' ]]; then
+    print 'not operating on non-feature branch'
+    exit
+fi
 
 # arr=${1:gs/_/ }
 arr=${branch:gs/_/ }
@@ -32,7 +37,7 @@ story=$(ssed -r -e 's^.*/^^' <<<$arr[1]) # SCRUM-12345
 
 # Modify pre-prepped git file (.git/COMMIT_EDITMSG) in-place effectively
 ssed -i "1i${(L)arr[2]}: ($story)$topic ${sentence:gs/-/ }\n" $COMMIT_MSG_FILE
-ssed -i "3iREPLACE THIS TEXT WITH A PARAGRAPH DESCRIPTION OF THE CHANGE." $COMMIT_MSG_FILE
+ssed -i "3iREPLACE THIS TEXT WITH A PARAGRAPH DESCRIPTION OF THE CHANGE.\n" $COMMIT_MSG_FILE
 
 # $(cat $COMMIT_MSG_FILE) > $COMMIT_MSG_FILE
 

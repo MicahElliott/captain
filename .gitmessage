@@ -1,0 +1,16 @@
+
+# Message should conform to the following:
+#   :emoji: (#ticket) [topic] Verb-leading short description
+
+# Where emoji is one of:
+#   (books|sparkles|bug|wrench|cop|check|lock|bomb|tada)
+
+# Example:
+#   :sparkles: (#123) [i18n] Add proper diacritics to frobnicator
+
+# As inspired by:
+# - https://dev.to/rmarting/why-i-use-emojis-in-my-git-commits-4c10
+# - https://github.com/carloscuesta/gitmoji
+# - https://gist.github.com/parmentf/035de27d6ed1dce0b36a
+# - https://github.com/ahmadawais/Emoji-Log/
+
