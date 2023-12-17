@@ -1,0 +1,6 @@
+#! /bin/zsh
+
+### Block large files from being committed
+# https://stackoverflow.com/questions/53690327/prevent-large-text-file-from-being-added-to-commit-when-using-github
+
+# This will force an "skip/bypass" feature in capt
