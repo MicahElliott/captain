@@ -257,12 +257,15 @@ run_scripts () {
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
     if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
     # Print out all the scripts about to be run
-    executors=()
+    executors=() cmds_lens=() max_cmd_len=0
     for line in $@; do
         [[ $line == *:* ]] &&
             executors+="$fg_bold[gray]${${(@s/:/)line}[1]}$reset_color" ||
             executors+="$fg_bold[gray]$line$reset_color"
+        cmds_lens+=$(print $line | ssed 's/[:( ].*//' | wc -m )
     done
+    max_cmd_len=$(print -l $cmds_lens | sort -nr | head -1)
+    # print max_cmd_len: $max_cmd_len
     # print; aye "$fg_bold[cyan][$runlevel]$reset_color Execution awaits! $executors"
     # printf '\xc'; print "" # no luck with printing line for pagebreak/formfeed in magit
     print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg_bold[gray][⚳ $executors$fg_bold[gray]]$reset_color" # ucloud
@@ -295,7 +298,9 @@ run_scripts () {
         # print_name=$(ssed 's/[:(].*//' <<<$name)
         print_name=$(print $name | ssed 's/[:(].*//' )
         # print
-        ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} ⚳⚳⚳$reset_color" # uhooks
+        # ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} $reset_color" # uhooks
+        # printf "      $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
+        printf "$reset_color$fg_bold[blue](◕‿-)$reset_color $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
             suit=♠; print -n " $suit"
             # Need to fix up cmd since no spec, and maybe include filtered files
