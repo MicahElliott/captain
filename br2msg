@@ -7,6 +7,8 @@ COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
 SHA1=$3
 
+# FIXME might need to bail out if COMMIT_SOURCE != 'template', since 'message' is showing in problematic rebase case
+
 # print $1 :: $2 :: $3
 
 if [[ $OSTYPE == darwin* ]]

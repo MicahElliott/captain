@@ -22,12 +22,18 @@ ayen() { print -n "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ } # no ne
 
 [[ -n $CAPT_DISABLE ]] && { print 'Sailin right past yer captain with CAPT_DISABLE bein set.'; exit }
 
-# Bail out immediately if in a rebase
+# Bail out immediately if rebase in progress
+# https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
 branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
-[[ $branch =~ '\* \(no branch, rebasing' ]] && {
+if [[ $branch =~ '\* \(no branch, rebasing' ]] ||
+       test -d "$(git rev-parse --git-path rebase-merge)" ||
+       test -d "$(git rev-parse --git-path rebase-apply)"
+then
     aye 'Must be in a rebase, exiting.'
     exit
-}
+else
+    : print "FIXME PLEASE (rebase debugging for br2msg): branch: $branch"
+fi
 
 autoload colors; colors
 
