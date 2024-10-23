@@ -16,13 +16,15 @@ log=cljtest.log
 # For each NS file that changed, find if corresponding test NS exists, and run it.
 # for f in src/clj/crawlingchaos/domain/installer/*.clj; do
 # https://stackoverflow.com/a/41876600/326516
-for f in ${(M)@:#*.clj} ; do # filter to only clj files
-    testfile=$(sed -r 's:^src/clj:test/clj:')
+# for f in ${(M)@:#*.clj} ; do # filter to only clj files
+for f in ${(m)@:#*_test.clj} ; do # filter to only non-test clj files
+    testfile=$(sed -r -e 's:^src/clj:test/clj:' -e 's/.clj$//' <<< $f )"_test.clj"
     echo "Preparing to test src file: $f"
     if [[ -f $testfile ]]; then
         # Convert file path to NS
         n=$(echo $f |sed -r -e 's:^src/clj/::' -e 's/\.clj$//' -e 's^/^.^g' -e 's/_/-/g')
         # rep "(clojure.test/run-tests 'crawlingchaos.domain.installer.disbursements-test)" >$log
+        # TODO figure out how to re-eval src and test NSs
         rep "(clojure.test/run-tests '${n}-test)" >$log
         if ! grep '0 failures, 0 errors.' $log; then cat $log; exit 1; fi
     else
