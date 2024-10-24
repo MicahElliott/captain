@@ -1,0 +1,3 @@
+#! /bin/zsh
+
+### Block commits with typos in strings

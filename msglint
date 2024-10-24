@@ -21,13 +21,13 @@ else
     swc() { wc $@ }
 fi
 
-if ! print $line1 | sgrep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada):( \(#\d{1,}\))*( \[.+\])* [A-Z].*'; then
+if ! print $line1 | sgrep -q -P '^:(books|sparkles|bug|wrench|cop|check|lock|bomb|tada|skull):( \(#\d{1,}\))*( \[.+\])* [A-Z].*'; then
     print "Message:"
     print '>>>'
     print $msg
     print '<<<'
     print 'Message does not match pattern'
-    print 'Acceptable subjects: (books|sparkles|bug|wrench|cop|check|lock|bomb|tada)'
+    print 'Acceptable subjects: (books|sparkles|bug|wrench|cop|check|lock|bomb|tada|skull)'
     print 'Optional specs: (#123) [topic]'
     print 'Proper message: Verb ...'
     print "Full example: $example"
