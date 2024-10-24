@@ -10,6 +10,11 @@
 # https://stackoverflow.com/a/24337705/326516
 # (clojure.test/run-tests 'crawlingchaos.domain.installer.disbursements-test)
 
+whence -p rep >/dev/null || {
+    echo "Please install rep to run fast tests connected to your nrepl:"
+    echo "https://github.com/eraserhd/rep\n\n"
+    exit 0
+}
 
 log=cljtest.log
 

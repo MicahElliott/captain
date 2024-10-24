@@ -117,7 +117,7 @@ You can’t have all that without a manager — you end up cooking it yourself,
 half-baked. And Yes, you can simply set that all up in your CI (and you
 should), but you don’t want your devs waiting 15 minutes to see if their
 commit passed. Instead, you want them to wait a few seconds for all that to
-run locally, in parallel.
+run locally, maybe in parallel.
 
 ### Captain’s key features
 
@@ -130,7 +130,7 @@ to invent, write, and/or wrap around every tool you run:
 - **Files changed** precise detection and control
 - **File filtering** by file type/extension
 - **Single file organization** of all hook/script specs for whole team to control/use
-- **User-Local scripts** support for individual developer use
+- **User-Local scripts** support for individual snowflake developer use
 - **Built-In** one-word triggers (linters, etc) with pre-defined filters
 - **Add-On linters** provided for optional use
 - **OS-agnostic** commands
@@ -199,6 +199,18 @@ The `capt` command is invoked with a single argument: the git-hook to run;
 e.g., as `capt pre-commit`; that will run all the pre-commit triggers. You can
 optionally run `capt` directly to see/debug output, and then have all of
 git-hooks call it.
+
+### Install a few tiny dependencies
+
+See `install.zsh` for a scripted solution to installing some dependency tooling.
+
+#### Mac requirements
+
+Install [GNU tools](https://apple.stackexchange.com/a/69332/327065)
+
+```
+brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep
+```
 
 ## Setup and Configuration
 
@@ -570,6 +582,28 @@ to have them be smart about file filtering (file-name extensions, which files
 changed in the commit, etc). In practice, the filtering often isn't too
 important with the CI runs, since there you might want to go ahead and run all
 your tests and analyzers, etc, over your whole code base anyway.
+
+## Comparing to other hook managers
+
+### Specific comparison to Lefthook
+
+I really like lefthook. It's the most featureful, fastest, and simplest of the
+managers I tried to adopt. In the end it has a couple blockers. If you don't
+care about these things, you might want to go with lefthook since it has a
+real team behind it.
+
+- The golang code base is overall nice, and I like go. But it's huge for the
+  simple things it does, weighing in at 10 KLOC and 10 MB executable. I needed
+  to hack a couple fixes in but it was painful to get into that code.
+- It won't play nice with magit-process. This could be magit's fault with supporting
+  spawned TTYs, but I couldn't fix it. Most output just wouldn't show up. The
+  output that did come through rendered poorly even in terminals with a couple
+  fonts that didn't like some of the unicode boxes and emojis.
+- The generated hooks files are huge, catering to a dozen platforms, and can't
+  be tweaked since they get rewritten whenever a config change is made.
+- I thought the YAML config was ugly and wanted to get away with a tiny DSL.
+  In the end, I needed something close to the YAML anyway, and realized there
+  was already TOML support. So this was ultimately a non-issue.
 
 ## Troubleshooting
 

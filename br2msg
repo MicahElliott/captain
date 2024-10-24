@@ -12,8 +12,8 @@ SHA1=$3
 # print $1 :: $2 :: $3
 
 if [[ $OSTYPE == darwin* ]]
-then ssed() { gsed $@ }
-else ssed() { sed $@ }
+then ssed() { gsed $@ ; }
+else ssed() { sed $@ ; }
 fi
 
 ex=mde/SCRUM-12345_FEAT_mytopic_some-detail-words
