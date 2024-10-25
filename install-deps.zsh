@@ -12,4 +12,6 @@ cp rep ~/bin
 print 'Installing gnu utils for mac'
 brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep
 
-#
+# sqllint
+print 'Installing postgres libpq for ecpg sql linting'
+brew install libpq

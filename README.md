@@ -393,8 +393,9 @@ Then you should add `.capt/local.sh` to your `.gitignore` file.
 
 You can fine-tune Captain’s behavior with several environment variables.
 
-- `CAPT_VERBOSE` :: Set to `1` to enable debug mode
+- `CAPT_VERBOSE` :: Set to `0` (or unset) to disable subcommand output
 - `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
+- `CAPT_DEBUG` :: Set to `1` to enable debug mode
 - `CAPT_MAIN_BRANCH` :: Useful for running in CI since default will be feature branch
 - `CAPT_FILE` :: Team-shared control file containing global hooks/triggers
 - `CAPT_LOCALFILE` :: User-local personal control file each dev may have (not in git control)
@@ -549,7 +550,7 @@ can also be navigated with `C-x [` (prev) and `C-x ]` (next). Add
 `magit-process`.
 
 Set environment variables that `capt` will read with `M-x setenv`. Eg, if you
-want to enable verbose logging mode, set `CAPT_VEBOSE` to `1` with that.
+want to enable debug mode, set `CAPT_DEBUG` to `1` with that.
 
 ## Running Hook Scripts in CI
 

@@ -32,7 +32,7 @@ then
     aye 'Must be in a rebase, exiting.'
     exit
 else
-    : print "FIXME PLEASE (rebase debugging for br2msg): branch: $branch"
+    print "FIXME PLEASE (rebase debugging for br2msg): branch: $branch"
 fi
 
 autoload colors; colors
