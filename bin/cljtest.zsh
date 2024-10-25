@@ -28,9 +28,9 @@ for f in ${(m)@:#*_test.clj} ; do # filter to only non-test clj files
     if [[ -f $testfile ]]; then
         # Convert file path to NS
         n=$(echo $f |sed -r -e 's:^src/clj/::' -e 's/\.clj$//' -e 's^/^.^g' -e 's/_/-/g')
-        # rep "(clojure.test/run-tests 'crawlingchaos.domain.installer.disbursements-test)" >$log
-        # TODO figure out how to re-eval src and test NSs
-        rep "(clojure.test/run-tests '${n}-test)" >$log
+        # Reload NS and test NS, and run them!
+        rep "(require '${n} :reload) (require '${n}-test :reload) (clojure.test/run-tests '${n}-test)" >$log
+        # rep "(clojure.tools.namespace.repl/refresh) (clojure.test/run-tests '${n}-test)" >$log
         if ! grep '0 failures, 0 errors.' $log; then cat $log; exit 1; fi
     else
         echo "WARN: Missing test file for src: $testfile"
