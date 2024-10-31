@@ -22,6 +22,11 @@ ayen() { print -n "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ } # no ne
 
 [[ -n $CAPT_DISABLE ]] && { print 'Sailin right past yer captain with CAPT_DISABLE bein set.'; exit }
 
+# Convert to arrays for easier use
+black_triggers=( ${(s:,:)CAPT_BLACK_TRIGGERS} )
+black_hooks=(    ${(s:,:)CAPT_BLACK_HOOKS}    )
+
+
 # Bail out immediately if rebase in progress
 # https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
 branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
@@ -261,9 +266,14 @@ setup_changes() {
 
 # Run the scripts from control file
 run_scripts () {
+    print active_githook: $active_githook
     # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
     if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
+    if (( $black_hooks[(Ie)$active_githook] )); then
+        aye "$fg[red]Stavin’ off yer $active_githook hook since ye blacklisted the varmint (CAPT_BLACK_HOOKS).$reset_color"
+        return
+    fi
     # Print out all the scripts about to be run
     executors=() cmds_lens=() max_cmd_len=0
     for line in $@; do
@@ -292,6 +302,7 @@ run_scripts () {
         name=$inv[1]
         # TODO(#1) failok mode
         # If name starts with - then remove it and treat the run as in fail-ok mode
+        unset failok
         if [[ $name[1] = '-' ]]; then
             name=${name[2,$#name]} # remove first char
             failok=1
@@ -305,6 +316,11 @@ run_scripts () {
         # Built-in has filter already, or specified filter
         # print_name=$(ssed 's/[:(].*//' <<<$name)
         print_name=$(print $name | ssed 's/[:(].*//' )
+        # print name: $print_name :: hooks: $black_triggers
+        if (( $black_triggers[(Ie)$print_name] )); then
+            aye "$fg[red]Snuffin’ out yer $print_name trigger since ye blacklisted the bedeviler (CAPT_BLACK_TRIGGERS).$reset_color"
+            continue
+        fi
         # print
         # ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} $reset_color" # uhooks
         # printf "      $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
@@ -392,7 +408,7 @@ run_scripts () {
         tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Bail out on whole run if any script not successful
-        if [[ $es -ne 0 ]]; then
+        if [[ $es -ne 0 && ! -v failok ]]; then
             print
             # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀"
             # print "$fg[red]    ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀"
@@ -415,6 +431,7 @@ run_scripts () {
             exit $es
             # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else
+            if [[ $es -ne 0 ]]; then aye "WARN: Errors detected but proceeding anyway since in failok mode"; fi
             if [[ -n $CAPT_VERBOSE ]]; then
                 aye "$fg[green]⚔⚔⚔ SURVIVAL! ⚔⚔⚔$reset_color" \
                     "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"

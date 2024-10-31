@@ -319,7 +319,7 @@ prepare_commit_msg=(
 # params: tmp-message-file-path
 # Validate your project state or commit message before allowing a commit to go through
 commit_msg=(
-    'commitlint: msglint $GITARG1'  # ensure log message meets standards
+    '-commitlint: msglint $GITARG1'  # ensure log message meets standards
 )
 # params: NONE
 # Examples: moving in large binary files that you don’t want source
@@ -364,18 +364,13 @@ Some things to notice in that file:
 - Some triggers are a line with a `somename:` "name" prefix, then the eval'd command
 - After a `name` is an optional "filter": `cljfmt` will only look at `.clj` and `.cljc` files
 - The `lint` and `format` are run in parallel by being backgrounded (`&`)
+- The `commitlint` is prefixed with a `-`: this instructs Captain to let itxs proceed even if it fails
 - You generally should use single-quote commands, even with env vars
 - The `$CAPT_CHANGES` is the convenient list of files that are part of the commit
 - The `$GITARG1` is the first available param passed from git to a hook script
 - The `test-suite` is a local script (in `.capt/scripts/`) not on `path`; Captain figures that out
 - `.capt/share.sh` gets put into git at your project-root and is used by all devs on the project
 - The last `clean_up` hook isn't a git hook, but you can run it directly with `capt` cli
-
-TODO will likely add these soon
-
-- disabled (#, commented out from start)
-- fail-ok mode (leading -)
-- description (trailing :: or # some text explaining hook)
 
 ## User-local additional hooks
 
@@ -384,7 +379,7 @@ E.g., you have OCD about line length. You can ensure that all of *your*
 commits conform by creating another local-only `.capt/local.sh` control file:
 
 ``` shell
-pre_commit=( 'line-length-pedant: check-line-length' ... other-custom-triggers... )
+pre_commit=( 'line-length-pedant: check-line-length' ...other-custom-triggers... )
 ```
 
 Then you should add `.capt/local.sh` to your `.gitignore` file.
@@ -396,6 +391,8 @@ You can fine-tune Captain’s behavior with several environment variables.
 - `CAPT_VERBOSE` :: Set to `0` (or unset) to disable subcommand output
 - `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
 - `CAPT_DEBUG` :: Set to `1` to enable debug mode
+- `CAPT_BLACK_TRIGGERS` :: Set to CSV of individual triggers you wish to disable
+- `CAPT_BLACK_HOOKS` :: Set to to CSV of individual hooks you wish to disable
 - `CAPT_MAIN_BRANCH` :: Useful for running in CI since default will be feature branch
 - `CAPT_FILE` :: Team-shared control file containing global hooks/triggers
 - `CAPT_LOCALFILE` :: User-local personal control file each dev may have (not in git control)
@@ -595,13 +592,16 @@ real team behind it.
 
 - The golang code base is overall nice, and I like go. But it's huge for the
   simple things it does, weighing in at 10 KLOC and 10 MB executable. I needed
-  to hack a couple fixes in but it was painful to get into that code.
+  to hack a couple fixes in but it was painful to get into that code. In the
+  end, I concluded it was not hackable, at least not for me.
 - It won't play nice with magit-process. This could be magit's fault with supporting
   spawned TTYs, but I couldn't fix it. Most output just wouldn't show up. The
   output that did come through rendered poorly even in terminals with a couple
   fonts that didn't like some of the unicode boxes and emojis.
 - The generated hooks files are huge, catering to a dozen platforms, and can't
   be tweaked since they get rewritten whenever a config change is made.
+- There are voluminous docs because there is complexity and arguably too many
+  features, some of which captain aims to remove.
 - I thought the YAML config was ugly and wanted to get away with a tiny DSL.
   In the end, I needed something close to the YAML anyway, and realized there
   was already TOML support. So this was ultimately a non-issue.
@@ -625,6 +625,6 @@ ___V_/_____
 
 ## License
 
-Copyright © Micah Elliott.
+Copyright © Micah Elliott
 
 Distributed under the Eclipse Public License v2.0. See LICENSE.
