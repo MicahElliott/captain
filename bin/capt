@@ -68,10 +68,10 @@ typeset -A builtin_helps=(
 )
 
 typeset -A command_helps=(
-    help 'show help with descriptions of built-in triggers'
-    list 'list the active hooks'
-    edit 'open the share.sh control file'
-    editlocal 'open the local.sh personal control file'
+    help    'show help with descriptions of built-in triggers'
+    list    'list the active hooks'
+    edit    'open the share.sh (and local.sh if exists) control file'
+    scripts 'list available scripts'
 )
 
 if [[ $@[1] == 'help' ]]; then
@@ -89,11 +89,45 @@ if [[ $@[1] == 'help' ]]; then
     # print $builtin_helps
     # print ${builtin_helps[kondo]}
     print "\nBuilt-in available triggers:"
-    for b in ${(k)builtin_helps}; do printf '  %-16s%s\n' $b ${builtin_helps[$b]} ; done
+    for b in ${(k)builtin_helps}; do printf '  %-26s%s\n' "${bold_color}$b$reset_color" ${builtin_helps[$b]} ; done
     print '\nCommands:'
-    print "  ${bold_color}list$reset_color   list of all active hooks"
-    print "  ${bold_color}edit$reset_color   see all active triggers in EDITOR"
-    print "  ${bold_color}setup$reset_color  initialize captain files into project (idempotent)"
+    for b in ${(k)command_helps}; do printf '  %-20s%s\n' "${bold_color}$b$reset_color" ${command_helps[$b]} ; done
+    # print "  ${bold_color}list$reset_color     list of all active hooks"
+    # print "  ${bold_color}edit$reset_color     see all active triggers in EDITOR"
+    # print "  ${bold_color}scripts$reset_color  initialize captain files into project (idempotent)"
+    # print "  ${bold_color}setup$reset_color    initialize captain files into project (idempotent)"
+    exit
+fi
+
+list_available_hooks() {
+    controller=$1
+    for h in $( grep -e '^[a-z_]\+=(' $controller | sed -e 's/_/-/g' -e 's/=(//' ); do
+        print "## $h"
+        local gf=$captdir/hooks/$h
+        if [[ -f $gf ]]; then cat $gf; else print '<custom hook/command>'; fi
+        print
+    done
+}
+if [[ $@[1] == 'list' ]]; then
+    aye "Active hooks in $captfile: (CAPT_FILE)"
+    list_available_hooks $captfile
+    aye "Active hooks in $captfilelocal: (CAPT_LOCALFILE)"
+    list_available_hooks $captfilelocal
+    print -- '----'
+    print "HINT: To see/edit triggers: ${bold_color}capt edit$reset_color"
+    print "HINT: To see your scripts:  ${bold_color}capt scripts$reset_color"
+    exit
+fi
+
+if [[ $@[1] == 'edit' ]]; then
+    aye "Opening EDITOR on $captfile $captfilelocal"
+    $EDITOR $captfile $captfilelocal &
+    exit
+fi
+
+if [[ $@[1] == 'scripts' ]]; then
+    aye "Available scripts in $scriptsdir: (CAPT_SCRIPTSDIR)"
+    ls -1 $scriptsdir
     exit
 fi
 
@@ -403,13 +437,13 @@ run_scripts () {
         else aye "$fg[red]WARNING: Skippin on yer $print_name; $cmd0 and $script be lost at sea.$reset_color"
         fi
         es=$?
-        [[ -n $CAPT_VERBOSE ]] && print -- "$output"
+        [[ -n $CAPT_VERBOSE && -n $output ]] && print -- "$output"
         wait # don't process until background scripts are finished
         tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 && ! -v failok ]]; then
-            print
+            [[ -z $CAPT_VERBOSE ]] && print "\nFAIL: $output"
             # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀"
             # print "$fg[red]    ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀"
             # print "$fg[red]    ⠀⣠⣤⣶⣶⣿⣿⣿⣿⣯⠀⠀⣽⣿⣿⣿⣿⣷⣶⣤⣄⠀"
@@ -423,7 +457,7 @@ run_scripts () {
             # print "$fg[red]    ⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀Status: $es"
             # print "$fg[red]    ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀"
             # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀"
-            print "$fg[red]         "'\\\\'
+            print "\n$fg[red]         "'\\\\'
             print "$fg[red]         (o>     Down to Davey Jones’ locker!"
             print "$fg[red]      ___(()___  Status $es"
             print "$fg[red]         ||"

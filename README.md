@@ -119,6 +119,16 @@ should), but you don’t want your devs waiting 15 minutes to see if their
 commit passed. Instead, you want them to wait a few seconds for all that to
 run locally, maybe in parallel.
 
+You may argue that all these checks should be done automatically by editors
+with on-save hooks. But there are a few reasons that often doesn't happen:
+
+- not all developers know how or bother
+- some types of checks are difficult to run automatically, or editors don't
+  have packages to run such checks
+- some checks may be a bit too slow to run frequently in an editor
+
+So in this regard, Captain takes the onus off all the developers’ editors.
+
 ### Captain’s key features
 
 Specifically, here are some of **Captain's features** you don't want to have
@@ -141,7 +151,7 @@ to invent, write, and/or wrap around every tool you run:
 You can think of Captain as like moving your fancy CI setup into everyone’s
 local control. The output is reminiscent of Github Actions, but way easier to
 set up, runs automatically whenever you use git, and delivers the red and
-green a kajillion times faster.
+green a kajillion times faster (aim for not more than a couple seconds).
 
 ## Why Captain instead of another hook manager?
 
@@ -170,10 +180,8 @@ Captain also has most of the features of other managers:
 
 ## Installation
 
-### Sneaking it in
-
 It’s worth noting that no one needs to know you’ve enlisted the Captain. You
-can do all the following and put `capt` to work for just yourself to start out
+can do the following steps to put `capt` to work for just yourself to start out
 with. You’ll commit a `.capt/` dir with some innocuous tiny files and point
 your own `git` config to use the Captain’s hooks instead of the pedestrian
 hooks you may have in `.git/hooks`.
@@ -275,6 +283,12 @@ for teams, to get everyone on the same page. Basically, a project should have
 a script (or at least a doc) for getting all the tooling installed. It might
 be just a bunch of dnf/apt-get/pacman/brew commands, or it could even be an
 ansible file.
+
+## Usage
+
+The `capt` CLI has a few built-in commands, such as `help`, `edit` (open
+editor on control files), `list` (see active hooks), and more. Use `help` to
+see them all and their documentation.
 
 ## Control File Spec
 
