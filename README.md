@@ -123,6 +123,7 @@ You may argue that all these checks should be done automatically by editors
 with on-save hooks. But there are a few reasons that often doesn't happen:
 
 - not all developers know how or bother
+
 - some types of checks are difficult to run automatically, or editors don't
   have packages to run such checks
 - some checks may be a bit too slow to run frequently in an editor

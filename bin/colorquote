@@ -1,5 +1,7 @@
 #! /bin/zsh
 
+# Spew a colorful pirate witticism to signal a successful run
+
 quotes=(
 'May your blade always be wet, and powder dry.'
 'Under a black flag we sail and the sea shall be our empire.'

@@ -5,9 +5,9 @@ pre_commit=(
     'hithere: hello $CAPT_FILES_CHANGED'
     # redundant with markdownlint but for testing filters etc
     'doclint(md|mkd): mdl $CAPT_FILES_CHANGED ## check markdown for violations'
-    markdownlint
+    mdlint
     # -markdownlint
-    missingnewline
+    nlcheck
     "fixmes: git-confirm.sh ## check for FIXMEs etc"
 )
 
@@ -31,4 +31,4 @@ pre_push=(
     # nvd
 )
 
-integration=( colorquote 'hi: hello some test params' markdownlint )
+integration=( colorquote 'hi: hello some test params' mdlint )

@@ -29,6 +29,7 @@ black_hooks=(    ${(s:,:)CAPT_BLACK_HOOKS}    )
 
 # Bail out immediately if rebase in progress
 # https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
+# FIXME This branch detection could definitely be better!
 branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
 if [[ $branch =~ '\* \(no branch, rebasing' ]] ||
        test -d "$(git rev-parse --git-path rebase-merge)" ||
@@ -37,7 +38,7 @@ then
     aye 'Must be in a rebase, exiting.'
     exit
 else
-    print "FIXME PLEASE (rebase debugging for br2msg): branch: $branch"
+    : print "FIXME PLEASE (rebase debugging for br2msg): branch: $branch"
 fi
 
 autoload colors; colors
@@ -47,24 +48,33 @@ autoload colors; colors
 # values are an optional filter, followed by a command to run
 # TODO May need a way/syntax to let checks run but ignore that they fail; IOW, proceed despite failure
 typeset -A builtin_cannons=(
-    'markdownlint' '(md|mkd|markdown)mdl $CAPT_FILES_CHANGED'
-    'msglint'      'msglint "$(cat $GITARG1)"'
-    'missingnewline' 'missingnewline $CAPT_FILES_CHANGED'
-    # 'gommit'       'gommit check message "$(cat $1)"'
-    'cljlint'      '(clj|cljc|cljs)clj-kondo --lint $CAPT_FILES_CHANGED'
-    'cljfmt'       '(clj)cljfmt check $CAPT_FILES_CHANGED'
-    'sqllint'      '(sql)pglint.zsh $CAPT_FILES_CHANGED'
-    'cljsplint'    '(clj)splint -o clj-kondo $CAPT_FILES_CHANGED'
-    'cljtest'      '(clj)cljtest.zsh $CAPT_FILES_CHANGED'
-    'colorquote'   'colorquote'
-    'br2msg'       'br2msg $GITARG1 $GITARG2 $GITARG3'
+    mdlint         '(md|mkd|markdown)mdl $CAPT_FILES_CHANGED'
+    cljlint        '(clj|cljc|cljs)clj-kondo --lint $CAPT_FILES_CHANGED'
+    cljsplint      '(clj)splint -o clj-kondo $CAPT_FILES_CHANGED'
+    cljfmt         '(clj)cljfmt check $CAPT_FILES_CHANGED'
+    cljtest        '(clj)cljtest.zsh $CAPT_FILES_CHANGED'
+    huglint        '(sql)huglint $CAPT_FILES_CHANGED'
+    nlcheck        'nlcheck $CAPT_FILES_CHANGED'
+    msglint        'msglint "$(cat $GITARG1)"'
+    gommit         'gommit check message "$(cat $1)"'
+    colorquote     'colorquote'
+    br2msg         'br2msg $GITARG1 $GITARG2 $GITARG3'
+    migsalert      'migsalert'
 )
 
 typeset -A builtin_helps=(
-    markdownlint 'Check markdown files for various conventional violations'
-    cljlint 'Perform static analysis on Clojure/EDN files without the need of a running REPL'
-    msglint 'Ensure a commit message adheres to a specied standard format'
-    cljfmt 'Format clojure files'
+    mdlint         'Check markdown files for various conventional violations (pre-commit)'
+    cljlint        'Perform static analysis on Clojure/EDN files without the need of a running REPL (pre-commit)'
+    cljsplint      'Linter style and code shape (pre-commit)'
+    cljfmt         'Format clojure files (pre-commit)'
+    cljtest        'Run test NSs with existing nrepl conn (pre-commit)'
+    huglint        'Detect an error in a HugSQL file using ecpg (pre-commit)'
+    nlcheck        'Detect if input file is missing a newline at end of file (pre-commit)'
+    msglint        'Ensure a commit message adheres to a specied standard format (commit-msg)'
+    gommit         'Ensure your commit messages are consistent (commit-msg)'
+    colorquote     'Spew a colorful pirate witticism to signal a successful run (post-commit)'
+    br2msg         'Convert current branch name into commit message, and add some boilerplate (prepare-commit-msg)'
+    migsalert      'Notify when pending migrations detected by switching branches (post-checkout)'
 )
 
 typeset -A command_helps=(
@@ -101,7 +111,7 @@ fi
 
 list_available_hooks() {
     controller=$1
-    for h in $( grep -e '^[a-z_]\+=(' $controller | sed -e 's/_/-/g' -e 's/=(//' ); do
+    for h in $( sgrep -e '^[a-z_]\+=(' $controller | ssed -e 's/_/-/g' -e 's/=(//' ); do
         print "## $h"
         local gf=$captdir/hooks/$h
         if [[ -f $gf ]]; then cat $gf; else print '<custom hook/command>'; fi
@@ -298,9 +308,22 @@ setup_changes() {
     dbg "git-hook arrrgs: $GITARG1 $GITARG2 $GITARG3"
 }
 
+# Look for a trailing help comment docstring ( ## ) and print if exists
+print_cmd_and_help () {
+    unset helpmsg
+    if   [[ -n $CAPT_VERBOSE ]]
+    then cmd=$( ssed 's/ ## .*$//' <<< $cmd)
+        aye "$suit $fg_bold[yellow]$cmd$reset_color"
+         if   sgrep -q ' ## ' <<< $cmd
+         then helpmsg=$( ssed 's/^.* ## //' <<< $cmd )
+              aye "# $fg[yellow]$helpmsg$reset_color"
+         fi
+    fi
+}
+
 # Run the scripts from control file
 run_scripts () {
-    print active_githook: $active_githook
+    # print active_githook: $active_githook
     # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
     if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
@@ -368,7 +391,7 @@ run_scripts () {
                 print; aye "$fg[red]ERROR: Unable to find built-in trigger: $bold_color$name$reset_color" ; exit 1
             fi
             #              NAME        FILTER    CMD
-            # User spec is like:    markdownlint(md|mkd): mdl ...
+            # User spec is like:    mdlint(md|mkd): mdl ...
             # DSL is actually like: (md|mkd)mdl ...
             dsl=$builtin_cannons[$name]
             filter=$(print $dsl | ssed 's/).*/)/')
@@ -392,36 +415,36 @@ run_scripts () {
             CAPT_FILES_CHANGED=( $filtered_files )
             # cmd="$cmd $filtered_files"
             print_filtereds $filtered_files
-            # aye "Ahoy! Aimin the captain’s built-in $print_name: $bold_color$cmd$reset_color"
-            [[ -n $CAPT_VERBOSE ]] && aye "$suit $fg_bold[yellow]$cmd$reset_color" # spade, built-in
+            # Remove end of help and prep for printing on non-verbose
+            helpmsg=$( ssed -r 's/ \(.*\)//' <<< $builtin_helps[$print_name] )
+            if   [[ -n $CAPT_VERBOSE ]]
+            then aye "# $fg[yellow]$helpmsg$reset_color"
+                 aye "$suit $fg_bold[yellow]$cmd$reset_color" # spade, built-in
+            fi
 
         elif [[ $name == *\(*\)* ]]; then dbg "custom-rigged filtered checker"
             suit=♥; print -n " $suit"
             filter=$(print $name | ssed 's/.*(/(/;s/://') # remove front name and trailing :
-            dbg filter: $filter
-            dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
+            dbg filter: $filter; dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
             filtered_files=( $(print -l $CAPT_FILES_CHANGED | sgrep -E "\.$filter$") )
             CAPT_FILES_CHANGED=( $filtered_files )
-            if [[ $#filtered_files < 1 ]]; then print " ($suit Not seein any matchin files staged, skippin.)"; continue
-            else
-                print_filtereds $filtered_files
-                [[ -n $CAPT_VERBOSE ]] && aye "$suit $fg_bold[yellow]$cmd$reset_color" # heart, custom filter
+            if [[ $#filtered_files < 1 ]]
+            then print " ($suit Not seein any matchin files staged, skippin.)"; continue
+            else print_filtereds $filtered_files
+                 print_cmd_and_help
             fi
         elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
             suit=♦; print -n " $suit"
             filtered_files=( $CAPT_FILES_CHANGED )
-            if [[ $#filtered_files < 1 ]]; then print " ($suit Not seein any matchin files staged, skippin.)"; continue
-            else
-                print_filtereds $CAPT_FILES_CHANGED
-                [[ -n $CAPT_VERBOSE ]] && aye "$suit $fg_bold[yellow]$cmd$reset_color" # diamond, unfiltered
+            if   [[ $#filtered_files < 1 ]]
+            then print " ($suit Not seein any matchin files staged, skippin.)"; continue
+            else print_filtereds $CAPT_FILES_CHANGED
+                 print_cmd_and_help
             fi
-        else
+        else # Ye took care of file selection yerself, or no files needin fer sayin.
             suit=♣; print -n " $suit"
-            # print; aye "Ye took care of file selection yerself, or no files needin fer sayin."
             print_filtereds ∞
-            # print " $fg[yellow][∞]$reset_color"
-            # aye "Doubloons! Aimin yer $print_name: $bold_color$cmd$reset_color"
-            [[ -n $CAPT_VERBOSE ]] && aye "$suit $fg_bold[yellow]$cmd$reset_color" # club, self
+            print_cmd_and_help
         fi
 
         # Add args to pass from git if it's one of the arg-accepting hooks
@@ -431,6 +454,7 @@ run_scripts () {
         dbg "cmd: $cmd, cmd0: $cmd0"
         dbg "script: $scriptsdir/$script"
         # Try to find script or command
+        # FIXME Some commands print to stderr; need to capture it too; but look out for &
         if [[ -f $scriptsdir/$script ]]; then output=$(eval $scriptsdir/$cmd)
         elif type $cmd0 >/dev/null;      then output=$(eval $cmd)
         # Just skip this one hook if command not found
@@ -443,7 +467,7 @@ run_scripts () {
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 && ! -v failok ]]; then
-            [[ -z $CAPT_VERBOSE ]] && print "\nFAIL: $output"
+            [[ -z $CAPT_VERBOSE ]] && print "\n${fg_bold[red]}BLIMEY!!!$reset_color\n$output"
             # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀"
             # print "$fg[red]    ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀"
             # print "$fg[red]    ⠀⣠⣤⣶⣶⣿⣿⣿⣿⣯⠀⠀⣽⣿⣿⣿⣿⣷⣶⣤⣄⠀"
