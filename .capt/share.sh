@@ -7,7 +7,7 @@ pre_commit=(
     'doclint(md|mkd): mdl $CAPT_FILES_CHANGED ## check markdown for violations'
     mdlint
     # -markdownlint
-    nlcheck
+    wscheck
     "fixmes: git-confirm.sh ## check for FIXMEs etc"
 )
 

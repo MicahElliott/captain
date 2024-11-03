@@ -476,7 +476,9 @@ which capt >/dev/null && capt $(basename $0) $@
 
 You can run any individual hook with `capt` directly. This can sometimes be
 useful for debugging; or convenience, in case you want to use Captain as
-something of a task collector.
+something of a task collector/runner. Just create another array in a control
+file (eg, `my-weird-collection`), add triggers to it, and invoke `capt
+my-weird-collection`.
 
 To run a hook:
 
@@ -534,12 +536,6 @@ can also be navigated with `C-x [` (prev) and `C-x ]` (next). Add
 
 Set environment variables that `capt` will read with `M-x setenv`. Eg, if you
 want to enable debug mode, set `CAPT_DEBUG` to `1` with that.
-
-### Captain as a command runner
-
-You can use `capt` as a general-purpose command runner too. Just create
-another array in a control file (eg, `clean`), add triggers to it, and invoke
-`capt clean`.
 
 ## Running Hook Scripts in CI
 

@@ -43,6 +43,25 @@ fi
 
 autoload colors; colors
 
+# Use s* to mean "system" as in "sgrep" -> "system grep"
+if [[ $OSTYPE == darwin* ]] ; then
+    if ! type ggrep >/dev/null; then
+        print 'Detected that GNU coreutils et al are not installed. You should run:'
+        print 'brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep'
+        exit 1
+    else
+        sdate() { gdate $@ }
+        sgrep() { ggrep $@ }
+        ssed()  { gsed $@ }
+        splayer() { afplay $@ }
+    fi
+else
+    sdate() { date $@ }
+    sgrep() { grep $@ }
+    ssed()  { sed $@ }
+    splayer() { play $@ }
+fi
+
 # Built-in convenience checkers
 # keys are for lookups
 # values are an optional filter, followed by a command to run
@@ -52,9 +71,9 @@ typeset -A builtin_cannons=(
     cljlint        '(clj|cljc|cljs)clj-kondo --lint $CAPT_FILES_CHANGED'
     cljsplint      '(clj)splint -o clj-kondo $CAPT_FILES_CHANGED'
     cljfmt         '(clj)cljfmt check $CAPT_FILES_CHANGED'
-    cljtest        '(clj)cljtest.zsh $CAPT_FILES_CHANGED'
+    cljtest        '(clj)cljtest $CAPT_FILES_CHANGED'
     huglint        '(sql)huglint $CAPT_FILES_CHANGED'
-    nlcheck        'nlcheck $CAPT_FILES_CHANGED'
+    wscheck        'wscheck $CAPT_FILES_CHANGED'
     msglint        'msglint "$(cat $GITARG1)"'
     gommit         'gommit check message "$(cat $1)"'
     colorquote     'colorquote'
@@ -69,8 +88,8 @@ typeset -A builtin_helps=(
     cljfmt         'Format clojure files (pre-commit)'
     cljtest        'Run test NSs with existing nrepl conn (pre-commit)'
     huglint        'Detect an error in a HugSQL file using ecpg (pre-commit)'
-    nlcheck        'Detect if input file is missing a newline at end of file (pre-commit)'
     msglint        'Ensure a commit message adheres to a specied standard format (commit-msg)'
+    wscheck        'Detect whitespace issues: newlines, BOM, tabs, etc (pre-commit)'
     gommit         'Ensure your commit messages are consistent (commit-msg)'
     colorquote     'Spew a colorful pirate witticism to signal a successful run (post-commit)'
     br2msg         'Convert current branch name into commit message, and add some boilerplate (prepare-commit-msg)'
@@ -151,25 +170,6 @@ if [[ $@[1] == 'COMPLETIONS' ]]; then
     print 'release (share)'
     print 'integration (share)'
     exit
-fi
-
-# Use s* to mean "system" as in "sgrep" -> "system grep"
-if [[ $OSTYPE == darwin* ]] ; then
-    if ! type ggrep >/dev/null; then
-        print 'Detected that GNU coreutils et al are not installed. You should run:'
-        print 'brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep'
-        exit 1
-    else
-        sdate() { gdate $@ }
-        sgrep() { ggrep $@ }
-        ssed()  { gsed $@ }
-        splayer() { afplay $@ }
-    fi
-else
-    sdate() { date $@ }
-    sgrep() { grep $@ }
-    ssed()  { sed $@ }
-    splayer() { play $@ }
 fi
 
 reporoot=$(git rev-parse --show-toplevel 2>/dev/null)
@@ -296,9 +296,11 @@ setup_changes() {
     else
         CAPT_FILES_CHANGED_ORIG=( $(git diff --name-only --cached) )
     fi
-    CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
-    # aye "[Δ Staged files changed ($#CAPT_FILES_CHANGED)]: $bold_color$CAPT_FILES_CHANGED$reset_color"
+    # Discard files marked for deletion: https://stackoverflow.com/a/52188874/326516
+    dels=( $(git status | sgrep 'deleted:' | ssed -r 's/.*deleted: +//') )
+    CAPT_FILES_CHANGED_ORIG=( ${CAPT_FILES_CHANGED_ORIG:|dels} )
     if (( $#CAPT_FILES_CHANGED > 0 )); then
+    CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
         # Print only truncated file names (split on /, take last two of path, join with ellipsis on front)
         # print xxx CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
         local shorts=( $(shortnames $CAPT_FILES_CHANGED) )

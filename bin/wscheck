@@ -1,0 +1,55 @@
+#! /bin/zsh
+
+# Detect various whitespace problems
+#
+
+# Why it matters:
+
+# Checks:
+# - missing a newline at end of file
+# - trailing whitespace
+# - hard tabs
+# - empty file
+# - BOM check
+
+# print "\n\nin missingnewline: $@ \n\n"
+
+allok=true
+nlcheck() {
+    filename=$1
+    if   [[ ! -s "$filename" ]]
+    then echo "ERROR: $filename is empty"
+         unset allok
+    fi
+    # https://unix.stackexchange.com/a/542520/101165
+    if   [[ -z "$(tail -c 1 <"$filename")" ]]
+    then : echo "OK: $filename ends with a newline or with a null byte"
+    else echo "ERROR: $filename does not end with a newline nor with a null byte"
+         echo "More details:"
+         echo -- "- https://gist.github.com/OleksiyRudenko/d51388345ea55767b7672307fe35adf3"
+         echo -- "- https://stackoverflow.com/questions/729692/why-should-text-files-end-with-a-newline"
+         unset allok
+    fi
+    if   grep -q '	' $filename
+    then echo "ERROR: $filename contains hard-tabs"
+         unset allok
+    fi
+    # if   git diff --check $filename
+    if   grep -q -- '^<<<<<<<' $filename
+    then echo "ERROR: $filename contains VCS conflict markers"
+         unset allok
+    fi
+    if   file $filename | grep -q '\(with BOM\)'
+    then echo "ERROR: $filename contains BOM"
+         echo "More details:"
+         echo "https://en.wikipedia.org/wiki/Byte_order_mark"
+         unset allok
+    fi
+}
+
+for f in $@; do nlcheck $f; done
+
+if [[ ! -v allok ]]; then
+    # print 'Found probs, exiting non-zero'
+    exit 1
+fi
