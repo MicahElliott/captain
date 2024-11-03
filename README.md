@@ -403,7 +403,7 @@ Then you should add `.capt/local.sh` to your `.gitignore` file.
 
 You can fine-tune Captain’s behavior with several environment variables.
 
-- `CAPT_VERBOSE` :: Set to `0` (or unset) to disable subcommand output
+- `CAPT_VERBOSE` :: Set to `0` (or unset) to disable subcommand output and docstrings
 - `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
 - `CAPT_DEBUG` :: Set to `1` to enable debug mode
 - `CAPT_BLACK_TRIGGERS` :: Set to CSV of individual triggers you wish to disable
@@ -423,68 +423,39 @@ There are also arrrgs you can utilize from your control files:
 
 ## Sample Run
 
-Rather than a live demo, here's an example of a `pre-commit` run (doesn't
+Rather than a live demo, here's an example of a `git commit` run (doesn't
 correspond to triggers shown above). This shows a couple of team-shared checks
-(clj-kondo and fixmes), and then after the parrot, a single user-local
-`something` trigger:
+(clj-kondo and fixmes).
 
 ```text
-(◕‿-) CAPTAIN IS OVERHAULIN. NO QUARTER!
-       _________
-      |-_ .-. _-|
-      |  (*^*)  |
-      |_-"|H|"-_|
+% git commit
 
-(◕‿-) Loadin the gunwales: /home/mde/work/fooproj/.capt/share.sh
+----------------------------------------
+(◕‿-) ☠☠☠ PRE-COMMIT ☠☠☠ [◷ 07:01:51] [⎇ mde/SCRUM-54599_feat_ibc_ignore-test-projects] [Δ(4) adr/template.md …sql/billcov-queries.sql …finops/billcov.clj …finops/loan_treatment.clj]
 
-(◕‿-) === PRE-COMMIT ===
+(◕‿-) ☁☁☁ .capt/share.sh ☁☁☁ [⚳ echo nlcheck huglint cljlint cljfmt cljtest mdlint]
+(◕‿-) ⚳⚳⚳ ECHO     ♦ [4] .......... SURVIVAL! (⧖ 6ms)
+(◕‿-) ⚳⚳⚳ NLCHECK  ♠ [4] .......... SURVIVAL! (⧖ 24ms)
+(◕‿-) ⚳⚳⚳ HUGLINT  ♠ [1] .......... SURVIVAL! (⧖ 31ms)
+(◕‿-) ⚳⚳⚳ CLJLINT  ♠ [2] .......... SURVIVAL! (⧖ 226ms)
+(◕‿-) ⚳⚳⚳ CLJFMT   ♠ [2] .......... SURVIVAL! (⧖ 335ms)
+(◕‿-) ⚳⚳⚳ CLJTEST  ♠ [2] .......... SURVIVAL! (⧖ 10ms)
+(◕‿-) ⚳⚳⚳ MDLINT   ♠ [1] .......... SURVIVAL! (⧖ 363ms)
+(◕‿-) ⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑
 
-(◕‿-) Discoverin yer MAIN branch remotely...
-(◕‿-) Main branch bein compared against: master
-(◕‿-) Files changed in yer stage (10):
-(◕‿-) - base/src/main/clojure/foo/core.clj
-(◕‿-) - resources/sql/some-queriees.sql
-(◕‿-) - ...
-(◕‿-) Execution awaits!
-(◕‿-) - clj-kondo
-(◕‿-) - fixmes
+(◕‿-) ☁☁☁ .capt/local.sh ☁☁☁ [⚳ docstring(clj) dumb sleeper hithere]
+(◕‿-) ⚳⚳⚳ DOCSTRING  ♥ [2] .......... SURVIVAL! (⧖ 18ms)
+(◕‿-) ⚳⚳⚳ SLEEPER    ♣ [∞] .......... SURVIVAL! (⧖ 9ms)
+(◕‿-) ⚳⚳⚳ HITHERE    ♣ [∞] .......... SURVIVAL! (⧖ 13ms)
+(◕‿-) ⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑
 
-(◕‿-) ??? CLJ-KONDO ???
-(◕‿-) Files under siege: 10
-maybe some output from clj-kondo, but assume all is well
-(◕‿-) Ahoy! Aimin our built-in cannon with files: $CAPT_FILES_CHANGED
-(◕‿-) ✓✓✓ SURVIVAL! (time: 2ms) ✓✓✓
+----------------------------------------
+(◕‿-) ☠☠☠ PREPARE-COMMIT-MSG ☠☠☠ [◷ 07:01:53] [⎇ mde/SCRUM-54599_feat_ibc_ignore-test-projects] [Δ(4) adr/template.md …sql/billcov-queries.sql …finops/billcov.clj …finops/loan_treatment.clj]
 
-(◕‿-) ??? FIXMES ???
-(◕‿-) Ye took care of file selection yerself, or no files needin fer sayin.
-(◕‿-) Ahoy! Aimin yer cannon: fixmes: git-confirm.sh
-Git-Confirm: hooks.confirm.match not set, defaulting to 'TODO'
-Add matches with `git config --add hooks.confirm.match "string-to-match"`
-(◕‿-) ✓✓✓ SURVIVAL! (time: 12ms) ✓✓✓
-
-(◕‿-) Ye survived the barrage. Must have been a fluke.
-
-         \
-         (o>
-      ___(()___
-         ||
-
-(◕‿-) Next on the plank: user-local hook scripts
-(◕‿-) Loadin the gunwales: /home/mde/work/cc/.capt/local.sh
-
-(◕‿-) Execution awaits!
-(◕‿-) - something
-
-(◕‿-) ??? SOMETHING ???
-(◕‿-) Ye took care of file selection yerself, or no files needin fer sayin.
-(◕‿-) Ahoy! Aimin yer cannon: something: sayhi.zsh
-some output from sayhi
-(◕‿-) ✓✓✓ SURVIVAL! (time: 3ms) ✓✓✓
-
-(◕‿-) Ye survived the barrage. Must have been a fluke.
-
-(◕‿-) Show a leg!
-hint: Waiting for your editor to close the file...
+(◕‿-) ☁☁☁ .capt/share.sh ☁☁☁ [⚳ br2msg]
+(◕‿-) ⚳⚳⚳ BR2MSG  ♠ [4] .......... SURVIVAL! (⧖ 37ms)
+(◕‿-) ⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑
+hint: Waiting for your editor to close the file... Waiting for Emacs...
 ```
 
 ## Migrating your existing git-hooks
@@ -563,6 +534,12 @@ can also be navigated with `C-x [` (prev) and `C-x ]` (next). Add
 
 Set environment variables that `capt` will read with `M-x setenv`. Eg, if you
 want to enable debug mode, set `CAPT_DEBUG` to `1` with that.
+
+### Captain as a command runner
+
+You can use `capt` as a general-purpose command runner too. Just create
+another array in a control file (eg, `clean`), add triggers to it, and invoke
+`capt clean`.
 
 ## Running Hook Scripts in CI
 

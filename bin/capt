@@ -327,6 +327,9 @@ run_scripts () {
     # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
     if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
+    # FIXME Probably need to skip this check in a if not in a
+    modified_cnt=$( git diff --name-only --cached |wc -l )
+    if (( modified_cnt == 0 )); then aye "No files staged, ya scabby sea bass."; return; fi
     if (( $black_hooks[(Ie)$active_githook] )); then
         aye "$fg[red]Stavin’ off yer $active_githook hook since ye blacklisted the varmint (CAPT_BLACK_HOOKS).$reset_color"
         return
@@ -483,9 +486,11 @@ run_scripts () {
             # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀"
             print "\n$fg[red]         "'\\\\'
             print "$fg[red]         (o>     Down to Davey Jones’ locker!"
-            print "$fg[red]      ___(()___  Status $es"
+            print "$fg[red]      ___(()___  Status $es from $print_name"
             print "$fg[red]         ||"
             print "$reset_color"
+            aye "Rerun with:"
+            print  ${(e)cmd}
             exit $es
             # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else
