@@ -1,0 +1,22 @@
+#! /bin/zsh
+
+# Detect an error in a HugSQL file using ecpg
+
+# print 'ecpg called on file:' :: $0 :: $1 :: $2 :: ':end' >>/tmp/ecpg.log
+
+# Reads from stdin implicitly (as given by flymake), or single input file
+# sed -r "s/([^:])((:v\*)?:[-a-z?]+)/\1'\2--\3--XXXXX'/g" $1 | pgsanity
+# sed -r -e 's/(^-- :name )/EXEC SQL \1/' -e "s/([^:])((:v\*)?:[-a-z?]+)/\1'\2--\3--XXXXX'/g" $1
+# sed -r -e 's/(^-- :name )/EXEC SQL \1/' -e "s/([^:])((:v\*)?:[-a-z?]+)/\1'\2--\3--XXXXX'/g" $1 |ecpg - >/dev/null
+
+err=$( sed -r -e 's/(^-- :name )/EXEC SQL \1/' -e "s/([^:])((:v\*)?:[-a-z?]+)/\1'\2--\3--XXXXX'/g" $1 |
+           ecpg - 2>&1 >/dev/null )
+es=$?
+
+if [[ $es != 0 ]]; then
+    if [[ $err =~ 'syntax error at or near "EXEC"' ]]
+    then sed "s/ERROR: .*/ERROR: missing trailing semicolon in previous statement/" <<< $err
+    else print $err
+    fi
+    exit $es
+fi
