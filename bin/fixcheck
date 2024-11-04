@@ -9,39 +9,20 @@
 # - breaks non-CAPT_VERBOSE mode
 # - is more complex than needed
 # - does unwanted things with tty
+# - maybe can't have it interactive
 
-# If we have a STDIN, use it, otherwise get one
-# if tty >/dev/null 2>&1; then TTY=$(tty); else TTY=/dev/tty; fi
-
-IFS=$'\n'
-# http://djm.me/ask
-ask() {
-    while true; do
-        prompt="Y/n"; default=Y
-        # Ask the question (not using "read -p" as it uses stderr not stdout)
-        echo -n "$1 [$prompt] "
-        read REPLY < "$TTY"
-        if [ -z "$REPLY" ]; then REPLY=$default; fi
-        case "$REPLY" in
-            Y*|y*) return 0 ;;
-            N*|n*) return 1 ;;
-        esac
-    done
-}
+autoload -U colors; colors
 
 check_file() {
     local file=$1 match_pattern=$2
-    # local file_changes_with_context=$(git diff -U999999999 -p --cached --color=always -- $file)
     local file_changes_with_context=$(git diff -U999999999 -p --cached --color=never -- $file)
     # From the diff, get the green lines starting with '+' and including '$match_pattern'
     local matched_additions=$(echo "$file_changes_with_context" | grep -C1 $'^\+.*'"$match_pattern")
-    if [ -n "$matched_additions" ]; then
-        echo "Additions to ‘$file’ match ‘$match_pattern’:"
-        print $matched_additions
-        if   ask "Proceed?"
-        then : echo 'proceeding'
-        else echo "aborting"; exit 1
-        fi
+    if  [[ -n "$matched_additions" ]]
+    then printf -v prompt "${fg[red]}WARN: Additions to ‘$file’ match ‘$match_pattern’:$reset_color\n$matched_additions\nproceed? y/n> "
+         print "\n\n"
+         if ! read -q "?$prompt"; then print "\n"; exit 1; fi
+         print "\n\n"
     fi
 }
 
@@ -50,12 +31,10 @@ checks=( ${(s:,:)checks} )
 
 # for file in `git diff --cached -p --name-status | cut -c3-`; do
 for file in $@; do
-
     if [[ ! -v CAPT_VERBOSE ]]
     then print 'ERROR: Aborting since cannot run without ‘CAPT_VERBOSE=1’ set/exported'
          print '       Use to bypass: export CAPT_BLACK_TRIGGERS=fixcheck'
          exit 1
     fi
-
     for match_pattern in $checks; do check_file $file $match_pattern; done
 done
