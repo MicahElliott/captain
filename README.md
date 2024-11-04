@@ -403,11 +403,12 @@ Then you should add `.capt/local.sh` to your `.gitignore` file.
 
 You can fine-tune Captain’s behavior with several environment variables.
 
-- `CAPT_VERBOSE` :: Set to `0` (or unset) to disable subcommand output and docstrings
+- `CAPT_VERBOSE` :: Unset to disable subcommand output and docstrings
 - `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
 - `CAPT_DEBUG` :: Set to `1` to enable debug mode
-- `CAPT_BLACK_TRIGGERS` :: Set to CSV of individual triggers you wish to disable
-- `CAPT_BLACK_HOOKS` :: Set to to CSV of individual hooks you wish to disable
+- `CAPT_INTERACTIVE` :: Set to `1` to enable interactive continuation mode in non-dumb terminals (progress past errors)
+- `CAPT_BLACK_TRIGGERS` :: Set to CSV string of individual triggers you wish to disable
+- `CAPT_BLACK_HOOKS` :: Set to to CSV string of individual hooks you wish to disable
 - `CAPT_MAIN_BRANCH` :: Useful for running in CI since default will be feature branch
 - `CAPT_FILE` :: Team-shared control file containing global hooks/triggers
 - `CAPT_LOCALFILE` :: User-local personal control file each dev may have (not in git control)

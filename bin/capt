@@ -342,6 +342,7 @@ run_scripts () {
     if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
     # FIXME Probably need to skip this check in a if not in a
     modified_cnt=$( git diff --name-only --cached |wc -l )
+    # FIXME post-commit hook shows no staged files, so need to only do this check for some hooks
     if (( modified_cnt == 0 )); then aye "No files staged, ya scabby sea bass."; return; fi
     if (( $black_hooks[(Ie)$active_githook] )); then
         aye "$fg[red]Stavin’ off yer $active_githook hook since ye blacklisted the varmint (CAPT_BLACK_HOOKS).$reset_color"
@@ -483,11 +484,11 @@ run_scripts () {
         tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Set failok mode true if interactive response "yes"
-        # if [[ $es -ne 0 && -v CAPT_INTERACTIVE ]]
-        # then prompt="?[CAPT_INTERACTIVE] Command failed; proceed anyway? y/n> "
-        #      # if read -q "$prompt"; then failok=1; fi
-        #      if read -k1 "$prompt"; then failok=1; fi
-        # fi
+        if [[ $es -ne 0 && -v CAPT_INTERACTIVE && $TERM != 'dumb' ]]
+        then prompt="?[CAPT_INTERACTIVE] Command failed; proceed anyway? y/n> "
+             if read -q "$prompt"; then failok=1; fi
+             # if read -k1 "$prompt"; then failok=1; fi
+        fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 && ! -v failok ]]; then
             [[ -z $CAPT_VERBOSE ]] && print "\n${fg_bold[red]}BLIMEY!!!$reset_color\n$output"
@@ -515,7 +516,7 @@ run_scripts () {
             # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else # Proceed!
             if   [[ $es -ne 0 && -v failok ]];
-            then aye "WARN: Errors detected but proceeding anyway since in failok mode"
+            then aye "WARN: Errors detected but proceeding anyway since in ‘failok’ mode"
             fi
             if [[ -n $CAPT_VERBOSE ]]; then
                 aye "$fg[green]⚔⚔⚔ SURVIVAL! ⚔⚔⚔$reset_color" \
