@@ -13,16 +13,22 @@
 
 autoload -U colors; colors
 
+# If we have a STDIN, use it, otherwise get one
+# if tty >/dev/null 2>&1; then TTY=$(tty); else TTY=/dev/tty; fi
+
 check_file() {
     local file=$1 match_pattern=$2
     local file_changes_with_context=$(git diff -U999999999 -p --cached --color=never -- $file)
     # From the diff, get the green lines starting with '+' and including '$match_pattern'
     local matched_additions=$(echo "$file_changes_with_context" | grep -C1 $'^\+.*'"$match_pattern")
-    if  [[ -n "$matched_additions" ]]
-    then printf -v prompt "${fg[red]}WARN: Additions to ‘$file’ match ‘$match_pattern’:$reset_color\n$matched_additions\nproceed? y/n> "
-         print "\n\n"
-         if ! read -q "?$prompt"; then print "\n"; exit 1; fi
-         print "\n\n"
+    if   [[ -n "$matched_additions" ]]
+    then
+         print "${fg[red]}WARN: Additions to ‘$file’ match ‘$match_pattern’:$reset_color\n$matched_additions"
+         haserror=1
+         # printf -v prompt "${fg[red]}WARN: Additions to ‘$file’ match ‘$match_pattern’:$reset_color\n$matched_additions\nproceed? y/n> "
+         # print "\n\n"
+         # if ! read -q "?$prompt"; then print "\n"; exit 1; fi
+         # print "\n\n"
     fi
 }
 
@@ -37,4 +43,5 @@ for file in $@; do
          exit 1
     fi
     for match_pattern in $checks; do check_file $file $match_pattern; done
+    if [[ -v haserror ]]; then print "ERROR: Failing due to detected violations."; exit 1; fi
 done
