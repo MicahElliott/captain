@@ -8,6 +8,7 @@
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 # print all args: $@
 
+captversion=0.1
 captdir=${CAPT_DIR-.capt}
 hooksdir=${CAPT_HOOKSDIR-$captdir/hooks} # not actually used
 scriptsdir=${CAPT_SCRIPTSDIR-$captdir/scripts}
@@ -74,6 +75,7 @@ typeset -A builtin_cannons=(
     cljtest        '(clj)cljtest $CAPT_FILES_CHANGED'
     huglint        '(sql)huglint $CAPT_FILES_CHANGED'
     wscheck        'wscheck $CAPT_FILES_CHANGED'
+    fixcheck       'fixcheck $CAPT_FILES_CHANGED'
     msglint        'msglint "$(cat $GITARG1)"'
     gommit         'gommit check message "$(cat $1)"'
     colorquote     'colorquote'
@@ -81,18 +83,22 @@ typeset -A builtin_cannons=(
     migsalert      'migsalert'
 )
 
+# TODO Warn on each that is not installed
+# TODO List configurable CAPT_... vars for each that has one
 typeset -A builtin_helps=(
     mdlint         'Check markdown files for various conventional violations (pre-commit)'
-    cljlint        'Perform static analysis on Clojure/EDN files without the need of a running REPL (pre-commit)'
+    cljlint        'Perform static analysis on Clojure/EDN files without (pre-commit)'
     cljsplint      'Linter style and code shape (pre-commit)'
     cljfmt         'Format clojure files (pre-commit)'
     cljtest        'Run test NSs with existing nrepl conn (pre-commit)'
     huglint        'Detect an error in a HugSQL file using ecpg (pre-commit)'
     msglint        'Ensure a commit message adheres to a specied standard format (commit-msg)'
     wscheck        'Detect whitespace issues: newlines, BOM, tabs, etc (pre-commit)'
+    fixcheck       'Detect FIXMEs, TODOs, etc (pre-commit)'
     gommit         'Ensure your commit messages are consistent (commit-msg)'
     colorquote     'Spew a colorful pirate witticism to signal a successful run (post-commit)'
-    br2msg         'Convert current branch name into commit message, and add some boilerplate (prepare-commit-msg)'
+    br2msg         'Convert current branch name, boilerplate into commit message (prepare-commit-msg)'
+    # br2msg         'Infer/use commit message, boilerplate from current branch name (prepare-commit-msg)'
     migsalert      'Notify when pending migrations detected by switching branches (post-checkout)'
 )
 
@@ -103,6 +109,8 @@ typeset -A command_helps=(
     scripts 'list available scripts'
 )
 
+### 
+### Main menu commands: help, list, edit, scripts
 if [[ $@[1] == 'help' ]]; then
     print 'capt is a git-hook manager, featuring multiple triggers per hook'
     print
@@ -125,8 +133,11 @@ if [[ $@[1] == 'help' ]]; then
     # print "  ${bold_color}edit$reset_color     see all active triggers in EDITOR"
     # print "  ${bold_color}scripts$reset_color  initialize captain files into project (idempotent)"
     # print "  ${bold_color}setup$reset_color    initialize captain files into project (idempotent)"
+    print "\ncapt version $captversion"
     exit
 fi
+
+if [[ $@[1] == 'version' ]]; then print "capt version $captversion"; fi
 
 list_available_hooks() {
     controller=$1
@@ -491,7 +502,7 @@ run_scripts () {
             print "$fg[red]      ___(()___  Status $es from $print_name"
             print "$fg[red]         ||"
             print "$reset_color"
-            aye "Rerun with:"
+            aye "Failing command:"
             print  ${(e)cmd}
             exit $es
             # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es

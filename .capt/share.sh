@@ -6,6 +6,7 @@ pre_commit=(
     # redundant with markdownlint but for testing filters etc
     'doclint(md|mkd): mdl $CAPT_FILES_CHANGED ## check markdown for violations'
     mdlint
+    fixcheck
     # -markdownlint
     wscheck
     "fixmes: git-confirm.sh ## check for FIXMEs etc"
