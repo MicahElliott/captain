@@ -37,11 +37,12 @@ checks=( ${(s:,:)checks} )
 
 # for file in `git diff --cached -p --name-status | cut -c3-`; do
 for file in $@; do
-    if [[ ! -v CAPT_VERBOSE ]]
-    then print 'ERROR: Aborting since cannot run without ‘CAPT_VERBOSE=1’ set/exported'
-         print '       Use to bypass: export CAPT_BLACK_TRIGGERS=fixcheck'
-         exit 1
-    fi
+    # if [[ ! -v CAPT_VERBOSE ]]
+    #    # FIXME Don't actually abort with this message until a fixme is detected
+    # then print 'ERROR: Aborting since cannot run without ‘CAPT_VERBOSE=1’ set/exported'
+    #      print '       Use to bypass: export CAPT_BLACK_TRIGGERS=fixcheck'
+    #      exit 1
+    # fi
     for match_pattern in $checks; do check_file $file $match_pattern; done
     if [[ -v haserror ]]; then print "ERROR: Failing due to detected violations."; exit 1; fi
 done

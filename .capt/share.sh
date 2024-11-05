@@ -2,7 +2,6 @@
 
 # Why is there no shellcheck? Doesn't seem to work well for too many things with Zsh.
 pre_commit=(
-    # FIXME not picking up docstring
     'hithere: hello $CAPT_FILES_CHANGED ## just say hello'
     # 'xxx: git-confirm.sh'
     # redundant with markdownlint but for testing filters etc

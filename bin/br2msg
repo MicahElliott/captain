@@ -6,7 +6,7 @@
 COMMIT_MSG_FILE=$1
 COMMIT_SOURCE=$2
 SHA1=$3
-print 'in br2msg'; print $COMMIT_MSG_FILE; print $COMMIT_SOURCE; print $SHA1
+# print 'in br2msg'; print $COMMIT_MSG_FILE; print $COMMIT_SOURCE; print $SHA1
 # If SHA1 is 'HEAD', could be in an
 
 # FIXME might need to bail out if COMMIT_SOURCE != 'template', since 'message' is showing in problematic rebase case

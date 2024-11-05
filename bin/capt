@@ -321,15 +321,16 @@ setup_changes() {
     dbg "git-hook arrrgs: $GITARG1 $GITARG2 $GITARG3"
 }
 
-# Look for a trailing help comment docstring ( ## ) and print if exists
+# For non-built-ins, look for a trailing help comment docstring ( ## ) and print if exists
 print_cmd_and_help () {
     unset helpmsg
     if   [[ -n $CAPT_VERBOSE ]]
-    then cmd=$( ssed 's/ ## .*$//' <<< $cmd)
-        aye "$suit $fg_bold[yellow]$cmd$reset_color"
-         if   sgrep -q ' ## ' <<< $cmd
+    then if sgrep -q ' ## ' <<< $cmd
          then helpmsg=$( ssed 's/^.* ## //' <<< $cmd )
+              cmd=$( ssed 's/ ## .*$//' <<< $cmd)
               aye "# $fg[yellow]$helpmsg$reset_color"
+              aye "$suit $fg_bold[yellow]$cmd$reset_color"
+         else aye "$suit $fg_bold[yellow]$cmd$reset_color"
          fi
     fi
 }
@@ -489,6 +490,14 @@ run_scripts () {
              if read -q "$prompt"; then failok=1; fi
              # if read -k1 "$prompt"; then failok=1; fi
         fi
+        # Set diagnostic indicators
+        # print "\nfailok:: $failok :: es:: $es"
+        if   [[ $es -eq 0 ]]
+        then indicator='\e[38;5;2m'   exclaim='SURVIVAL!'            # green
+        elif [[ $failok -eq 1 ]]
+        then indicator='\e[38;5;202m' exclaim='WOUNDED! '  wounded=1 # orange
+        else indicator='\e[38;5;1m'   exclaim='DEAD!    '            # red
+        fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 && ! -v failok ]]; then
             [[ -z $CAPT_VERBOSE ]] && print "\n${fg_bold[red]}BLIMEY!!!$reset_color\n$output"
@@ -515,21 +524,24 @@ run_scripts () {
             exit $es
             # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else # Proceed!
-            if   [[ $es -ne 0 && -v failok ]];
-            then aye "WARN: Errors detected but proceeding anyway since in ‘failok’ mode"
-            fi
-            if [[ -n $CAPT_VERBOSE ]]; then
-                aye "$fg[green]⚔⚔⚔ SURVIVAL! ⚔⚔⚔$reset_color" \
-                    "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"
-            else
-                print -n " .........." \
-                      "$fg[green]SURVIVAL!$reset_color" \
-                      "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"
+            if   [[ -n $CAPT_VERBOSE ]]
+            then [[ $es -ne 0 ]] && aye "WARN: Errors detected but proceeding anyway since in ‘failok’ mode"
+                 aye "${indicator}⚔⚔⚔ $exclaim ⚔⚔⚔$reset_color" \
+                     "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"
+            else print -n " .........." \
+                       "$indicator$exclaim$reset_color" \
+                       "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"
             fi
         fi
     done
 
-    aye "$fg_bold[green]⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑ $reset_color"
+    if   [[ -v wounded ]]
+    then aye "\e[1;38;5;202m⚑⚑⚑ Suffered some scathin’ ya scurvy knave. ⚑⚑⚑ $reset_color"
+         [[ -z $CAPT_VERBOSE ]] &&
+             aye "Kill yer ${EDITOR-editor} and try again with ‘CAPT_VERBOSE=1’ to see yer folly."
+         unset wounded failok
+    else aye "$fg_bold[green]⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑ $reset_color"
+    fi
 }
 
 # Run a set of scripts based on which hook is active
