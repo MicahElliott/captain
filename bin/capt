@@ -22,10 +22,11 @@ autoload -U colors; colors
 fg[orange]='\e[0;38;5;208m'
 fg_bold[orange]='\e[1;38;5;208m'
 
+icon='(◕‿-)'
 dbg() { [[ -n $CAPT_DEBUG ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
 # aye() { print '(◕‿-)' $@ }
-aye()  { print    "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ }
-ayen() { print -n "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ } # no newline
+aye()  { print    "$reset_color$fg_bold[blue]$icon$reset_color" $@ }
+ayen() { print -n "$reset_color$fg_bold[blue]$icon$reset_color" $@ } # no newline
 
 [[ -n $CAPT_DISABLE ]] && { print 'Sailin right past yer captain with CAPT_DISABLE bein set.'; exit }
 
@@ -202,9 +203,12 @@ fi
 print_banner() {
     # print '(◕‿-) Shiver me timbers!'
     print
-    print ""
+    if [[ $TERM = 'dumb' ]] # magit
+    then print ""
+    else print "$fg_bold[blue]————————————————————————————————————————————————————————————————————————————————$reset_color"
+    fi
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
-    print -n "$fg_bold[blue](◕‿-)$reset_color" \
+    print -n "$fg_bold[blue]$icon$reset_color" \
           "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
           "$fg_bold[white][◷ $(sdate +%T)]$reset_color" # skull
     # aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
@@ -256,7 +260,10 @@ print_filtereds() {
 setup_changes() {
     # VALUEADD Magic to figure out main v master and get changed files
     print
-    print ""
+    if [[ $TERM = 'dumb' ]] # magit
+    then print ""
+    else print "$fg_bold[blue]————————————————————————————————————————————————————————————————————————————————$reset_color"
+    fi
     if [[ $active_githook == 'integration' ]]; then
         dbg 'Seems we’re in integration mode (but maybe not doing anything about it)'
     fi
@@ -287,7 +294,7 @@ setup_changes() {
 
     fi
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
-    print -n "$fg_bold[blue](◕‿-)$reset_color" \
+    print -n "$fg_bold[blue]$icon$reset_color" \
           "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
           "$fg_bold[white][◷ $(sdate +%T)]$reset_color"
 
@@ -414,7 +421,7 @@ run_scripts () {
         # print
         # ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} $reset_color" # uhooks
         # printf "      $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
-        printf "$reset_color$fg_bold[blue](◕‿-)$reset_color $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
+        printf "$reset_color$fg_bold[blue]$icon$reset_color $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
             suit=♠; print -n " $suit"
             # Need to fix up cmd since no spec, and maybe include filtered files
@@ -494,7 +501,6 @@ run_scripts () {
         else aye "$fg[red]WARNING: Skippin on yer $print_name; $cmd0 and $script be lost at sea.$reset_color"
         fi
         es=$?
-        # TODO Add interactive mode (CAPT_INTERACTIVE) to enable prompting when command fails
         [[ -n $CAPT_VERBOSE && -n $output ]] && print -- "$output"
         wait # don't process until background scripts are finished
         tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
@@ -510,11 +516,9 @@ run_scripts () {
         fi
         # Set diagnostic indicators
         # print "\nfailok:: $failok :: es:: $es"
-        if   [[ $es -eq 0 ]]
-        then indicator=green  exclaim='SURVIVAL!'
-        elif [[ $failok -eq 1 ]]
-        then indicator=orange exclaim='WOUNDED! '  wounded=1
-        else indicator=red    exclaim='DEAD!    '
+        if [[ $es -eq 0 ]];       then indicator=green  exclaim='SURVIVAL!'
+        elif [[ $failok -eq 1 ]]; then indicator=orange exclaim='WOUNDED! '  wounded=1
+        else                           indicator=red    exclaim='DEAD!    '
         fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 && ! -v failok ]]; then
@@ -609,6 +613,7 @@ fi
 if   [[ -f $captfilelocal ]] # Run user-local hooks
      # TODO test interactive
 then runlevel=$captfilelocal
+     icon='<*‿*>'
      select_hook
 fi
 
