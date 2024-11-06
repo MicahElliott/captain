@@ -16,6 +16,12 @@ captfile=${CAPT_FILE-$captdir/share.sh}
 captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
 path+=$scriptsdir
 
+# Why isn't this necessary?? https://stackoverflow.com/questions/57659657/zsh-colours-only-work-when-command-used-in-terminal-directly
+autoload -U colors; colors
+# Add custom colors to array for later use
+fg[orange]='\e[0;38;5;208m'
+fg_bold[orange]='\e[1;38;5;208m'
+
 dbg() { [[ -n $CAPT_DEBUG ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
 # aye() { print '(◕‿-)' $@ }
 aye()  { print    "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ }
@@ -23,10 +29,9 @@ ayen() { print -n "$reset_color$fg_bold[blue](◕‿-)$reset_color" $@ } # no ne
 
 [[ -n $CAPT_DISABLE ]] && { print 'Sailin right past yer captain with CAPT_DISABLE bein set.'; exit }
 
-# Convert to arrays for easier use
+# Convert CSVs to arrays for easier use
 black_triggers=( ${(s:,:)CAPT_BLACK_TRIGGERS} )
 black_hooks=(    ${(s:,:)CAPT_BLACK_HOOKS}    )
-
 
 # Bail out immediately if rebase in progress
 # https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
@@ -311,13 +316,20 @@ setup_changes() {
     dels=( $(git status | sgrep 'deleted:' | ssed -r 's/.*deleted: +//') )
     CAPT_FILES_CHANGED_ORIG=( ${CAPT_FILES_CHANGED_ORIG:|dels} )
     if (( $#CAPT_FILES_CHANGED > 0 )); then
-    CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
+        CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
         # Print only truncated file names (split on /, take last two of path, join with ellipsis on front)
         # print xxx CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
         local shorts=( $(shortnames $CAPT_FILES_CHANGED) )
         # print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color" # delta
         print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $shorts]$reset_color" # delta
-    else print; fi
+    else print
+    fi
+    # Enable capt running on explicitly specified file(s)
+    # CAPT_FILES_CHANGED_OVERRIDE='foo.md hello.clj' capt ...
+    if [[ -v CAPT_FILES_CHANGED_OVERRIDE ]]
+    then CAPT_FILES_CHANGED_ORIG=( $=CAPT_FILES_CHANGED_OVERRIDE )
+         CAPT_FILES_CHANGED=(      $=CAPT_FILES_CHANGED_OVERRIDE )
+    fi
     dbg "git-hook arrrgs: $GITARG1 $GITARG2 $GITARG3"
 }
 
@@ -341,10 +353,13 @@ run_scripts () {
     # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
     if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
-    # FIXME Probably need to skip this check in a if not in a
-    modified_cnt=$( git diff --name-only --cached |wc -l )
     # FIXME post-commit hook shows no staged files, so need to only do this check for some hooks
-    if (( modified_cnt == 0 )); then aye "No files staged, ya scabby sea bass."; return; fi
+    modified_cnt=$( git diff --name-only --cached |wc -l )
+    file_worthy_hooks=( pre-commit )
+    if  (( $file_worthy_hooks[(Ie)$active_githook] )) && (( modified_cnt == 0 )) &&
+            [[ ! -v CAPT_FILES_CHANGED_OVERRIDE ]]
+    then aye "No files staged, ya scabby sea bass."; return
+    fi
     if (( $black_hooks[(Ie)$active_githook] )); then
         aye "$fg[red]Stavin’ off yer $active_githook hook since ye blacklisted the varmint (CAPT_BLACK_HOOKS).$reset_color"
         return
@@ -493,10 +508,10 @@ run_scripts () {
         # Set diagnostic indicators
         # print "\nfailok:: $failok :: es:: $es"
         if   [[ $es -eq 0 ]]
-        then indicator='\e[38;5;2m'   exclaim='SURVIVAL!'            # green
+        then indicator=green  exclaim='SURVIVAL!'
         elif [[ $failok -eq 1 ]]
-        then indicator='\e[38;5;202m' exclaim='WOUNDED! '  wounded=1 # orange
-        else indicator='\e[38;5;1m'   exclaim='DEAD!    '            # red
+        then indicator=orange exclaim='WOUNDED! '  wounded=1
+        else indicator=red    exclaim='DEAD!    '
         fi
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 && ! -v failok ]]; then
@@ -526,17 +541,17 @@ run_scripts () {
         else # Proceed!
             if   [[ -n $CAPT_VERBOSE ]]
             then [[ $es -ne 0 ]] && aye "WARN: Errors detected but proceeding anyway since in ‘failok’ mode"
-                 aye "${indicator}⚔⚔⚔ $exclaim ⚔⚔⚔$reset_color" \
+                 aye "$fg[$indicator]⚔⚔⚔ $exclaim ⚔⚔⚔$reset_color" \
                      "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"
             else print -n " .........." \
-                       "$indicator$exclaim$reset_color" \
+                       "$fg[$indicator]$exclaim$reset_color" \
                        "$fg[$units_color](⧖ ${tfinal}${units})$reset_color\n"
             fi
         fi
     done
 
     if   [[ -v wounded ]]
-    then aye "\e[1;38;5;202m⚑⚑⚑ Suffered some scathin’ ya scurvy knave. ⚑⚑⚑ $reset_color"
+    then aye "$fg_bold[orange]⚑⚑⚑ Suffered some scathin’ ya scurvy knave. ⚑⚑⚑ $reset_color"
          [[ -z $CAPT_VERBOSE ]] &&
              aye "Kill yer ${EDITOR-editor} and try again with ‘CAPT_VERBOSE=1’ to see yer folly."
          unset wounded failok
