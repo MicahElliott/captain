@@ -500,10 +500,13 @@ run_scripts () {
         tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Set failok mode true if interactive response "yes"
-        if [[ $es -ne 0 && -v CAPT_INTERACTIVE && $TERM != 'dumb' ]]
-        then prompt="?[CAPT_INTERACTIVE] Command failed; proceed anyway? y/n> "
-             if read -q "$prompt"; then failok=1; fi
+        # if [[ $es -ne 0 && -v CAPT_INTERACTIVE && $TERM != 'dumb' ]]
+        # print TTY:; tty; print
+        if [[ $es -ne 0 && -v CAPT_INTERACTIVE ]]
+        # NOTE The [y/n] spec is narrowly accepted as a prompt by magit via `magit-process-yes-or-no-prompt-regexp`
+        then prompt="?[CAPT_INTERACTIVE] Command failed; proceed anyway? [y/n] "
              # if read -k1 "$prompt"; then failok=1; fi
+             if read -q "$prompt"; then failok=1; fi
         fi
         # Set diagnostic indicators
         # print "\nfailok:: $failok :: es:: $es"
@@ -555,7 +558,7 @@ run_scripts () {
          [[ -z $CAPT_VERBOSE ]] &&
              aye "Kill yer ${EDITOR-editor} and try again with ‘CAPT_VERBOSE=1’ to see yer folly."
          unset wounded failok
-    else aye "$fg_bold[green]⚑⚑⚑ Ye survived the barrage. Musta been a fluke. ⚑⚑⚑ $reset_color"
+    else aye "$fg_bold[green]⚑⚑⚑ Ye survived the barrage. Musta’ been a fluke. ⚑⚑⚑ $reset_color"
     fi
 }
 
@@ -598,24 +601,15 @@ if [[ $active_githook == 'pre-commit'         && -z $pre_commit ]] ||
    [[ $active_githook == 'commit-msg'         && -z $commit_msg ]] ||
    [[ $active_githook == 'post-commit'        && -z $post_commit ]] ||
    [[ $active_githook == 'prepare-commit-msg' && -z $prepare_commit_msg ]] ||
-   [[ $active_githook == 'post-checkout'      && -z $post_checkout ]]; then
-    exit_gracefully
+   [[ $active_githook == 'post-checkout'      && -z $post_checkout ]]
+then exit_gracefully
 fi
 
 # Optionally run user hooks if they exist
-if [[ -f $captfilelocal ]]; then
-    # Run user-local hooks
-    # print
-    # print "         \\"
-    # print "         (o> "
-    # print "      ___(()___"
-    # print "         ||"
-    # print
-    # date
-    # aye "Next on the plank: user-local hook scripts"
-    # aye "Now loadin yer local muskets: $PWD/$captfilelocal\n"
-    runlevel=$captfilelocal
-    select_hook
+if   [[ -f $captfilelocal ]] # Run user-local hooks
+     # TODO test interactive
+then runlevel=$captfilelocal
+     select_hook
 fi
 
 # Show successful completion

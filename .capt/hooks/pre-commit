@@ -1,1 +1,3 @@
 capt $(basename $0) $@
+
+#git-confirm.sh

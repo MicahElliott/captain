@@ -38,7 +38,7 @@ jobs:
           # pwd
           # ls
           # tree
-          CAPT_MAIN_BRANCH=origin/main ./capt integration
+          CAPT_MAIN_BRANCH=origin/main ./bin/capt integration
       # - name: Run a zsh script as proof
       #   # run: .github/bin/zsh_proof.sh
       #   run: tree
