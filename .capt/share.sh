@@ -9,7 +9,7 @@ pre_commit=(
     mdlint
     fixcheck
     # -markdownlint
-    wscheck
+    'wscheck(md|sh)'
     # "fixmes: git-confirm.sh ## check for FIXMEs etc"
 )
 

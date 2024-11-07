@@ -1,7 +1,7 @@
 # Captain
 
 > _Captain_ is a simple, convenient, transparent opt-in approach to client-
-> and CI-side **git-hook management**, with just a single, tiny,
+> and CI-side **git-hook management**, with just a single, small,
 > dependency-free shell script to download. Suited for sharing across a team,
 > extensible for individuals. Supports all
 > [common git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
@@ -24,7 +24,9 @@
 ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀
 ```
 
-## One-minute E-Z Quick-Start Guide (very easy, point your team here)
+## One-minute E-Z Quick-Start Guide if Captain already set up
+
+_(Easy, point your team here.)_
 
 *SITUATION*: Captain was already set up in a repo you use, and you want to
 start enabling its checks (AKA triggers). (Or you're a curmudgeon: You won't
@@ -34,12 +36,12 @@ miss out on the fun!)
 ```shell
 # Install the capt command (a small zsh script)
 cd ~/src # or somewhere like that where you keep clones
-git clone https://github.com/MicahElliott/captain  # to get all tooling
+git clone https://github.com/MicahElliott/captain  # to get all tooling, easy to update
 print 'path+=~/src/captain/bin' >> ~/.zshrc  # or something/somewhere like that
 # OR, put that ^^^ into a .envrc file and use https://github.com/direnv/direnv for your proj
 # OR, for just the capt script (sufficient for some projects that don't need extra goodies):
 # cd /somewhere/on/your/PATH
-# wget https://raw.githubusercontent.com/MicahElliott/captain/main/capt && chmod +x capt
+# wget https://raw.githubusercontent.com/MicahElliott/captain/main/bin/capt && chmod +x capt
 
 # Point git to the new hooks
 cd your-project-root # like you always do
@@ -57,6 +59,8 @@ terminal, you'll need to ensure your `PATH` is set to include
 If there are any "triggers" (linters, formatters, informers, etc) being
 invoked that you don't have installed yet, Captain should kindly let you know
 more details.
+
+---
 
 OR, if you're looking to be the one to introduce Captain git-hook management to a
 project, read on....
@@ -300,15 +304,32 @@ Now onto the simple `.capt/share.sh` control file at the root of your repo
 
 ### Trigger Spec
 
-There is a tiny DSL that is used for each "trigger" in a control file.
+There is a tiny DSL that is used to specify each "trigger" in a control file.
+Here's an example of a custom trigger. The first part, up to the colon is the
+name and optional glob filter. The second part is the command to run, and a
+trailing comment docstring. This one says to run the `clj-kondo` linter (named
+`lint` in the output) specifically on Clojure files that were changed as part
+of the staged commit.
 
 ```
-    'lint(clj|cljs):   clj-kondo $CAPT_CHANGES &'      # linting of files
-     ^^^^ ^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^ ^       ^^^^^^^^^^^^^^^^^^
-     NAME  FILTERS             COMMAND     CONCURRENCY    COMMENT
+    'lint(clj|cljs):   clj-kondo $CAPT_FILES_CHANGED &   ## lint clojure files'
+     ^^^^ ^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^   ^^^^^^^^^^^^^^^^^^^^^
+     NAME  FILTERS             COMMAND         CONCURRENCY  COMMENT
 ```
 
-Note that this syntax looks almost exactly like the standard [git conventional
+And here's a couple built in triggers. Built-ins have pre-defined commands,
+filters, and docs. Note that there is no colon after the name spec for
+built-ins. The quotes are optional, but needed if you include a filter. The
+first says to run the "whitespace checker" on Ruby, Clojure, and Javascript
+files only. The second runs the standard Clojure linter (`clj-kondo`) on all
+staged Clojure files.
+
+```
+    'wscheck(rb|clj|js)'
+    cljlint
+```
+
+Note that this syntax looks kinda like the standard [git conventional
 commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13) DSL.
 
 ### Example Team Control File
@@ -322,14 +343,15 @@ pre_commit=(
     'lint:             clj-kondo $CAPT_CHANGES &' # linting of files being committed
     'format(clj|cljc): cljfmt &'                  # reformat or check for poor formatting
     'fixmes:           git-confirm.sh'            # look for/prompt on FIXMEs etc
-    markdownlint                                  # built-in config with implicit filter
+    mdlint                                        # built-in config with implicit md filter
+    'wslint(py|sql)'                              # built-in with py and sql file filter
     'test-suite:       run-minimal-test-suite $CAPT_CHANGES'
 )
 # params: tmp-message-file-path, commit-type, sha
 # Build a commit message based on branch name standardized format.
 prepare_commit_msg=(
     # you/TEAM-123_FIX_lang_undo-the-widget-munging => fix(lang): Undo the widget munging #123
-    branch2message
+    br2msg
 )
 # params: tmp-message-file-path
 # Validate your project state or commit message before allowing a commit to go through
@@ -352,7 +374,7 @@ post_rewrite=(
 # params: NONE
 # Set up your working directory properly for your project environment
 post_checkout=(
-    "mig-alert(sql): alert-migrations-pending.zsh" # inform that action is needed
+    "migalert(sql): alert-migrations-pending.zsh" # inform that action is needed
 )
 # Use to validate a set of ref updates before a push occurs
 pre_push=(
