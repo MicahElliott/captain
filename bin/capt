@@ -108,6 +108,21 @@ typeset -A builtin_helps=(
     migsalert      'Notify when pending migrations detected by switching branches (post-checkout)'
 )
 
+typeset -A envars=(
+    CAPT_VERBOSE        'Unset to disable subcommand output and docstrings'
+    CAPT_DISABLE        'Set to `1` to bypass captain doing anything'
+    CAPT_DEBUG          'Set to `1` to enable debug mode'
+    CAPT_INTERACTIVE    'Set to `1` to enable interactive continuation mode (progress past errors)'
+    CAPT_BLACK_TRIGGERS 'Set to CSV string of individual triggers you wish to disable'
+    CAPT_BLACK_HOOKS    'Set to CSV string of individual hooks you wish to disable'
+    CAPT_FILES_OVERRIDE 'Set to list of files to run on (instead of git-staged)'
+    CAPT_MAIN_BRANCH    'Useful for running in CI since default will be feature branch'
+    CAPT_FILE           'Team-shared control file containing global hooks/triggers'
+    CAPT_LOCALFILE      'User-local personal control file each dev may have (not in git control)'
+    CAPT_HOOKSDIR       'Defaults to `.capt/hooks`, for pointing `git` to'
+    CAPT_SCRIPTSDIR     'Defaults to `.capt/scripts`, for storing team-shared triggers'
+)
+
 typeset -A command_helps=(
     help    'show help with descriptions of built-in triggers'
     list    'list the active hooks'
@@ -118,7 +133,8 @@ typeset -A command_helps=(
 ### 
 ### Main menu commands: help, list, edit, scripts
 if [[ $@[1] == 'help' ]]; then
-    print 'capt is a git-hook manager, featuring multiple triggers per hook'
+    local b e indic
+    print "${bold_color}capt$reset_color is a git-hook manager, featuring multiple triggers per hook"
     print
     if [[ -f $captfile ]]; then
         print "Detected a team shared control file:       $bold_color$captfile$reset_color"
@@ -128,17 +144,31 @@ if [[ $@[1] == 'help' ]]; then
     fi
     [[ -f $captfilelocal ]] &&
     print "Detected your local personal control file: $bold_color$captfilelocal$reset_color"
-    print "\nUse to view/edit hooks/triggers in control files: ${bold_color}capt edit$reset_color"
+    print "View/edit hooks/triggers in control files: ${bold_color}capt edit$reset_color"
     # print $builtin_helps
     # print ${builtin_helps[kondo]}
     print "\nBuilt-in available triggers:"
-    for b in ${(k)builtin_helps}; do printf '  %-26s%s\n' "${bold_color}$b$reset_color" ${builtin_helps[$b]} ; done
+    for b in ${(k)builtin_helps}; do printf '  %-24s%s\n' "${bold_color}$b$reset_color" ${builtin_helps[$b]} ; done
     print '\nCommands:'
-    for b in ${(k)command_helps}; do printf '  %-20s%s\n' "${bold_color}$b$reset_color" ${command_helps[$b]} ; done
+    for b in ${(k)command_helps}
+    do  if [[ $b == 'help' ]]
+        then printf '  %-24s%s\n' "$fg_bold[green]$b$reset_color" ${command_helps[$b]}
+        else printf '  %-21s%s\n' "$bold_color$b$reset_color" ${command_helps[$b]}
+        fi
+    done
+
     # print "  ${bold_color}list$reset_color     list of all active hooks"
     # print "  ${bold_color}edit$reset_color     see all active triggers in EDITOR"
     # print "  ${bold_color}scripts$reset_color  initialize captain files into project (idempotent)"
     # print "  ${bold_color}setup$reset_color    initialize captain files into project (idempotent)"
+    print '\nEnvironment variables:'
+    for e in ${(k)envars}
+    do  if [[ -v $e ]]
+        then printf '  %-34s%s\n' "$fg_bold[green]$e$reset_color" ${envars[$e]}
+        else printf '  %-31s%s\n' "$bold_color$e$reset_color" ${envars[$e]}
+        fi
+    done
+
     print "\ncapt version $captversion"
     exit
 fi
@@ -332,10 +362,10 @@ setup_changes() {
     else print
     fi
     # Enable capt running on explicitly specified file(s)
-    # CAPT_FILES_CHANGED_OVERRIDE='foo.md hello.clj' capt ...
-    if [[ -v CAPT_FILES_CHANGED_OVERRIDE ]]
-    then CAPT_FILES_CHANGED_ORIG=( $=CAPT_FILES_CHANGED_OVERRIDE )
-         CAPT_FILES_CHANGED=(      $=CAPT_FILES_CHANGED_OVERRIDE )
+    # CAPT_FILES_OVERRIDE='foo.md hello.clj' capt ...
+    if [[ -v CAPT_FILES_OVERRIDE ]]
+    then CAPT_FILES_CHANGED_ORIG=( $=CAPT_FILES_OVERRIDE )
+         CAPT_FILES_CHANGED=(      $=CAPT_FILES_OVERRIDE )
     fi
     dbg "git-hook arrrgs: $GITARG1 $GITARG2 $GITARG3"
 }
@@ -393,7 +423,7 @@ run_scripts () {
     modified_cnt=$( git diff --name-only --cached |wc -l )
     file_worthy_hooks=( pre-commit )
     if  (( $file_worthy_hooks[(Ie)$active_githook] )) && (( modified_cnt == 0 )) &&
-            [[ ! -v CAPT_FILES_CHANGED_OVERRIDE ]]
+            [[ ! -v CAPT_FILES_OVERRIDE ]]
     then aye "No files staged, ya scabby sea bass."; return
     fi
     if (( $black_hooks[(Ie)$active_githook] )); then
