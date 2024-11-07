@@ -2,7 +2,7 @@
 
 # capt: a very simple git-hook manager
 
-# Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ◴◵◶◷
+# Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ☠ ◴◵◶◷
 
 # Save the incoming git-hook arg(s)
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
@@ -10,7 +10,7 @@ GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 
 captversion=0.1
 captdir=${CAPT_DIR-.capt}
-hooksdir=${CAPT_HOOKSDIR-$captdir/hooks} # not actually used
+hooksdir=${CAPT_HOOKSDIR-$captdir/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-$captdir/scripts}
 captfile=${CAPT_FILE-$captdir/share.sh}
 captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
@@ -24,7 +24,6 @@ fg_bold[orange]='\e[1;38;5;208m'
 
 icon='(◕‿-)'
 dbg() { [[ -n $CAPT_DEBUG ]] && print "$fg[cyan]DEBUG:" $@ $reset_color }
-# aye() { print '(◕‿-)' $@ }
 aye()  { print    "$reset_color$fg_bold[blue]$icon$reset_color" $@ }
 ayen() { print -n "$reset_color$fg_bold[blue]$icon$reset_color" $@ } # no newline
 
@@ -90,7 +89,6 @@ typeset -A builtin_cannons=(
 )
 
 # TODO Warn on each that is not installed
-# TODO List configurable CAPT_... vars for each that has one
 typeset -A builtin_helps=(
     mdlint         'Check markdown files for various conventional violations (pre-commit)'
     cljlint        'Perform static analysis on Clojure/EDN files without (pre-commit)'
@@ -125,6 +123,7 @@ typeset -A envars=(
 
 typeset -A command_helps=(
     help    'show help with descriptions of built-in triggers'
+    init    'initialize a repo with a capt setup of fresh new config'
     list    'list the active hooks'
     edit    'open the share.sh (and local.sh if exists) control file'
     scripts 'list available scripts'
@@ -132,45 +131,110 @@ typeset -A command_helps=(
 
 ### 
 ### Main menu commands: help, list, edit, scripts
-if [[ $@[1] == 'help' ]]; then
-    local b e indic
-    print "${bold_color}capt$reset_color is a git-hook manager, featuring multiple triggers per hook"
-    print
-    if [[ -f $captfile ]]; then
-        print "Detected a team shared control file:       $bold_color$captfile$reset_color"
-    else
-        print "Unable to detect a shared contol file: $bold_color$captfile$reset_color"
-        print "You can create one by hand, or use: ${bold_color}capt setup$reset_color"
-    fi
-    [[ -f $captfilelocal ]] &&
-    print "Detected your local personal control file: $bold_color$captfilelocal$reset_color"
-    print "View/edit hooks/triggers in control files: ${bold_color}capt edit$reset_color"
-    # print $builtin_helps
-    # print ${builtin_helps[kondo]}
-    print "\nBuilt-in available triggers:"
-    for b in ${(k)builtin_helps}; do printf '  %-24s%s\n' "${bold_color}$b$reset_color" ${builtin_helps[$b]} ; done
-    print '\nCommands:'
-    for b in ${(k)command_helps}
-    do  if [[ $b == 'help' ]]
-        then printf '  %-24s%s\n' "$fg_bold[green]$b$reset_color" ${command_helps[$b]}
-        else printf '  %-21s%s\n' "$bold_color$b$reset_color" ${command_helps[$b]}
-        fi
-    done
+if [[ $@[1] == 'help' ]]
+then local b e indic
+     print "${bold_color}capt$reset_color is a git-hook manager, featuring multiple triggers per hook"
+     print 'It is typically run automatically from a git-hook script, such as pre-commit.'
+     print
+     if   [[ -f $captfile ]]
+     then print "Detected a team shared control file:       $bold_color$captfile$reset_color"
+     else print "Unable to detect a shared contol file: $bold_color$captfile$reset_color"
+          print "You can create one by hand, or use: ${bold_color}capt init$reset_color"
+     fi
+     [[ -f $captfilelocal ]] &&
+         print "Detected your local personal control file: $bold_color$captfilelocal$reset_color"
+     print "View/edit hooks/triggers in control files: ${bold_color}capt edit$reset_color"
+     # print $builtin_helps
+     # print ${builtin_helps[kondo]}
+     print "\nBuilt-in available triggers:"
+     for b in ${(k)builtin_helps}; do printf '  %-24s%s\n' "${bold_color}$b$reset_color" ${builtin_helps[$b]} ; done
+     print '\nCommands:'
+     for b in ${(k)command_helps}
+     do   if   [[ $b == 'help' ]]
+          then printf '  %-24s%s\n' "$fg_bold[green]$b$reset_color" ${command_helps[$b]}
+          else printf '  %-21s%s\n' "$bold_color$b$reset_color" ${command_helps[$b]}
+          fi
+     done
+     print '\nEnvironment variables:'
+     for e in ${(k)envars}
+     do   if   [[ -v $e ]]
+          then printf '  %-34s%s\n' "$fg_bold[green]$e$reset_color" ${envars[$e]}
+          else printf '  %-31s%s\n' "$bold_color$e$reset_color" ${envars[$e]}
+          fi
+     done
+     if   [[ ! -f .gitmessage ]]
+     then print "\nNOTE: You do not have a .gitmessage commit template file."
+          print "It’s a convenient way to provide guiding help text during commits. Do this:"
+          print "  ${bold_color}echo 'TODO Add some conventions, tips, etc...' > .gitmessage$reset_color"
+          print "  ${bold_color}git add .gitmessage && git commit -m 'Add gitmessage template'$reset_color"
+     fi
+     print "\ncapt version $captversion"
+     exit
+fi
 
-    # print "  ${bold_color}list$reset_color     list of all active hooks"
-    # print "  ${bold_color}edit$reset_color     see all active triggers in EDITOR"
-    # print "  ${bold_color}scripts$reset_color  initialize captain files into project (idempotent)"
-    # print "  ${bold_color}setup$reset_color    initialize captain files into project (idempotent)"
-    print '\nEnvironment variables:'
-    for e in ${(k)envars}
-    do  if [[ -v $e ]]
-        then printf '  %-34s%s\n' "$fg_bold[green]$e$reset_color" ${envars[$e]}
-        else printf '  %-31s%s\n' "$bold_color$e$reset_color" ${envars[$e]}
-        fi
-    done
+if  [[ $@[1] == 'init' ]]
+then print "Initializing new capt setup...."
+     if [[ ! -d .git ]]; then print "Not in a git repo top level??"; exit 1; fi
+     if [[ -d $hooksdir ]]; then print "\nDetected that $bold_color$hooksdir$reset_color already exists, so proceeding to only set up your config."; fi
+     cur_git_hookspath=$(git config core.hooksPath)
+     if [[ $hooksdir == $cur_git_hookspath ]]
+     then print "\nGit’s core.hooksPath already set to same hooksdir: $bold_color$hooksdir$reset_color"
+     else print "\nCurrent core.hooksPath setting: $bold_color$cur_git_hookspath$reset_color"
+          print "\nAltering your git config"
+          print -- "=> ${bold_color}git config core.hooksPath $hooksdir$reset_color"
+          git config core.hooksPath $hooksdir
+     fi
+     if [[ -d $hooksdir ]]; then exit; fi
+     print "\nCreating new hooksdir: $bold_color$hooksdir$reset_color"
+     mkdir -p $hooksdir
+     # Create the standard executable git hook files
+     hookfiles=( pre-commit prepare-commit-msg commit-msg post-commit post-checkout
+                 pre-push post-rewrite )
+     print "\nCreating new tiny capt-invoking executable hookfiles in: $bold_color$hooksdir$reset_color"
+     for hookfile in $hookfiles
+     do
+         print 'capt $(basename $0) $@' > $hooksdir/$hookfile
+         chmod +x $hooksdir/$hookfile
+     done
+     print "Created: $hookfiles"
+     # Create a shared control file
+     if [[ -f $captfile ]]; then print "Oops, captfile $captfile already exists"
+                                 exit 1; fi
+     print "\nCreating team-shared control file: $bold_color$captfile$reset_color"
+     touch $captfile
+     cat <<EOS > $captfile
+# Captain git-hook manager control file
 
-    print "\ncapt version $captversion"
-    exit
+pre_commit=(
+    'hithere: echo $CAPT_FILES_CHANGED ## just print changed files'
+    mdlint
+    fixcheck
+    wscheck
+)
+
+commit_msg=( msglint )
+
+prepare_commit_msg=( br2msg )
+
+post_commit=( colorquote )
+EOS
+
+     print "\nResult of creations:"
+     tree -C $hooksdir
+
+     print "\nYou optionally can create a local captfile that contains only your desired hooks:"
+     print "  ${bold_color}touch $captfilelocal$reset_color"
+     print "\nAnd edit it to resemble the format of shared captfile: $bold_color$captfile$reset_color"
+     print "And if you do, you likely should also do:"
+     print "  ${bold_color}echo '$captfilelocal' >> .gitignore$reset_color"
+     print
+     print "IMPORTANT:"
+     print "You should now manually run the following:"
+     print "  ${bold_color}git add $captfile $hooksdir$reset_color"
+     print "  ${bold_color}git commit -m 'Add captain git-hook manager'$reset_color"
+     print "\nLearn more about capt usage:"
+     print "  ${bold_color}capt help$reset_color"
+     exit
 fi
 
 if [[ $@[1] == 'version' ]]; then print "capt version $captversion"; fi
@@ -231,7 +295,6 @@ if [[ $#@ < 1 ]]; then
 fi
 
 print_banner() {
-    # print '(◕‿-) Shiver me timbers!'
     print
     if [[ $TERM = 'dumb' ]] # magit
     then print ""
@@ -239,7 +302,7 @@ print_banner() {
     fi
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print -n "$fg_bold[blue]$icon$reset_color" \
-          "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
+          "$fg_bold[blue]⚳⚳⚳ ${(U)active_githook} ⚳⚳⚳$reset_color" \
           "$fg_bold[white][◷ $(sdate +%T)]$reset_color" # skull
     # aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
     # print '       _________ '
@@ -254,16 +317,6 @@ if [[ ! -f $captfile ]]; then print "Unable to load CAPT_FILE $captfile"; exit 1
 # FIXME This could possibly go into print_banner, if `source`ing run first,
 # but unlikely since need to source both capt files
 active_githook=$1
-# aghu=$(ssed 's/-/_/g' <<<$active_githook)
-# print aghu: $aghu
-# [[ -n $"$(eval 'print $aghu')" ]] && print yes: $aghu || print no1
-# [[ -n $"$aghu" ]] && print yes: $aghu || print no2
-# if [[ -z $active_githook ]]; then
-#     print "no hook configured in $captfile or $captfilelocal for $1"
-#     # exit
-# else
-#     print "ok got an active_githook: $active_githook"
-# fi
 
 shortnames() {
     for f in $@; do
@@ -325,7 +378,7 @@ setup_changes() {
     fi
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print -n "$fg_bold[blue]$icon$reset_color" \
-          "$fg_bold[blue]☠☠☠ ${(U)active_githook} ☠☠☠$reset_color" \
+          "$fg_bold[blue]⚳⚳⚳ ${(U)active_githook} ⚳⚳⚳$reset_color" \
           "$fg_bold[white][◷ $(sdate +%T)]$reset_color"
 
     # if [[ ! $main_branch == (main|master) ]]; then
@@ -439,17 +492,8 @@ run_scripts () {
         cmds_lens+=$(print $line | ssed 's/[:( ].*//' | wc -m )
     done
     max_cmd_len=$(print -l $cmds_lens | sort -nr | head -1)
-    # print max_cmd_len: $max_cmd_len
-    # print; aye "$fg_bold[cyan][$runlevel]$reset_color Execution awaits! $executors"
-    # printf '\xc'; print "" # no luck with printing line for pagebreak/formfeed in magit
-    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg_bold[gray][⚳ $executors$fg_bold[gray]]$reset_color" # ucloud
-
-    # for line in $@; do
-    #     [[ $line == *:* ]] &&
-    #         aye "- $bold_color${${(@s/:/)line}[1]}$reset_color" ||
-    #         aye "- $bold_color$line$reset_color"
-    # done
-
+    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg_bold[gray][☠ $executors$fg_bold[gray]]$reset_color" # ucloud
+    # Run through each trigger
     for line in $@; do
         # Reset for each time through
         CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
@@ -480,7 +524,7 @@ run_scripts () {
         # print
         # ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} $reset_color" # uhooks
         # printf "      $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
-        printf "$reset_color$fg_bold[blue]$icon$reset_color $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
+        printf "$reset_color$fg_bold[blue]$icon$reset_color $fg[yellow]☠☠☠ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
         # Built-in triggers are the only ones with no colon
         if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
             suit=♠; print -n " $suit"
@@ -543,12 +587,10 @@ run_scripts () {
         tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Set failok mode true if interactive response "yes"
-        # if [[ $es -ne 0 && -v CAPT_INTERACTIVE && $TERM != 'dumb' ]]
         # print TTY:; tty; print
         if [[ $es -ne 0 && -v CAPT_INTERACTIVE ]]
         # NOTE The [y/n] spec is narrowly accepted as a prompt by magit via `magit-process-yes-or-no-prompt-regexp`
         then prompt="?[CAPT_INTERACTIVE] Command failed; proceed anyway? [y/n] "
-             # if read -k1 "$prompt"; then failok=1; fi
              if read -q "$prompt"; then failok=1; fi
         fi
         # Set diagnostic indicators
@@ -560,19 +602,6 @@ run_scripts () {
         # Bail out on whole run if any script not successful
         if [[ $es -ne 0 && ! -v failok ]]; then
             [[ -z $CAPT_VERBOSE ]] && print "\n${fg_bold[red]}BLIMEY!!!$reset_color\n$output"
-            # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀"
-            # print "$fg[red]    ⠀⠀⠀⠀⠀⢀⣴⣿⣿⣿⡿⢿⣿⣿⣿⣷⣄⠀⠀⠀⠀⠀"
-            # print "$fg[red]    ⠀⣠⣤⣶⣶⣿⣿⣿⣿⣯⠀⠀⣽⣿⣿⣿⣿⣷⣶⣤⣄⠀"
-            # print "$fg[red]    ⢸⣿⣿⣿⣿⣿⣿⣿⣿⡅⠉⠉⢨⣿⣿⣿⣿⣿⣿⣿⣿⡇"
-            # print "$fg[red]    ⠈⠻⣿⣿⣿⣿⣿⣿⣿⣥⣴⣦⣬⣿⣿⣿⣿⣿⣿⣿⠟⠁"
-            # print "$fg[red]    ⠀⠀⢸⣿⡿⠿⠿⠿⠿⠿⠿⠿⢿⣿⣿⣿⠿⢿⣿⡇⠀⠀"
-            # print "$fg[red]    ⠀⣠⣾⣿⠂⠀⠀⣤⣄⠀⠀⢰⣿⣿⣿⣿⡆⠐⣿⣷⣄⠀"
-            # print "$fg[red]    ⠀⣿⣿⡀⠀⠀⠈⠿⠟⠀⠀⠈⠻⣿⣿⡿⠃⠀⢀⣿⣿⠀"
-            # print "$fg[red]    ⠀⠘⠻⢿⣷⡀⠀⠀⠀⢀⣀⣀⠀⠀⠀⠀⢀⣾⡿⠟⠃⠀"
-            # print "$fg[red]    ⠀⠀⠀⠸⣿⣿⣷⣦⣾⣿⣿⣿⣿⣦⣴⣾⣿⣿⡇⠀⠀⠀Down to Davey Jones’ locker!"
-            # print "$fg[red]    ⠀⠀⠀⠀⢻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⡿⠀⠀⠀⠀Status: $es"
-            # print "$fg[red]    ⠀⠀⠀⠀⠈⠻⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠟⠁⠀⠀⠀⠀"
-            # print "$fg[red]    ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀⠀⠀"
             print "\n$fg[red]         "'\\\\'
             print "$fg[red]         (o>     Down to Davey Jones’ locker!"
             print "$fg[red]      ___(()___  Status $es from $print_name"
@@ -581,7 +610,6 @@ run_scripts () {
             aye "Failing command:"
             print  ${(e)cmd}
             exit $es
-            # aye '\(ˆ˚ˆ)/ <>_<> (-_- ;) ˚∆˚ Shiver me timbers, down to Davey Jones locker! Status:' $es; print; exit $es
         else # Proceed!
             if   [[ -n $CAPT_VERBOSE ]]
             then [[ $es -ne 0 ]] && aye "WARN: Errors detected but proceeding anyway since in ‘failok’ mode"
@@ -636,7 +664,6 @@ if [[ -f $captfilelocal ]]; then source $captfilelocal
 else exit_gracefully "No captfilelocal found, so finishin now."; fi
 
 dbg active_githook: $active_githook
-# dbg post_checkout: $post_checkout
 # eval "unset ${active_githook:gs/-/_}"
 if [[ $active_githook == 'pre-commit'         && -z $pre_commit ]] ||
    [[ $active_githook == 'commit-msg'         && -z $commit_msg ]] ||
@@ -653,6 +680,6 @@ then runlevel=$captfilelocal
      select_hook
 fi
 
-# Show successful completion
+# TODO Show successful completion with some stats
 # print
 # aye 'Show a leg!' # => wake up, we're done, succussfully!
