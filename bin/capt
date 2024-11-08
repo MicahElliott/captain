@@ -15,6 +15,9 @@ scriptsdir=${CAPT_SCRIPTSDIR-$captdir/scripts}
 captfile=${CAPT_FILE-$captdir/share.sh}
 captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
 path+=$scriptsdir
+hookfiles=( # Supported hooks
+    pre-commit prepare-commit-msg commit-msg post-commit post-checkout
+    pre-push post-rewrite )
 
 # Why isn't this necessary?? https://stackoverflow.com/questions/57659657/zsh-colours-only-work-when-command-used-in-terminal-directly
 autoload -U colors; colors
@@ -188,8 +191,6 @@ then print "Initializing new capt setup...."
      print "\nCreating new hooksdir: $bold_color$hooksdir$reset_color"
      mkdir -p $hooksdir
      # Create the standard executable git hook files
-     hookfiles=( pre-commit prepare-commit-msg commit-msg post-commit post-checkout
-                 pre-push post-rewrite )
      print "\nCreating new tiny capt-invoking executable hookfiles in: $bold_color$hooksdir$reset_color"
      for hookfile in $hookfiles
      do
@@ -217,6 +218,11 @@ commit_msg=( msglint )
 prepare_commit_msg=( br2msg )
 
 post_commit=( colorquote )
+
+# Other available hooks
+#post-checkout=( ... )
+#pre-push=( ... )
+#post-rewrite=( ... )
 EOS
 
      print "\nResult of creations:"
@@ -239,20 +245,37 @@ fi
 
 if [[ $@[1] == 'version' ]]; then print "capt version $captversion"; fi
 
-list_available_hooks() {
+# Iterate over supported hooks to list each as active, missing array, missing call in file
+list_available_hooks () {
     controller=$1
-    for h in $( sgrep -e '^[a-z_]\+=(' $controller | ssed -e 's/_/-/g' -e 's/=(//' ); do
-        print "## $h"
-        local gf=$captdir/hooks/$h
-        if [[ -f $gf ]]; then cat $gf; else print '<custom hook/command>'; fi
-        print
+    arrays=( $(sgrep -e '^[a-z_]\+=(' $controller | ssed -e 's/_/-/g' -e 's/=(.*//') )
+    for suphook in $hookfiles
+    do  if (( $arrays[(Ie)$suphook] )) # supported hook present in control file
+        then local gf=$captdir/hooks/$suphook
+             if   [[ -f $gf ]]
+             then if sgrep -q '^capt' $gf
+                  then printf '  %-32s (file and capt)\n' $fg_bold[green]$suphook$reset_color
+                  else printf '  %-32s (missing capt call in file)\n' $fg_bold[yellow]$suphook$reset_color
+                  fi
+             else printf '  %-32s (missing file: $gf)\n' $fg_bold[magenta]$suphook$reset_color
+             fi
+        else printf '  %-32s (not in capt)\n'  $fg_bold[gray]$suphook$reset_color
+        fi
     done
+    for a in $arrays
+    do if ! (( $hookfiles[(Ie)$a] ))
+       then printf '  %-32s (non-hook)\n' $fg_bold[cyan]$a$reset_color; fi
+    done
+    print
 }
 if [[ $@[1] == 'list' ]]; then
     aye "Active hooks in $captfile: (CAPT_FILE)"
     list_available_hooks $captfile
-    aye "Active hooks in $captfilelocal: (CAPT_LOCALFILE)"
-    list_available_hooks $captfilelocal
+    if   [[ -f $captfilelocal ]]
+    then aye "Active hooks in $captfilelocal: (CAPT_LOCALFILE)"
+         list_available_hooks $captfilelocal
+    else aye "No user-local captfile detected: $captfilelocal (CAPT_LOCALFILE)"
+    fi
     print -- '----'
     print "HINT: To see/edit triggers: ${bold_color}capt edit$reset_color"
     print "HINT: To see your scripts:  ${bold_color}capt scripts$reset_color"
@@ -661,7 +684,9 @@ exit_gracefully() { if (( $#@ > 0 )); then print; aye $@; fi; exit }
 
 # dbg "captfilelocal: $captfilelocal"
 if [[ -f $captfilelocal ]]; then source $captfilelocal
-else exit_gracefully "No captfilelocal found, so finishin now."; fi
+# else exit_gracefully "No captfilelocal found, so finishin now."
+else exit_gracefully
+fi
 
 dbg active_githook: $active_githook
 # eval "unset ${active_githook:gs/-/_}"
