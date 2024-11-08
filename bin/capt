@@ -82,6 +82,7 @@ typeset -A builtin_cannons=(
     cljfmt         '(clj)cljfmt check $CAPT_FILES_CHANGED'
     cljtest        '(clj)cljtest $CAPT_FILES_CHANGED'
     huglint        '(sql)huglint $CAPT_FILES_CHANGED'
+    hugdoc         '(sql)hugdoc $CAPT_FILES_CHANGED'
     wscheck        'wscheck $CAPT_FILES_CHANGED'
     fixcheck       'fixcheck $CAPT_FILES_CHANGED'
     msglint        'msglint "$(cat $GITARG1)"'
@@ -99,6 +100,7 @@ typeset -A builtin_helps=(
     cljfmt         'Format clojure files (pre-commit)'
     cljtest        'Run test NSs with existing nrepl conn (pre-commit)'
     huglint        'Detect an error in a HugSQL file using ecpg (pre-commit)'
+    hugdoc         'Detect an missing docstring in a HugSQL file (pre-commit)'
     msglint        'Ensure a commit message adheres to a specied standard format (commit-msg)'
     wscheck        'Detect whitespace issues: newlines, BOM, tabs, etc (pre-commit)'
     fixcheck       'Detect FIXMEs, TODOs, etc (pre-commit)'
@@ -257,7 +259,7 @@ list_available_hooks () {
                   then printf '  %-32s (file and capt)\n' $fg_bold[green]$suphook$reset_color
                   else printf '  %-32s (missing capt call in file)\n' $fg_bold[yellow]$suphook$reset_color
                   fi
-             else printf '  %-32s (missing file: $gf)\n' $fg_bold[magenta]$suphook$reset_color
+             else printf "  %-32s (missing file: $gf)\n" $fg_bold[magenta]$suphook$reset_color
              fi
         else printf '  %-32s (not in capt)\n'  $fg_bold[gray]$suphook$reset_color
         fi

@@ -15,3 +15,13 @@ brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-geto
 # sqllint
 print 'Installing postgres libpq for ecpg sql linting'
 brew install libpq
+
+# https://github.com/babashka/bbin (for splint)
+print 'Installing babashka bbin (for splint)'
+brew install babashka/brew/bbin
+
+# https://cljdoc.org/d/io.github.noahtheduke/splint/1.10.1/doc/installation
+print 'Installing splint'
+bbin install io.github.noahtheduke/splint
+
+print 'Add to your path for splint: path+=~/.local/bin'

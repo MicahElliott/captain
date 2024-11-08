@@ -1,0 +1,24 @@
+#! /bin/zsh
+
+# Detect missing docstrings from hugsql files
+
+# This linter could do a lot better with collecting line numbers and putting
+# into error-friendly format. This was a quick POC.
+
+# Look for occurrences of `-- :name ...\nNOT-- :doc`
+
+if [[ $OSTYPE == darwin* ]]
+then sgrep() { ggrep $@ }; ssed() { gsed $@ }
+else sgrep() {  grep $@ }; ssed() {  sed $@ }
+fi
+
+missings=(
+    $(sgrep -Pzo -- '-- :name .*?\n[^-]' $1 |
+          while read -r l; do ssed -r 's/.*:name ([a-z<>?!-]+).*/\1/' ; done)
+)
+
+if   (( $#missings > 0 ))
+then print "The following functions are missing docstrings:"
+     print -l --  ${missings[1,-3]}
+     exit 1
+fi
