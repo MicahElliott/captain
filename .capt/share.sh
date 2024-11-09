@@ -2,7 +2,8 @@
 
 # Why is there no shellcheck? Doesn't seem to work well for too many things with Zsh.
 pre_commit=(
-    'hithere: hello $CAPT_FILES_CHANGED ## just say hello'
+    'hithere(md): hello $CAPT_FILES_CHANGED ## just say hello'
+    'hithere2: hello $CAPT_FILES_CHANGED ## just say hello2'
     # 'xxx: git-confirm.sh'
     # redundant with markdownlint but for testing filters etc
     # 'doclint(md|mkd): mdl $CAPT_FILES_CHANGED ## check markdown for violations'

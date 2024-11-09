@@ -124,14 +124,15 @@ typeset -A envars=(
     CAPT_LOCALFILE      'User-local personal control file each dev may have (not in git control)'
     CAPT_HOOKSDIR       'Defaults to `.capt/hooks`, for pointing `git` to'
     CAPT_SCRIPTSDIR     'Defaults to `.capt/scripts`, for storing team-shared triggers'
+    CAPT_LOUD_NOOPS     'Print even when triggers have nothing to do (for debugging new triggers)'
 )
 
 typeset -A command_helps=(
-    help    'show help with descriptions of built-in triggers'
-    init    'initialize a repo with a capt setup of fresh new config'
-    list    'list the active hooks'
-    edit    'open the share.sh (and local.sh if exists) control file'
-    scripts 'list available scripts'
+    help    'Show help with descriptions of built-in triggers'
+    init    'Initialize a repo with a capt setup of fresh new config'
+    list    'List the active hooks'
+    edit    'Open the share.sh (and local.sh if exists) control file'
+    scripts 'List available scripts'
 )
 
 ### 
@@ -328,7 +329,7 @@ print_banner() {
     # aye "$fg_bold[white][$(sdate +%T)] $fg_bold[blue]=== ${(U)active_githook} ===$reset_color ${bold_color}CAPTAIN IS OVERHAULIN. NO QUARTER!$reset_color"
     print -n "$fg_bold[blue]$icon$reset_color" \
           "$fg_bold[blue]⚳⚳⚳ ${(U)active_githook} ⚳⚳⚳$reset_color" \
-          "$fg_bold[white][◷ $(sdate +%T)]$reset_color" # skull
+          "$fg_bold[white][◷ $(sdate +%T)]$reset_color" # uhook
     # aye "$bold_color=== ${(U)active_githook} ===$reset_color\n"
     # print '       _________ '
     # print '      |-_ .-. _-|'
@@ -433,7 +434,7 @@ setup_changes() {
     if (( $#CAPT_FILES_CHANGED > 0 )); then
         CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
         # Print only truncated file names (split on /, take last two of path, join with ellipsis on front)
-        # print xxx CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
+        # print  CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
         local shorts=( $(shortnames $CAPT_FILES_CHANGED) )
         # print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $CAPT_FILES_CHANGED]$reset_color" # delta
         print " $fg_bold[yellow][Δ($#CAPT_FILES_CHANGED) $shorts]$reset_color" # delta
@@ -486,8 +487,10 @@ get_combined_filtereds () {
     fi
     CAPT_FILES_CHANGED=( $filtered_files )
     if [[ $#filtered_files < 1 ]]
-    then print " ($suit Not seein any matchin files staged, skippin.)"
+    then [[ -v CAPT_LOUD_NOOPS ]] &&
+             print "$pending ($suit Not seein any matchin files staged, skippin.)"
          return 1
+    else print -n $pending
     fi
 }
 
@@ -522,7 +525,7 @@ run_scripts () {
     for line in $@; do
         # Reset for each time through
         CAPT_FILES_CHANGED=( $CAPT_FILES_CHANGED_ORIG )
-        dbg xxx CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
+        dbg CAPT_FILES_CHANGED: $CAPT_FILES_CHANGED
         inv=( ${(@s: :)line} ) # split on spaces to get first, discard beyond second
         name=$inv[1]
         # TODO(#1) failok mode
@@ -546,13 +549,12 @@ run_scripts () {
             aye "$fg[red]Snuffin’ out yer $print_name trigger since ye blacklisted the bedeviler (CAPT_BLACK_TRIGGERS).$reset_color"
             continue
         fi
-        # print
-        # ayen "$fg[yellow]⚳⚳⚳ ${(U)print_name} $reset_color" # uhooks
-        # printf "      $fg[yellow]⚳⚳⚳ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
-        printf "$reset_color$fg_bold[blue]$icon$reset_color $fg[yellow]☠☠☠ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uhooks
+        printf -v pending "$reset_color$fg_bold[blue]$icon$reset_color $fg[yellow]☠☠☠ %-${max_cmd_len}s$reset_color" ${(U)print_name}  # uskull
         # Built-in triggers are the only ones with no colon
-        if [[ ! $name == *: ]]; then dbg "built-in plain checker with no spec:" $name
-            suit=♠; print -n " $suit"
+        if [[ ! $name == *: ]]
+        then dbg "built-in plain checker with no spec:" $name
+             suit=♠
+             pending="$pending$suit"
             # Need to fix up cmd since no spec, and maybe include filtered files
             script=$inv[1]
             just_buitins=${(k)builtin_cannons}
@@ -576,19 +578,25 @@ run_scripts () {
                  aye "$suit $fg_bold[yellow]$cmd$reset_color" # spade, built-in
             fi
 
-        elif [[ $name == *\(*\)* ]]; then dbg "custom-rigged filtered checker"
-            suit=♥; print -n " $suit"
+        elif [[ $name == *\(*\)* ]]
+        then dbg "custom-rigged filtered checker"
+             suit=♥
+             pending="$pending$suit"
             get_combined_filtereds || continue
-        elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]; then dbg "unfiltered checker"
-            suit=♦; print -n " $suit"
+            print_filtereds $filtered_files
+        elif [[ $line == *CAPT_FILES_CHANGED* || ! $name == *: ]]
+        then dbg "unfiltered checker"
+             suit=♦
+             print -n "$pending$suit"
             filtered_files=( $CAPT_FILES_CHANGED )
-            if   [[ $#filtered_files < 1 ]]
-            then print " ($suit Not seein any matchin files staged, skippin.)"; continue
+            if   [[ $#filtered_files < 1 ]] # FIXME Probably can never get here
+                 then print " ZZZ $pending ($suit Not seein any matchin files staged, skippin.) ZZZ" ; continue
             else print_filtereds $CAPT_FILES_CHANGED
                  print_cmd_and_help
             fi
         else # Ye took care of file selection yerself, or no files needin fer sayin.
-            suit=♣; print -n " $suit"
+            suit=♣
+            print -n "$pending$suit"
             print_filtereds ∞
             print_cmd_and_help
         fi

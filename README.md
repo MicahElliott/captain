@@ -438,6 +438,7 @@ You can fine-tune Captain’s behavior with several environment variables.
 - `CAPT_LOCALFILE` :: User-local personal control file each dev may have (not in git control)
 - `CAPT_HOOKSDIR` :: Defaults to `.capt/hooks`, for pointing `git` to
 - `CAPT_SCRIPTSDIR` :: Defaults to `.capt/scripts`, for storing team-shared triggers
+- `CAPT_LOUD_NOOPS` :: Print even when triggers have nothing to do (for debugging new triggers)
 
 There are also arrrgs you can utilize from your control files:
 
