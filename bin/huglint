@@ -9,7 +9,7 @@
 # sed -r -e 's/(^-- :name )/EXEC SQL \1/' -e "s/([^:])((:v\*)?:[-a-z?]+)/\1'\2--\3--XXXXX'/g" $1
 # sed -r -e 's/(^-- :name )/EXEC SQL \1/' -e "s/([^:])((:v\*)?:[-a-z?]+)/\1'\2--\3--XXXXX'/g" $1 |ecpg - >/dev/null
 
-err=$( sed -r -e 's/(^-- :name )/EXEC SQL \1/' -e "s/([^:])((:v\*)?:[-a-z?]+)/\1'\2--\3--XXXXX'/g" $1 |
+err=$( sed -r -e 's/(^-- :name )/EXEC SQL \1/' -e "s/([^:])((:v\*)?:[-a-z0-9+*_<>!?]+)/\1'\2--\3--XXXXX'/g" $1 |
            ecpg - 2>&1 >/dev/null )
 es=$?
 
