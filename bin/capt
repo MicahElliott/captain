@@ -113,17 +113,18 @@ typeset -A builtin_helps=(
 
 typeset -A envars=(
     CAPT_VERBOSE        'Unset to disable subcommand output and docstrings'
-    CAPT_DISABLE        'Set to `1` to bypass captain doing anything'
-    CAPT_DEBUG          'Set to `1` to enable debug mode'
-    CAPT_INTERACTIVE    'Set to `1` to enable interactive continuation mode (progress past errors)'
+    CAPT_DISABLE        'Set to ‘1’ to bypass captain doing anything'
+    CAPT_DEBUG          'Set to ‘1’ to enable debug mode'
+    CAPT_INTERACTIVE    'Set to ‘1’ to enable interactive continuation mode (progress past errors)'
+    CAPT_CAVALIER       'Set to ‘1’ to progress past all errors with no remorse'
     CAPT_BLACK_TRIGGERS 'Set to CSV string of individual triggers you wish to disable'
     CAPT_BLACK_HOOKS    'Set to CSV string of individual hooks you wish to disable'
     CAPT_FILES_OVERRIDE 'Set to list of files to run on (instead of git-staged)'
     CAPT_MAIN_BRANCH    'Useful for running in CI since default will be feature branch'
     CAPT_FILE           'Team-shared control file containing global hooks/triggers'
     CAPT_LOCALFILE      'User-local personal control file each dev may have (not in git control)'
-    CAPT_HOOKSDIR       'Defaults to `.capt/hooks`, for pointing `git` to'
-    CAPT_SCRIPTSDIR     'Defaults to `.capt/scripts`, for storing team-shared triggers'
+    CAPT_HOOKSDIR       'Defaults to ‘.capt/hooks’, for pointing ‘git’ to'
+    CAPT_SCRIPTSDIR     'Defaults to ‘.capt/scripts’, for storing team-shared triggers'
     CAPT_LOUD_NOOPS     'Print even when triggers have nothing to do (for debugging new triggers)'
 )
 
@@ -139,7 +140,7 @@ typeset -A command_helps=(
 ### Main menu commands: help, list, edit, scripts
 if [[ $@[1] == 'help' ]]
 then local b e indic
-     print "${bold_color}capt$reset_color is a git-hook manager, featuring multiple triggers per hook"
+     print "${bold_color}capt$reset_color is a git-hook manager, featuring multiple triggers per hook."
      print 'It is typically run automatically from a git-hook script, such as pre-commit.'
      print
      if   [[ -f $captfile ]]
@@ -148,7 +149,7 @@ then local b e indic
           print "You can create one by hand, or use: ${bold_color}capt init$reset_color"
      fi
      [[ -f $captfilelocal ]] &&
-         print "Detected your local personal control file: $bold_color$captfilelocal$reset_color"
+          print "Detected your local personal control file: $bold_color$captfilelocal$reset_color"
      print "View/edit hooks/triggers in control files: ${bold_color}capt edit$reset_color"
      # print $builtin_helps
      # print ${builtin_helps[kondo]}
@@ -275,7 +276,8 @@ if [[ $@[1] == 'list' ]]; then
     aye "Active hooks in $captfile: (CAPT_FILE)"
     list_available_hooks $captfile
     if   [[ -f $captfilelocal ]]
-    then aye "Active hooks in $captfilelocal: (CAPT_LOCALFILE)"
+    then icon='<*‿*>'
+         aye "Active hooks in $captfilelocal: (CAPT_LOCALFILE)"
          list_available_hooks $captfilelocal
     else aye "No user-local captfile detected: $captfilelocal (CAPT_LOCALFILE)"
     fi
@@ -287,7 +289,7 @@ fi
 
 if [[ $@[1] == 'edit' ]]; then
     aye "Opening EDITOR on $captfile $captfilelocal"
-    $EDITOR $captfile $captfilelocal &
+    $=EDITOR $captfile $captfilelocal &
     exit
 fi
 
@@ -614,10 +616,15 @@ run_scripts () {
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
         # Set failok mode true if interactive response "yes"
         # print TTY:; tty; print
-        if [[ $es -ne 0 && -v CAPT_INTERACTIVE ]]
+        if   [[ $es -ne 0 && -v CAPT_INTERACTIVE ]]
         # NOTE The [y/n] spec is narrowly accepted as a prompt by magit via `magit-process-yes-or-no-prompt-regexp`
+        # NOTE Magit has a limitation/bug where it can only pause once per run, so cannot
+        #      proceed past multiple errors
         then prompt="?[CAPT_INTERACTIVE] Command failed; proceed anyway? [y/n] "
              if read -q "$prompt"; then failok=1; fi
+        elif [[ $es -ne 0 && -v CAPT_CAVALIER ]]
+        # TODO Should maybe print something to indicate bypassing errors; but WOUNDED maybe already enough
+        then failok=1
         fi
         # Set diagnostic indicators
         # print "\nfailok:: $failok :: es:: $es"

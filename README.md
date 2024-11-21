@@ -295,6 +295,9 @@ The `capt` CLI has a few built-in commands, such as `help`, `edit` (open
 editor on control files), `list` (see active hooks), and more. Use `help` to
 see them all and their documentation.
 
+You can have Zsh completions if you put the provided `_capt` file on your
+`fpath`: `fpath+=/path/to/capt/clone` (and get a new shell)
+
 ## Control File Spec
 
 Now onto the simple `.capt/share.sh` control file at the root of your repo
@@ -429,6 +432,7 @@ You can fine-tune Captain’s behavior with several environment variables.
 - `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
 - `CAPT_DEBUG` :: Set to `1` to enable debug mode
 - `CAPT_INTERACTIVE` :: Set to `1` to enable interactive continuation mode in non-dumb terminals (progress past errors)
+- `CAPT_CAVALIER` :: Set to `1` to progress past all errors with no remorse
 - `CAPT_BLACK_TRIGGERS` :: Set to CSV string of individual triggers you wish to disable
 - `CAPT_BLACK_HOOKS` :: Set to CSV string of individual hooks you wish to
   disable
