@@ -5,7 +5,7 @@
 # Could parameterize for options:
 # - message_length
 # - exclude_merge_commits
-# - summary_max_length (russial novel)
+# - summary_max_length (russian novel)
 
 example=':books: (#1234) [i18n] Add proper diacritics'
 msg=$1

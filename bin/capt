@@ -100,7 +100,7 @@ typeset -A builtin_helps=(
     cljfmt         'Format clojure files (pre-commit)'
     cljtest        'Run test NSs with existing nrepl conn (pre-commit)'
     huglint        'Detect an error in a HugSQL file using ecpg (pre-commit)'
-    hugdoc         'Detect an missing docstring in a HugSQL file (pre-commit)'
+    hugdoc         'Detect missing docstrings in a HugSQL file (pre-commit)'
     msglint        'Ensure a commit message adheres to a specied standard format (commit-msg)'
     wscheck        'Detect whitespace issues: newlines, BOM, tabs, etc (pre-commit)'
     fixcheck       'Detect FIXMEs, TODOs, etc (pre-commit)'
@@ -537,7 +537,7 @@ run_scripts () {
         cmd=${line#* } # remove up to first space, keeping all the rest
         dbg "inv:" $inv[1] "::" $inv[2] "::" $inv[3] "::"
         cmd0=${cmd%% *} # keep only first part, the command name
-        dbg "line: $line :: cmd0: $cmd0 :: cmd: $cmd"
+        # print "line: $line :: cmd0: $cmd0 :: cmd: ${(e)cmd}"
 
         # TODO Add special casing for specific hooks needing special treatment
         if [[ $active_githook =~ 'commit-msg' ]]; then : ; fi
@@ -600,7 +600,7 @@ run_scripts () {
         # [[ $active_githook =~ 'commit-msg' ]] && cmd+=' $1 $2'
         t0=$(sdate +%s%3N) # start timer
         # Work with either a local script or something found on path
-        dbg "cmd: $cmd, cmd0: $cmd0"
+        dbg "cmd: ${(e)cmd}, cmd0: $cmd0"
         dbg "script: $scriptsdir/$script"
         # Try to find script or command
         # FIXME Some commands print to stderr; need to capture it too; but look out for &

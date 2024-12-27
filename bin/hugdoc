@@ -18,7 +18,8 @@ missings=(
 )
 
 if   (( $#missings > 0 ))
-then print "The following functions are missing docstrings:"
+then
+     print "The following functions are missing docstrings:"
      print -l --  ${missings[1,-3]}
      exit 1
 fi
