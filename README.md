@@ -195,6 +195,39 @@ Install [GNU tools](https://apple.stackexchange.com/a/69332/327065)
 brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep
 ```
 
+### Docker (alternative install method)
+
+It's possible to bundle and run Captain and all its extra goodies via Docker.
+Take a look at the `Dockerfile-div53` to see an example of an image you can build.
+
+For my Clojure team, we have several utils that I didn't want everyone to have
+to install manually. If you need to do GraalVM builds (eg,
+[cljfmt](https://github.com/pmbauer/cljfmt-graalvm)), you may have an easier
+time using an image base like `bitnami/minideb:latest` that uses libc, rather
+than `alpine` with musl.
+
+To build:
+
+```shell
+podman image build --rm -t captdeb -f Dockerfile-div53 .
+```
+
+There are quirks when running `git` from inside a container to a host repo. I
+have found that setting git as such solves a double-indexing problem:
+
+```shell
+git config core.checkstat minimal
+```
+
+[Opening the host network](https://stackoverflow.com/a/24326540/326516) is
+also needed for things like port/nrepl access.
+
+Here's a convenient alias for `capt` with Docker:
+
+```shell
+alias capt='podman container run --network=host --rm -it -v ${PWD}:/data:Z -e CAPT_INTERACTIVE=1 localhost/captdeb capt'
+```
+
 ## Setup and Configuration
 
 Say you want to enable some git-hooks. Here's how you would create the them,

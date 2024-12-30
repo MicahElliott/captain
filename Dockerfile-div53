@@ -1,0 +1,45 @@
+FROM bitnami/minideb:latest
+
+RUN apt-get update && apt-get install -y zsh git file curl wget ruby libecpg-dev default-jre-headless gcc && rm -rf /var/lib/apt/lists/*
+
+RUN gem install mdl
+
+ENV PATH="$PATH:~/.local/bin"
+
+# Install eget
+ENV EGET_BIN=/usr/local/bin
+RUN curl https://zyedidia.github.io/eget.sh | sh && mv eget /usr/local/bin
+
+# TODO make non-interactive
+RUN eget leafclick/pgmig -a '^asc' -a '^sha'
+
+RUN eget clj-kondo/clj-kondo -a '^static'
+
+RUN eget babashka/babashka -a '^static'
+
+# rep
+RUN git clone https://github.com/eraserhd/rep && cd rep && cc -g -O2 -o rep rep.c && cp rep /usr/local/bin
+
+# bbin
+RUN curl -o- -L https://raw.githubusercontent.com/babashka/bbin/v0.2.4/bbin > /usr/local/bin/bbin && chmod +x /usr/local/bin/bbin
+
+# splint
+RUN bbin install io.github.noahtheduke/splint
+
+# gommit
+RUN eget -t 2.10.0 antham/gommit
+
+# clean up
+RUN apt remove -y gcc
+RUN apt-get --purge autoremove -y
+
+# COPY bin /capt/bin
+COPY bin /usr/local/bin
+# WORKDIR /capt/bin
+WORKDIR data
+# WORKDIR tmp
+
+ENV GIT_DISCOVERY_ACROSS_FILESYSTEM=1
+
+# ENTRYPOINT /bin/zsh
+CMD ["/bin/zsh"]

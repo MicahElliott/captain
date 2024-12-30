@@ -80,6 +80,7 @@ typeset -A builtin_cannons=(
     cljlint        '(clj|cljc|cljs)clj-kondo --lint $CAPT_FILES_CHANGED'
     cljsplint      '(clj)splint -o clj-kondo $CAPT_FILES_CHANGED'
     cljfmt         '(clj)cljfmt check $CAPT_FILES_CHANGED'
+    # cljfmt         '(clj)cljfmt  $CAPT_FILES_CHANGED'
     cljtest        '(clj)cljtest $CAPT_FILES_CHANGED'
     huglint        '(sql)huglint $CAPT_FILES_CHANGED'
     hugdoc         '(sql)hugdoc $CAPT_FILES_CHANGED'
