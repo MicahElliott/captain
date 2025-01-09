@@ -33,6 +33,8 @@ start enabling its checks (AKA triggers). (Or you're a curmudgeon: You won't
 be impacted if you do nothing; then `capt` will not be invoked — but you will
 miss out on the fun!)
 
+### Installation via git-clone
+
 ```shell
 # Install the capt command (a small zsh script)
 cd ~/src # or somewhere like that where you keep clones
@@ -42,7 +44,26 @@ print 'path+=~/src/captain/bin' >> ~/.zshrc  # or something/somewhere like that
 # OR, for just the capt script (sufficient for some projects that don't need extra goodies):
 # cd /somewhere/on/your/PATH
 # wget https://raw.githubusercontent.com/MicahElliott/captain/main/bin/capt && chmod +x capt
+```
 
+### Installation via eget
+
+A really nice tool for installing a variety of packages directly from Github
+it [eget](https://github.com/zyedidia/eget). You can install it with:
+
+```shell
+curl https://zyedidia.github.io/eget.sh | sh
+```
+
+Then install Captain (and anything else on Github that has releases):
+
+```shell
+EGET_BIN=~/.local/bin micahelliott/captain
+```
+
+### Set up your project `hooksPath`
+
+```shell
 # Point git to the new hooks
 cd your-project-root # like you always do
 git config core.hooksPath .capt/hooks  # THIS IS THE BIGGIE!!
