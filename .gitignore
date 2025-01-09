@@ -1,3 +1,4 @@
 tmp/
 *.tmp
 .capt/local.sh
+bin/cljfmt

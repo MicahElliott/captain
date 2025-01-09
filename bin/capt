@@ -8,7 +8,7 @@
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 # print all args: $@
 
-captversion=0.1
+captversion=v2025.01.07
 captdir=${CAPT_DIR-.capt}
 hooksdir=${CAPT_HOOKSDIR-$captdir/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-$captdir/scripts}

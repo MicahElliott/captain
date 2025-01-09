@@ -212,8 +212,14 @@ To build:
 podman image build --rm -t captdeb -f Dockerfile-div53 .
 ```
 
+Or to use a pre-built image:
+
+```shell
+podman pull docker.io/micahelliott/captain:v1
+```
+
 There are quirks when running `git` from inside a container to a host repo. I
-have found that setting git as such solves a double-indexing problem:
+have found that setting git as such solves a double-indexing refresh problem:
 
 ```shell
 git config core.checkstat minimal
@@ -222,10 +228,23 @@ git config core.checkstat minimal
 [Opening the host network](https://stackoverflow.com/a/24326540/326516) is
 also needed for things like port/nrepl access.
 
+There are SELinux settings to consider for permissions, so use for the
+"volume", use `:Z` on a Linux host and `:rw` on MacOS.
+
 Here's a convenient alias for `capt` with Docker:
 
 ```shell
+# linux
 alias capt='podman container run --network=host --rm -it -v ${PWD}:/data:Z -e CAPT_INTERACTIVE=1 localhost/captdeb capt'
+# mac
+alias capt='podman container run --network=host --rm -it -v ${PWD}:/data:rw -e CAPT_INTERACTIVE=1 localhost/captdeb capt'
+```
+
+(For maintainers, new builds can be pushed with:)
+
+```shell
+podman login docker.io
+podman push captdeb docker.io/micahelliott/captain:v1
 ```
 
 ## Setup and Configuration
