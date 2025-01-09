@@ -9,11 +9,23 @@
 # all its tools with:
 #   % eget micahelliott/captain
 
-dt=$(date +%Y%m%d)
-artifact=captain-v$dt.tgz
+suffix=
+if [[ -n $1 ]]; then suffix="-$1"; fi
+
+vdt=$(date +v%Y.%m.%d)$suffix
+artifact=captain-$vdt.tgz
 
 print "Creating artifact of runnable tools in bin dir: $artifact"
 tar czvf $artifact -C bin .
 
-print "You should have already created a git tag: v$dt"
+print "Will create and push git tag: $vdt"
+read -qk "?Proceed? [y/n] " || exit 1
+
+git tag $vdt
+git push origin $vdt
+
+print "You should have already created and pushed a git tag: $vdt"
 print "Now manually upload $artifact to https://github.com/MicahElliott/captain/releases"
+
+print "Creating a new release on github"
+gh release create $vdt $artifact

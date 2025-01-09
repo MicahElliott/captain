@@ -6,7 +6,7 @@
 > extensible for individuals. Supports all
 > [common git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 > (and probably more)! Works with Linux, MacOS, BSDs, probably WSL.
-> Language-agnositic — no npm, ruby, yaml or anything to wrestle with.
+> Language-agnositic — no npm, ruby, yaml or any such thing to wrestle with.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
@@ -39,17 +39,15 @@ miss out on the fun!)
 # Install the capt command (a small zsh script)
 cd ~/src # or somewhere like that where you keep clones
 git clone https://github.com/MicahElliott/captain  # to get all tooling, easy to update
-print 'path+=~/src/captain/bin' >> ~/.zshrc  # or something/somewhere like that
+path+=~/src/captain/bin
+print 'path+=~/src/captain/bin' >> ~/.zshrc  # or something like that
 # OR, put that ^^^ into a .envrc file and use https://github.com/direnv/direnv for your proj
-# OR, for just the capt script (sufficient for some projects that don't need extra goodies):
-# cd /somewhere/on/your/PATH
-# wget https://raw.githubusercontent.com/MicahElliott/captain/main/bin/capt && chmod +x capt
 ```
 
-### Installation via eget
+### OR, Installation via eget (recommended)
 
 A really nice tool for installing a variety of packages directly from Github
-it [eget](https://github.com/zyedidia/eget). You can install it with:
+is [eget](https://github.com/zyedidia/eget). You can install `eget` with:
 
 ```shell
 curl https://zyedidia.github.io/eget.sh | sh
@@ -189,13 +187,12 @@ to the **[One-minute
 guide](#one-minute-e-z-quick-start-guide-very-easy-point-your-team-here)**
 above), so violations can be caught before code changes go to CI.
 
-1. `git clone https://github.com/MicahElliott/captain`
+1. Follow the install instructions above to clone or eget
 1. Try it out! Add your project/company to the
    [Featured Projects](#featured-projects-using-captain) section and run `capt`.
-1. Put the `capt` script on your `path`
 1. `cd your-project`
-1. Run the for-loop below to create any git-hooks you want
-1. Create a `.capt/share.sh` control file (or copy the one below)
+1. Run `capt init`
+1. Open the new `.capt/share.sh` control file (or copy the one below)
 1. [optional] Create a `.capt/local.sh` control file for your personal
    additional triggers
 
@@ -203,10 +200,6 @@ The `capt` command is invoked with a single argument: the git-hook to run;
 e.g., as `capt pre-commit`; that will run all the pre-commit triggers. You can
 optionally run `capt` directly to see/debug output, and then have all of
 git-hooks call it.
-
-### Install a few tiny dependencies
-
-See `install.zsh` for a scripted solution to installing some dependency tooling.
 
 #### Mac requirements
 
