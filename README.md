@@ -440,7 +440,7 @@ Some things to notice in that file:
 - Some triggers are a line with a `somename:` "name" prefix, then the eval'd command
 - After a `name` is an optional "filter": `cljfmt` will only look at `.clj` and `.cljc` files
 - The `lint` and `format` are run in parallel by being backgrounded (`&`)
-- The `commitlint` is prefixed with a `-`: this instructs Captain to let itxs proceed even if it fails
+- The `commitlint` is prefixed with a `-`: this instructs Captain to let it proceed even if it fails
 - You generally should use single-quote commands, even with env vars
 - The `$CAPT_CHANGES` is the convenient list of files that are part of the commit
 - The `$GITARG1` is the first available param passed from git to a hook script
@@ -472,6 +472,7 @@ You can fine-tune Captain’s behavior with several environment variables.
 - `CAPT_BLACK_TRIGGERS` :: Set to CSV string of individual triggers you wish to disable
 - `CAPT_BLACK_HOOKS` :: Set to CSV string of individual hooks you wish to
   disable
+- `CAPT_TIMEOUT` :: limit the duration of all triggers
 - `CAPT_FILES_OVERRIDE` :: Set to list of files to run on (instead of git-staged)
 - `CAPT_MAIN_BRANCH` :: Useful for running in CI since default will be feature branch
 - `CAPT_FILE` :: Team-shared control file containing global hooks/triggers

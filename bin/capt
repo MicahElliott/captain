@@ -14,6 +14,7 @@ hooksdir=${CAPT_HOOKSDIR-$captdir/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-$captdir/scripts}
 captfile=${CAPT_FILE-$captdir/share.sh}
 captfilelocal=${CAPT_LOCALFILE-.capt/local.sh}
+timeout=${CAPT_TIMEOUT-10}
 path+=$scriptsdir
 hookfiles=( # Supported hooks
     pre-commit prepare-commit-msg commit-msg post-commit post-checkout
@@ -120,6 +121,7 @@ typeset -A envars=(
     CAPT_CAVALIER       'Set to ‘1’ to progress past all errors with no remorse'
     CAPT_BLACK_TRIGGERS 'Set to CSV string of individual triggers you wish to disable'
     CAPT_BLACK_HOOKS    'Set to CSV string of individual hooks you wish to disable'
+    CAPT_TIMEOUT        'Set to number of seconds allowed for each trigger completion (default 10s)'
     CAPT_FILES_OVERRIDE 'Set to list of files to run on (instead of git-staged)'
     CAPT_MAIN_BRANCH    'Useful for running in CI since default will be feature branch'
     CAPT_FILE           'Team-shared control file containing global hooks/triggers'
@@ -605,13 +607,16 @@ run_scripts () {
         dbg "script: $scriptsdir/$script"
         # Try to find script or command
         # FIXME Some commands print to stderr; need to capture it too; but look out for &
-        if [[ -f $scriptsdir/$script ]]; then output=$(eval $scriptsdir/$cmd)
-        elif type $cmd0 >/dev/null;      then output=$(eval $cmd)
+        if   [[ -f $scriptsdir/$script ]]; then output=$(eval timeout $timeout $scriptsdir/$cmd)
+        elif type $cmd0 >/dev/null;        then output=$(eval timeout $timeout $cmd)
         # Just skip this one hook if command not found
         else aye "$fg[red]WARNING: Skippin on yer $print_name; $cmd0 and $script be lost at sea.$reset_color"
         fi
         es=$?
         [[ -n $CAPT_VERBOSE && -n $output ]] && print -- "$output"
+        if   [[ $es == 124 ]] # special timeout exit code; seems universal
+        then print "${fg[red]}Timeout (${timeout}s) occurred (Set it via CAPT_TIMEOUT, 0 to disable)$reset_color"
+        fi
         wait # don't process until background scripts are finished
         tfinal=$(( $(sdate +%s%3N) - $t0 )) units=ms units_color=white
         if (( 1000 < $tfinal )); then tfinal=$(( $tfinal / 1000 )); units=s; units_color=red; fi
