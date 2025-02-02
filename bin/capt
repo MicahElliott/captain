@@ -9,6 +9,9 @@ GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 # print all args: $@
 
 captversion=v2025.01.09
+
+if [[ $@[1] == 'version' || $@[1] == '--version' || $@[1] == '-v' ]]; then print "capt $captversion"; exit; fi
+
 captdir=${CAPT_DIR-.capt}
 hooksdir=${CAPT_HOOKSDIR-$captdir/hooks}
 scriptsdir=${CAPT_SCRIPTSDIR-$captdir/scripts}
@@ -35,12 +38,18 @@ ayen() { print -n "$reset_color$fg_bold[blue]$icon$reset_color" $@ } # no newlin
 
 # Convert CSVs to arrays for easier use
 black_triggers=( ${(s:,:)CAPT_BLACK_TRIGGERS} )
+# print black_triggers: $black_triggers
 black_hooks=(    ${(s:,:)CAPT_BLACK_HOOKS}    )
 
 # Bail out immediately if rebase in progress
 # https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
 # FIXME This branch detection could definitely be better!
-branch=$(git branch -vv | head -1) # * (no branch, rebasing ...
+set -o pipefail
+branch=$(git branch -vv 2>/dev/null | head -1) # * (no branch, rebasing ...
+branch_es=$?
+# print $pipestatus[1] ; not working
+# if [[ $pipestatus[1] != 0 ]]; then aye "XXX Captain must be run from the root of a git repo."; exit 1; fi
+if [[ $branch_es != 0 ]]; then aye "Captain must be run from the root of a git repo."; exit 1; fi
 if [[ $branch =~ '\* \(no branch, rebasing' ]] ||
        test -d "$(git rev-parse --git-path rebase-merge)" ||
        test -d "$(git rev-parse --git-path rebase-apply)"
