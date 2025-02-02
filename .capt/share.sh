@@ -8,6 +8,7 @@ pre_commit=(
     # redundant with markdownlint but for testing filters etc
     # 'doclint(md|mkd): mdl $CAPT_FILES_CHANGED ## check markdown for violations'
     mdlint
+    'sleeper: sleep 0'
     fixcheck
     # -markdownlint
     'wscheck(md|sh)'

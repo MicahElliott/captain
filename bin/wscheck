@@ -17,6 +17,11 @@
 allok=true
 nlcheck() {
     filename=$1
+    ftype=$( file -b --mime-type $filename | sed 's|/.*||' )
+    if   [[ $ftype != 'text' ]]
+    then "Not operating on non-text file"
+         exit
+    fi
     if   [[ ! -s "$filename" ]]
     then echo "ERROR: $filename is empty"
          unset allok
