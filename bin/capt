@@ -9,7 +9,6 @@ GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 # print all args: $@
 
 captversion=v2025.01.09
-
 if [[ $@[1] == 'version' || $@[1] == '--version' || $@[1] == '-v' ]]; then print "capt $captversion"; exit; fi
 
 captdir=${CAPT_DIR-.capt}
@@ -44,10 +43,12 @@ black_hooks=(    ${(s:,:)CAPT_BLACK_HOOKS}    )
 # Bail out immediately if rebase in progress
 # https://stackoverflow.com/questions/3921409/how-to-know-if-there-is-a-git-rebase-in-progress
 # FIXME This branch detection could definitely be better!
-set -o pipefail
-branch=$(git branch -vv 2>/dev/null | head -1) # * (no branch, rebasing ...
+# set -o pipefail
+allbranches=$(git branch -vv 2>/dev/null)
 branch_es=$?
-# print $pipestatus[1] ; not working
+branch=$(head -1 <<<$allbranches) # not really used
+# print branch_es: $branch_es
+# print pipestatus: $pipestatus[1] # not working
 # if [[ $pipestatus[1] != 0 ]]; then aye "XXX Captain must be run from the root of a git repo."; exit 1; fi
 if [[ $branch_es != 0 ]]; then aye "Captain must be run from the root of a git repo."; exit 1; fi
 if [[ $branch =~ '\* \(no branch, rebasing' ]] ||
@@ -657,6 +658,10 @@ run_scripts () {
             print "$reset_color"
             aye "Failing command:"
             print  ${(e)cmd}
+            print "\nTo bypass this error and/or see more details, set any of these env vars:"
+            print '  CAPT_CAVALIER, CAPT_INTERACTIVE, CAPT_DISABLE, CAPT_BLACK_TRIGGERS, CAPT_BLACK_HOOKS, CAPT_VERBOSE'
+            print 'Then commit again to rerun.'
+            print 'See ‘capt help’ for more details in any of those.'
             exit $es
         else # Proceed!
             if   [[ -n $CAPT_VERBOSE ]]
