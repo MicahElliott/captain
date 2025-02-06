@@ -55,7 +55,7 @@ if [[ $branch =~ '\* \(no branch, rebasing' ]] ||
        test -d "$(git rev-parse --git-path rebase-merge)" ||
        test -d "$(git rev-parse --git-path rebase-apply)"
 then
-    aye 'Must be in a rebase, exiting.'
+    aye 'Looks like a rebase, exiting.'
     exit
 else
     : print "FIXME PLEASE (rebase debugging for br2msg): branch: $branch"
@@ -661,7 +661,7 @@ run_scripts () {
             print "\nTo bypass this error and/or see more details, set any of these env vars:"
             print '  CAPT_CAVALIER, CAPT_INTERACTIVE, CAPT_DISABLE, CAPT_BLACK_TRIGGERS, CAPT_BLACK_HOOKS, CAPT_VERBOSE'
             print 'Then commit again to rerun.'
-            print 'See ‘capt help’ for more details in any of those.'
+            print 'Run ‘capt help’ for more details on any of those.'
             exit $es
         else # Proceed!
             if   [[ -n $CAPT_VERBOSE ]]

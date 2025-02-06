@@ -20,6 +20,7 @@ tar czvf $artifact -C bin .
 
 print "Will create and push git tag: $vdt"
 read -qk "?Proceed? [y/n] " || exit 1
+print
 
 git tag $vdt
 git push origin $vdt
