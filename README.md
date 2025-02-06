@@ -669,6 +669,12 @@ If for any reason you need to bypass Captain, set this: `export CAPT_DISABLE=1`
 
 - [Dividend Finance](https://www.dividendfinance.com/) (Clojure projects)
 
+## Contributing
+
+Releases are created with [Havoc](https://github.com/MicahElliott/havoc).
+
+## License
+
 ```text
   \\
    (o>
@@ -677,8 +683,6 @@ ___V_/_____
    ||
    ||
 ```
-
-## License
 
 Copyright © Micah Elliott
 
