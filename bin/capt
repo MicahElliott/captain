@@ -1,6 +1,6 @@
 #! /bin/zsh
 
-# capt: a very simple git-hook manager
+# capt: a simple git-hook manager
 
 # Symbols fer usin:  ⚔ ⚳ ⚑ ☁ ☀ ✓ ☠ ◴◵◶◷
 

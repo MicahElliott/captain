@@ -1,4 +1,4 @@
-# Captain
+# Captain -- a simple git-hook manager
 
 > _Captain_ is a simple, convenient, transparent opt-in approach to client-
 > and CI-side **git-hook management**, with just a single, small,
