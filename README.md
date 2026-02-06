@@ -50,13 +50,14 @@ A really nice tool for installing a variety of packages directly from Github
 is [eget](https://github.com/zyedidia/eget). You can install `eget` with:
 
 ```shell
-curl https://zyedidia.github.io/eget.sh | sh
+curl https://zyedidia.github.io/eget.sh | sh # OR brew install eget
 ```
 
 Then install Captain (and anything else on Github that has releases):
 
 ```shell
-EGET_BIN=~/.local/bin micahelliott/captain
+EGET_BIN=~/.local/bin eget micahelliott/captain # choose last option: all
+path+=~/.local/bin # add to .zshrc for future use
 ```
 
 ### Set up your project `hooksPath`
@@ -64,16 +65,27 @@ EGET_BIN=~/.local/bin micahelliott/captain
 ```shell
 # Point git to the new hooks
 cd your-project-root # like you always do
+
 git config core.hooksPath .capt/hooks  # THIS IS THE BIGGIE!!
+
+# If on MacOS
+brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep
+
 # Make some project file changes, and
 git commit # etc, just like always, nothing you do changed except NOW CLEAN CODE
 # Captain at yer service! ...
 ```
 
-_(Note to MacOS users: If you use a git client/IDE that is not started from a
-terminal, you'll need to ensure your `PATH` is set to include
-`/path/to/captain` by editing `/etc/paths`, as per
-[this](https://stackoverflow.com/a/22465399/326516).)_
+If anything goes sideways during a commit, please
+[report it!](https://github.com/MicahElliott/captain/issues) And note that you
+can always disable Captain by setting the environment variable:
+`CAPT_DISABLE=1`
+
+> [!NOTE]
+> MacOS users: If you use a git client/IDE that is not
+> started from a terminal, you'll need to ensure your `PATH` is set to include
+> `/path/to/captain` by editing `/etc/paths`, as per
+> [this](https://stackoverflow.com/a/22465399/326516).
 
 If there are any "triggers" (linters, formatters, informers, etc) being
 invoked that you don't have installed yet, Captain should kindly let you know
@@ -116,7 +128,6 @@ You may argue that all these checks should be done automatically by editors
 with on-save hooks. But there are a few reasons that often doesn't happen:
 
 - not all developers know how or bother
-
 - some types of checks are difficult to run automatically, or editors don't
   have packages to run such checks
 - some checks may be a bit too slow to run frequently in an editor
@@ -194,7 +205,7 @@ above), so violations can be caught before code changes go to CI.
 1. Run `capt init`
 1. Open the new `.capt/share.sh` control file (or copy the one below)
 1. [optional] Create a `.capt/local.sh` control file for your personal
-   additional triggers
+   additional triggers (and add it to `.gitignore`)
 
 The `capt` command is invoked with a single argument: the git-hook to run;
 e.g., as `capt pre-commit`; that will run all the pre-commit triggers. You can
@@ -205,7 +216,7 @@ git-hooks call it.
 
 Install [GNU tools](https://apple.stackexchange.com/a/69332/327065)
 
-```
+```shell
 brew install coreutils findutils gnu-tar gnu-sed gawk gnutls gnu-indent gnu-getopt grep
 ```
 
@@ -263,9 +274,15 @@ podman push captdeb docker.io/micahelliott/captain:v1
 
 ## Setup and Configuration
 
-Say you want to enable some git-hooks. Here's how you would create the them,
-just like you may have done in the past with git. This step can be done by
-each developer upon cloning the project repo:
+Say you want to enable some git-hooks. This is as simple as running:
+
+```shell
+capt init
+```
+
+And follow its short instructions to finalize setup.
+
+If for any reason you wish to create git-hook files manually, here's how:
 
 ```shell
 ## If you want to commit the hooks to repo, and everyone sets hooksPath
@@ -332,7 +349,7 @@ editor on control files), `list` (see active hooks), and more. Use `help` to
 see them all and their documentation.
 
 You can have Zsh completions if you put the provided `_capt` file on your
-`fpath`: `fpath+=/path/to/capt/clone` (and get a new shell)
+`fpath`: `fpath+=/path/to/capt/clone` (and get a new shell).
 
 ## Control File Spec
 

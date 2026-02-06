@@ -3,3 +3,4 @@ tmp/
 .capt/local.sh
 bin/cljfmt
 releases/
+.aider*
