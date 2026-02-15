@@ -21,9 +21,9 @@ then ssed() { gsed $@ ; }
 else ssed() { sed $@ ; }
 fi
 
-ex=mde/SCRUM-12345_FEAT_mytopic_some-detail-words
-ex=mde/SCRUM-12345_FEAT_some-detail-words
-becomes='feat: (SCRUM-12345) [mytopic] Some detail words'
+# ex=mde/SCRUM-12345_FEAT_mytopic_some-detail-words
+# ex=mde/SCRUM-12345_FEAT_some-detail-words
+# becomes='feat: (SCRUM-12345) [mytopic] Some detail words'
 
 branch=$(git rev-parse --abbrev-ref HEAD)
 
@@ -35,7 +35,7 @@ fi
 # arr=${1:gs/_/ }
 arr=${branch:gs/_/ }
 arr=( $=arr )
-if [[ $#arr == 4 ]]; then
+if (( $#arr == 4 )); then
     topic=" "[$arr[3]"]" sentence=$arr[4]
 else
     sentence=$arr[3]
@@ -44,7 +44,11 @@ story=$(ssed -r -e 's^.*/^^' <<<$arr[1]) # SCRUM-12345
 
 # Modify pre-prepped git file (.git/COMMIT_EDITMSG) in-place effectively
 ssed -i "1i${(L)arr[2]}: ($story)$topic ${sentence:gs/-/ }\n" $COMMIT_MSG_FILE
-ssed -i "3iREPLACE THIS TEXT WITH A PARAGRAPH DESCRIPTION OF THE CHANGE.\n" $COMMIT_MSG_FILE
+
+# Only add this placeholder if no -m/--message used by git
+if   [[ $COMMIT_SOURCE != message ]]
+then ssed -i "3iREPLACE THIS TEXT WITH A PARAGRAPH DESCRIPTION OF THE CHANGE.\n" $COMMIT_MSG_FILE
+fi
 
 # $(cat $COMMIT_MSG_FILE) > $COMMIT_MSG_FILE
 
