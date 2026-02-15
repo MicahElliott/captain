@@ -1,12 +1,19 @@
 # Captain -- a simple git-hook manager
 
+## Synopsis
+
+```shell
+capt [help|--version]
+capt <GIT_HOOK>
+```
+
 > _Captain_ is a simple, convenient, transparent opt-in approach to client-
 > and CI-side **git-hook management**, with just a single, small,
 > dependency-free shell script to download. Suited for sharing across a team,
 > extensible for individuals. Supports all
 > [common git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 > (and probably more)! Works with Linux, MacOS, BSDs, probably WSL.
-> Language-agnositic — no npm, ruby, yaml or any such thing to wrestle with.
+> Language-agnostic — no npm, ruby, yaml or any such thing to wrestle with.
 
 ```text
 ⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⣤⣤⣀⡀⠀⠀⠀⠀⠀⠀⠀
@@ -24,13 +31,13 @@
 ⠀⠀⠀⠀⠀⠀⠀⠈⠉⠛⠛⠛⠛⠋⠉⠀⠀⠀⠀⠀
 ```
 
-## One-minute E-Z Quick-Start Guide if Captain already set up
+## One-minute E-Z Quick-Start Guide if Captain is already set up
 
 _(Easy, point your team here.)_
 
 *SITUATION*: Captain was already set up in a repo you use, and you want to
-start enabling its checks (AKA triggers). (Or you're a curmudgeon: You won't
-be impacted if you do nothing; then `capt` will not be invoked — but you will
+start enabling its checks (AKA "triggers"). (Or you're a curmudgeon: You won't
+be impacted if you do nothing; then `capt` will not be invoked — you will only
 miss out on the fun!)
 
 ### Installation via git-clone
@@ -76,10 +83,13 @@ git commit # etc, just like always, nothing you do changed except NOW CLEAN CODE
 # Captain at yer service! ...
 ```
 
-If anything goes sideways during a commit, please
-[report it!](https://github.com/MicahElliott/captain/issues) And note that you
-can always disable Captain by setting the environment variable:
-`CAPT_DISABLE=1`
+**THAT’S IT, YOU’RE DONE, GET BACK TO WORK!!** But just some minor notes:
+
+> [!NOTE]
+> If anything goes sideways during a commit, please
+> [report it!](https://github.com/MicahElliott/captain/issues) And note that you
+> can always disable Captain by setting the environment variable:
+> `CAPT_DISABLE=1`
 
 > [!NOTE]
 > MacOS users: If you use a git client/IDE that is not
@@ -87,9 +97,10 @@ can always disable Captain by setting the environment variable:
 > `/path/to/captain` by editing `/etc/paths`, as per
 > [this](https://stackoverflow.com/a/22465399/326516).
 
-If there are any "triggers" (linters, formatters, informers, etc) being
-invoked that you don't have installed yet, Captain should kindly let you know
-more details.
+> [!NOTE]
+> If there are any "triggers" (linters, formatters, informers, etc) being
+> invoked that you don't have installed yet, Captain should kindly let you know
+> more details.
 
 ---
 
@@ -119,7 +130,7 @@ each commit):
 - ignorability of some things on some systems
 
 You can’t have all that without a manager — you end up cooking it yourself,
-half-baked. And Yes, you can simply set that all up in your CI (and you
+half-baked. And yes, you can simply set that all up in your CI (and you
 should), but you don’t want your devs waiting 15 minutes to see if their
 commit passed. Instead, you want them to wait a few seconds for all that to
 run locally, maybe in parallel.
@@ -127,7 +138,7 @@ run locally, maybe in parallel.
 You may argue that all these checks should be done automatically by editors
 with on-save hooks. But there are a few reasons that often doesn't happen:
 
-- not all developers know how or bother
+- not all developers bother (or know how)
 - some types of checks are difficult to run automatically, or editors don't
   have packages to run such checks
 - some checks may be a bit too slow to run frequently in an editor
@@ -142,6 +153,7 @@ to invent, write, and/or wrap around every tool you run:
 - **Checking for existence** and guiding installation of tool being run
 - **Timing** info of each hook run
 - **Clear output** made consistent for each tool
+- **Simplest possible spec** is just CLI invocations for each trigger
 - **Files changed** precise detection and control
 - **File filtering** by file type/extension
 - **Single file organization** of all hook/script specs for whole team to control/use
@@ -160,9 +172,13 @@ green a kajillion times faster (aim for not more than a couple seconds).
 
 ## Why Captain instead of another hook manager?
 
-Compared to [Lefthook](https://github.com/evilmartians/lefthook),
-[Husky](https://typicode.github.io/husky/), and
-[Overcommit](https://github.com/sds/overcommit), _Captain is_:
+Compared to
+[Lefthook](https://github.com/evilmartians/lefthook),
+[Husky](https://typicode.github.io/husky/),
+[Overcommit](https://github.com/sds/overcommit),
+[pre-commit](https://pre-commit.com/),
+[prek](https://prek.j178.dev/),
+_Captain is_:
 
 - Tiny, transparent, no deps: read and understand the whole code base (one small Zsh file) in minutes
 - Simple: workflow is just calling commands or the scripts you already have
@@ -335,7 +351,7 @@ instructions above.
 ### Note on External Tools Installation
 
 It is outside Captain's scope to install all your team's trigger tools on
-every dev's machine. However, this repo provides an [example
+every developer’s machine. However, this repo provides an [example
 script](install-standard-triggers.zsh) that should demonstrate common practice
 for teams, to get everyone on the same page. Basically, a project should have
 a script (or at least a doc) for getting all the tooling installed. It might
@@ -360,6 +376,9 @@ Now onto the simple `.capt/share.sh` control file at the root of your repo
 
 ### Trigger Spec
 
+If you can invoke a CLI tool, then you already know how to add it to Captain.
+The spec is basically just the command line!
+
 There is a tiny DSL that is used to specify each "trigger" in a control file.
 Here's an example of a custom trigger. The first part, up to the colon is the
 name and optional glob filter. The second part is the command to run, and a
@@ -368,25 +387,26 @@ trailing comment docstring. This one says to run the `clj-kondo` linter (named
 of the staged commit.
 
 ```
-    'lint(clj|cljs):   clj-kondo $CAPT_FILES_CHANGED &   ## lint clojure files'
-     ^^^^ ^^^^^^^^     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^   ^^^^^^^^^^^^^^^^^^^^^
-     NAME  FILTERS             COMMAND         CONCURRENCY  COMMENT
+    'lint(clj|cljs):  clj-kondo $CAPT_FILES_CHANGED &   ## lint clojure files'
+     ^^^^ ^^^^^^^^    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ^   ^^^^^^^^^^^^^^^^^^^^^
+     NAME  FILTERS            COMMAND         CONCURRENCY  COMMENT
 ```
 
 And here's a couple built in triggers. Built-ins have pre-defined commands,
-filters, and docs. Note that there is no colon after the name spec for
-built-ins. The quotes are optional, but needed if you include a filter. The
-first says to run the "whitespace checker" on Ruby, Clojure, and Javascript
-files only. The second runs the standard Clojure linter (`clj-kondo`) on all
-staged Clojure files.
+filters, and docs, so you often don't need to add anything but their name.
+Note that there is no colon after the name spec for built-ins. The quotes are
+optional, but needed if you include a filter. The first says to run the
+"whitespace checker" on Ruby, Clojure, and JavaScript files only. The second
+runs the standard Clojure linter (`clj-kondo`) on all staged Clojure files.
 
 ```
     'wscheck(rb|clj|js)'
     cljlint
 ```
 
-Note that this syntax looks kinda like the standard [git conventional
-commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13) DSL.
+Note that this syntax looks kinda like the standard
+[git conventional commits](https://gist.github.com/qoomon/5dfcdf8eec66a051ecd85625518cfd13)
+DSL.
 
 ### Example Team Control File
 
@@ -465,11 +485,14 @@ Some things to notice in that file:
 - `.capt/share.sh` gets put into git at your project-root and is used by all devs on the project
 - The last `clean_up` hook isn't a git hook, but you can run it directly with `capt` cli
 
-## User-local additional hooks
+## User-local setup
 
 Suppose you have even higher personal standards than the rest of your team.
-E.g., you have OCD about line length. You can ensure that all of *your*
-commits conform by creating another local-only `.capt/local.sh` control file:
+E.g., you have OCD about line length, and maybe you even like to spell-check
+your source files. You can ensure that all of *your* commits conform by
+creating another local-only `.capt/local.sh` control file:
+
+### Additional hooks
 
 ``` shell
 pre_commit=( 'line-length-pedant: check-line-length' ...other-custom-triggers... )
@@ -477,7 +500,17 @@ pre_commit=( 'line-length-pedant: check-line-length' ...other-custom-triggers...
 
 Then you should add `.capt/local.sh` to your `.gitignore` file.
 
-## Settings
+### Disabling shared hooks
+
+What if your team has a trigger enabled in `.capt/share.sh` that is to slow
+for you, or you just can't get to work? One way to skip those is to use
+`CAPT_BLACK_TRIGGERS`. Eg, set env var:
+
+```shell
+export CAPT_BLACK_TRIGGERS=slowassthing1,brokeassthing3
+```
+
+## Environment
 
 You can fine-tune Captain’s behavior with several environment variables.
 
@@ -487,9 +520,8 @@ You can fine-tune Captain’s behavior with several environment variables.
 - `CAPT_INTERACTIVE` :: Set to `1` to enable interactive continuation mode in non-dumb terminals (progress past errors)
 - `CAPT_CAVALIER` :: Set to `1` to progress past all errors with no remorse
 - `CAPT_BLACK_TRIGGERS` :: Set to CSV string of individual triggers you wish to disable
-- `CAPT_BLACK_HOOKS` :: Set to CSV string of individual hooks you wish to
-  disable
-- `CAPT_TIMEOUT` :: limit the duration of all triggers
+- `CAPT_BLACK_HOOKS` :: Set to CSV string of individual hooks you wish to disable
+- `CAPT_TIMEOUT` :: Limit the duration of all triggers
 - `CAPT_FILES_OVERRIDE` :: Set to list of files to run on (instead of git-staged)
 - `CAPT_MAIN_BRANCH` :: Useful for running in CI since default will be feature branch
 - `CAPT_FILE` :: Team-shared control file containing global hooks/triggers
@@ -587,6 +619,7 @@ your own. Here is a list of themes to start with:
 
 - linting: code, docs (safety etc violations, fixmes)
 - formatting: code, commit messages (style, indentation, whitespace, line length)
+- spell-checking: soft warnings you want to be aware of
 - alerting: migrations to be run
 - deprecations: insecure or outdated deps
 - audio effects: good or bad things completed
@@ -657,9 +690,9 @@ your tests and analyzers, etc, over your whole code base anyway.
 
 ### Specific comparison to Lefthook
 
-I really like lefthook. It's the most featureful, fastest, and simplest of the
+I really like Lefthook. It's the most featureful, fastest, and simplest of the
 managers I tried to adopt. In the end it has a couple blockers. If you don't
-care about these things, you might want to go with lefthook since it has a
+care about these things, you might want to go with Lefthook since it has a
 real team behind it.
 
 - The golang code base is overall nice, and I like go. But it's huge for the
@@ -687,6 +720,11 @@ If for any reason you need to bypass Captain, set this: `export CAPT_DISABLE=1`
 - [Dividend Finance](https://www.dividendfinance.com/) (Clojure projects)
 
 ## Contributing
+
+Please submit any problems via
+[github issues](https://github.com/MicahElliott/captain/issues).
+
+## Releases
 
 Releases are created with [Havoc](https://github.com/MicahElliott/havoc).
 
