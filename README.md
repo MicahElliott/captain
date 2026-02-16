@@ -12,7 +12,7 @@ capt <GIT_HOOK>
 > dependency-free shell script to download. Suited for sharing across a team,
 > extensible for individuals. Supports all
 > [common git hooks](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
-> (and probably more)! Works with Linux, MacOS, BSDs, probably WSL.
+> (and probably more)! Works with Linux, MacOS, BSDs, WSL.
 > Language-agnostic — no npm, ruby, yaml or any such thing to wrestle with.
 
 ```text

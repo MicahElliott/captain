@@ -1,4 +1,5 @@
 # Captain git-hook manager control file
+# shellcheck disable=SC2034,SC2016
 
 # Why is there no shellcheck? Doesn't seem to work well for too many things with Zsh.
 pre_commit=(
@@ -13,6 +14,8 @@ pre_commit=(
     # -markdownlint
     'wscheck(md|sh)'
     # "fixmes: git-confirm.sh ## check for FIXMEs etc"
+    shellcheck # TODO
+    'spellcheck: enchant-2 -lL README.md | wc -l ## placeholder for new checker'
 )
 
 commit_msg=( msglint )
