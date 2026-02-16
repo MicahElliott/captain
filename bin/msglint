@@ -1,4 +1,5 @@
 #! /bin/zsh
+# shellcheck disable=SC2068
 
 # Check commit message for adherence to hard-coded style
 
@@ -14,20 +15,31 @@ line1=$(print $msg | head -1)
 
 # grep's -P option only in gnu
 if [[ $OSTYPE == darwin* ]] ; then
-    sgrep() { ggrep $@ }
-    swc() { gwc $@ }
+    sgrep() { ggrep $@ ; }
+    swc() { gwc $@ ; }
 else
-    sgrep() { grep $@ }
-    swc() { wc $@ }
+    sgrep() { grep $@ ; }
+    swc() { wc $@ ; }
 fi
 
-if ! print $line1 | sgrep -q -P '^:(books|sparkles|bug|wrench|recycle|lipstick|cop|check|lock|bomb|tada|skull):( \(#\d{1,}\))*( \[.+\])* [A-Z].*'; then
+# Havoc Release Spec
+# https://micahelliott.github.io/havoc/
+features='tada|books|sparkles|construction|zap|wheelchair|abc|lock'
+fixmes='bug|wastebasket'
+other='rat|flags|guard|ledger|package|recycle|poop|wrench|bricks|key|alien|robot|alembic|stethoscope|thread'
+breaking='boom'
+crises='ambulance|rewind'
+havocspec="$features|$fixmes|$other|$breaking|$crises"
+
+# orig='bug|wrench|recycle|lipstick|cop|check|lock|bomb|tada|skull'
+
+if ! print $line1 | sgrep -q -P '^:('$havocspec'):( \(#\d{1,}\))*( \[.+\])* [A-Z].*'; then
     print "Message:"
     print '>>>'
     print $msg
     print '<<<'
     print 'Message does not match pattern'
-    print 'Acceptable subjects: (books|sparkles|bug|wrench|recycle|lipstick|cop|check|lock|bomb|tada|skull)'
+    print "Acceptable subjects: $havocspec"
     print 'Optional specs: (#123) [topic]'
     print 'Proper message: Verb ...'
     print "Full example: $example"
