@@ -105,7 +105,7 @@ git commit # etc, just like always, nothing you do changed except NOW CLEAN CODE
 ---
 
 OR, if you're looking to be the one to introduce Captain git-hook management to a
-project, read on....
+project/team, read on....
 
 ## Do I need a hook manager?
 
@@ -164,6 +164,7 @@ to invent, write, and/or wrap around every tool you run:
 - **Parallel execution** control of each tool
 - **Debugging** aids for writing your own new scripts
 - **Custom scripts** location for collecting in your repo
+- **Flexible run modes** for verbosity, interactivity, auto-stashing, etc
 
 You can think of Captain as like moving your fancy CI setup into everyone’s
 local control. The output is reminiscent of Github Actions, but way easier to
@@ -182,16 +183,17 @@ _Captain is_:
 
 - Tiny, transparent, no deps: read and understand the whole code base (one small Zsh file) in minutes
 - Simple: workflow is just calling commands or the scripts you already have
-- Client-compatible: other managers don't play nice with some git clients (eg, magit)
+- Client-compatible: other managers don't play nice (output, interactivity, stashing) with some git clients (eg, Emacs' magit)
 - Super fast: sensitivity-colored timing details apparent everywhere
 - Any terminal (xterm etc): uses unicode indicators instead of emojis, tuned for 80-char display width
 - Basic: config is just a `.capt/share.sh` control file with shell arrays of scripts for each hook (no yaml etc)
-- Clean, clear, and concise: your standard git-hooks become one-line calls to `capt` (not cluttered messes)
+- Clean, clear, and concise: your standard git-hooks files become one-line calls to `capt` (not cluttered messes)
 - Fun: get ideas for new triggers and be entertained by the Captain!
 - All documentation right here: this readme is all you need
 - Language/tool agnostic: don't need npm, yarn/2, gem, pip, etc; works with any code base
 - Hands-off: Captain doesn't try to install things for you (see _External Tools Installation_ below)
 - Extensible, custom for each dev: run your own triggers in addition to standards
+- Flexible: you decide which triggers run, whether you want working tree checked, and much more
 
 Captain also has most of the features of other managers:
 
@@ -519,6 +521,7 @@ You can fine-tune Captain’s behavior with several environment variables.
 - `CAPT_DEBUG` :: Set to `1` to enable debug mode
 - `CAPT_INTERACTIVE` :: Set to `1` to enable interactive continuation mode in non-dumb terminals (progress past errors)
 - `CAPT_CAVALIER` :: Set to `1` to progress past all errors with no remorse
+- `CAPT_AUTOSTASH` :: Set to `1` to enable git auto-stash (omits non-indexed changes from triggers)
 - `CAPT_BLACK_TRIGGERS` :: Set to CSV string of individual triggers you wish to disable
 - `CAPT_BLACK_HOOKS` :: Set to CSV string of individual hooks you wish to disable
 - `CAPT_TIMEOUT` :: Limit the duration of all triggers

@@ -1,5 +1,5 @@
 #! /bin/zsh
-# shellcheck disable=SC1003,SC1105,SC2154,SC2016,SC2102,SC2199,SC2068,SC2168,SC1090,SC2210
+# shellcheck disable=SC1003,SC1105,SC2154,SC2016,SC2102,SC2199,SC2068,SC2168,SC1090,SC2210,SC1007
 
 # capt: a simple git-hook manager
 
@@ -22,6 +22,7 @@ path+=$scriptsdir
 hookfiles=( # Supported hooks
     pre-commit prepare-commit-msg commit-msg post-commit post-checkout
     pre-push post-rewrite )
+teammode=share
 
 # Why isn't this necessary?? https://stackoverflow.com/questions/57659657/zsh-colours-only-work-when-command-used-in-terminal-directly
 autoload -U colors; colors
@@ -35,6 +36,7 @@ aye()  { print    "$reset_color$fg_bold[blue]$icon$reset_color" $@ ; }
 ayen() { print -n "$reset_color$fg_bold[blue]$icon$reset_color" $@ ; } # no newline
 
 [[ -n $CAPT_DISABLE ]] && { print 'Sailin right past yer captain with CAPT_DISABLE bein set.'; exit ; }
+[[ -n $CAPT_DISABLE_QUIETLY ]] && exit
 
 # Convert CSVs to arrays for easier use
 black_triggers=( ${(s:,:)CAPT_BLACK_TRIGGERS} )
@@ -134,6 +136,7 @@ typeset -A envars=(
     CAPT_DEBUG          'Set to ‘1’ to enable debug mode'
     CAPT_INTERACTIVE    'Set to ‘1’ to enable interactive continuation mode (progress past errors)'
     CAPT_CAVALIER       'Set to ‘1’ to progress past all errors with no remorse'
+    CAPT_AUTOSTASH      'Set to ‘1’ to enable git auto-stash (omits non-indexed changes from triggers)'
     CAPT_BLACK_TRIGGERS 'Set to CSV string of individual triggers you wish to disable'
     CAPT_BLACK_HOOKS    'Set to CSV string of individual hooks you wish to disable'
     CAPT_TIMEOUT        'Set to number of seconds allowed for each trigger completion (default 10s)'
@@ -281,7 +284,7 @@ list_available_hooks () {
                   fi
              else printf "  %-32s (missing file: $gf)\n" $fg_bold[magenta]$suphook$reset_color
              fi
-        else printf '  %-32s (not in capt)\n'  $fg_bold[gray]$suphook$reset_color
+        else printf '  %-32s (not in capt)\n'  $fg_bold[magenta]$suphook$reset_color
         fi
     done
     for a in $arrays
@@ -514,12 +517,26 @@ get_combined_filtereds () {
     fi
 }
 
+undostash () {
+    if   [[ -v didstash ]]
+    then # print 'looks like did a stash'
+         laststash=( $(git stash list -n1) ) # grab just the final piece of most recent stash
+         if [[ $laststash[-1] == "$stashname" ]]
+         then unset didstash
+              aye "$fg[blue]Relinquishin’ the stash: $stashname$reset_color"
+              git stash pop --quiet
+         else aye "fg[red]Somethin’s awash!"
+         fi
+    fi
+}
+
 # Run the scripts from control file
 run_scripts () {
     # print active_githook: $active_githook
     # FIXME maybe all the vars (CAPT_FILES_CHANGED etc) should be local since getting reset on every call?
     # TODO check for existence of specified hook and print meaningful message if no/empty hook
     if [[ -z $@ ]]; then aye "No triggers to be run."; return; fi
+
     # FIXME post-commit hook shows no staged files, so need to only do this check for some hooks
     modified_cnt=$( git diff --name-only --cached |wc -l )
     file_worthy_hooks=( pre-commit )
@@ -531,17 +548,32 @@ run_scripts () {
         aye "$fg[red]Stavin’ off yer $active_githook hook since ye blacklisted the varmint (CAPT_BLACK_HOOKS).$reset_color"
         return
     fi
+
     # Print out all the scripts about to be run
     executors=() cmds_lens=() max_cmd_len=0
     for line in $@; do
         # shellcheck disable=SC2298
         [[ $line == *:* ]] &&
-            executors+="$fg_bold[gray]${${(@s/:/)line}[1]}$reset_color" ||
-            executors+="$fg_bold[gray]$line$reset_color"
+            executors+="$fg[cyan]${${(@s/:/)line}[1]}$reset_color" ||
+            executors+="$fg[cyan]$line$reset_color"
         cmds_lens+=$(print $line | ssed 's/[:( ].*//' | wc -m )
     done
     max_cmd_len=$(print -l $cmds_lens | sort -nr | head -1)
-    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg_bold[gray][☠ $executors$fg_bold[gray]]$reset_color" # ucloud
+    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg[cyan][☠ $executors$fg[cyan]]$reset_color" # ucloud
+
+    # Do stash
+    if [[ -v CAPT_AUTOSTASH && $active_githook == pre-commit ]]
+    then stamp=$(date +%s)
+         # unset GIT_LITERAL_PATHSPECS
+         stashname="captstash-precommit-$teammode-$stamp"
+         aye "$fg[blue]Auto-stashing unindexed working tree as: $stashname$reset_color"
+         # https://stackoverflow.com/a/70309897/326516
+         # https://github.com/magit/magit/issues/3419
+         CAPT_DISABLE_QUIETLY=1 GIT_LITERAL_PATHSPECS= git stash push --quiet --keep-index --message="$stashname"
+         print
+         didstash=true
+    fi
+
     # Run through each trigger
     for line in $@; do
         # Reset for each time through
@@ -668,6 +700,7 @@ run_scripts () {
             print '  CAPT_CAVALIER, CAPT_INTERACTIVE, CAPT_DISABLE, CAPT_BLACK_TRIGGERS, CAPT_BLACK_HOOKS, CAPT_VERBOSE'
             print 'Then commit again to rerun.'
             print 'Run ‘capt help’ for more details on any of those.'
+            undostash
             exit $es
         else # Proceed!
             if   [[ -n $CAPT_VERBOSE ]]
@@ -680,6 +713,8 @@ run_scripts () {
             fi
         fi
     done
+
+    undostash
 
     if   [[ -v wounded ]]
     then aye "$fg_bold[orange]⚑⚑⚑ Suffered some scathin’ ya scurvy knave. ⚑⚑⚑ $reset_color"
@@ -738,6 +773,7 @@ fi
 if   [[ -f $captfilelocal ]] # Run user-local hooks
 then runlevel=$captfilelocal
      icon='<*‿*>'
+     teammode=local
      select_hook
 fi
 
