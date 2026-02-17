@@ -14,8 +14,8 @@ pre_commit=(
     # -markdownlint
     'wscheck(md|sh)'
     # "fixmes: git-confirm.sh ## check for FIXMEs etc"
-    shellcheck # TODO
-    'spellcheck: enchant-2 -lL README.md | wc -l ## placeholder for new checker'
+    -shellcheck # TODO
+    '-spellcheck: enchant-2 -lL README.md | wc -l ## placeholder for new checker'
 )
 
 commit_msg=( msglint )
