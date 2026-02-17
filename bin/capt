@@ -22,7 +22,6 @@ path+=$scriptsdir
 hookfiles=( # Supported hooks
     pre-commit prepare-commit-msg commit-msg post-commit post-checkout
     pre-push post-rewrite )
-teammode=share
 
 # Why isn't this necessary?? https://stackoverflow.com/questions/57659657/zsh-colours-only-work-when-command-used-in-terminal-directly
 autoload -U colors; colors
@@ -559,7 +558,14 @@ run_scripts () {
         cmds_lens+=$(print $line | ssed 's/[:( ].*//' | wc -m )
     done
     max_cmd_len=$(print -l $cmds_lens | sort -nr | head -1)
-    print; aye "$fg_bold[cyan]☁☁☁ $runlevel ☁☁☁$reset_color $fg[cyan][☠ $executors$fg[cyan]]$reset_color" # ucloud
+    print
+    if   [[ -n $CAPT_VERBOSE ]]
+    then if   [[ $teammode == share ]]
+         then aye "$fg_bold[cyan]☁☁☁ SHARED TEAM MODE ☁☁☁$reset_color"
+         else aye "$fg_bold[cyan]☁☁☁ LOCAL USER MODE  ☁☁☁$reset_color"
+         fi
+    fi
+    aye "$fg_bold[cyan]☁☁☁  $runlevel  ☁☁☁$reset_color $fg[cyan][☠ $executors$fg[cyan]]$reset_color" # ucloud
 
     # Do stash
     if [[ -v CAPT_AUTOSTASH && $active_githook == pre-commit ]]
@@ -747,6 +753,8 @@ setup_changes
 # Run team-wide repo hooks
 runlevel=$captfile
 source $captfile
+teammode=share
+
 # FIXME non-hook tasks not being seen
 select_hook $1
 
