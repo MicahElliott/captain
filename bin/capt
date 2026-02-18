@@ -9,7 +9,7 @@
 GITARG1=$argv[2] GITARG2=$argv[3] GITARG3=$argv[4]
 # print all args: $@
 
-captversion=v2026.02.06
+captversion=v2026.02.18
 if [[ $*[1] == 'version' || $*[1] == '--version' || $*[1] == '-v' ]]; then print "capt $captversion"; exit; fi
 
 captdir=${CAPT_DIR-.capt}
@@ -35,7 +35,8 @@ aye()  { print    "$reset_color$fg_bold[blue]$icon$reset_color" $@ ; }
 ayen() { print -n "$reset_color$fg_bold[blue]$icon$reset_color" $@ ; } # no newline
 
 [[ -n $CAPT_DISABLE ]] && { print 'Sailin right past yer captain with CAPT_DISABLE bein set.'; exit ; }
-[[ -n $CAPT_DISABLE_QUIETLY ]] && exit
+[[ $CAPT == 0 ]]       && { print 'Sailin right past yer captain with CAPT=0 bein set.';       exit ; }
+[[ -n $CAPT_DISABLE_QUIETLY ]] && exit # used only internally for NO output
 
 # Convert CSVs to arrays for easier use
 black_triggers=( ${(s:,:)CAPT_BLACK_TRIGGERS} )
@@ -131,6 +132,7 @@ typeset -A builtin_helps=(
 
 typeset -A envars=(
     CAPT_VERBOSE        'Unset to disable subcommand output and docstrings'
+    CAPT                'Set to ‘0’ to bypass captain doing anything'
     CAPT_DISABLE        'Set to ‘1’ to bypass captain doing anything'
     CAPT_DEBUG          'Set to ‘1’ to enable debug mode'
     CAPT_INTERACTIVE    'Set to ‘1’ to enable interactive continuation mode (progress past errors)'

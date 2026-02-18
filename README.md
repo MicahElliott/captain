@@ -517,6 +517,7 @@ export CAPT_BLACK_TRIGGERS=slowassthing1,brokeassthing3
 You can fine-tune Captain’s behavior with several environment variables.
 
 - `CAPT_VERBOSE` :: Unset to disable subcommand output and docstrings
+- `CAPT` :: Set to `0` to bypass captain doing anything
 - `CAPT_DISABLE` :: Set to `1` to bypass captain doing anything
 - `CAPT_DEBUG` :: Set to `1` to enable debug mode
 - `CAPT_INTERACTIVE` :: Set to `1` to enable interactive continuation mode in non-dumb terminals (progress past errors)
