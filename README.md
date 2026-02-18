@@ -85,14 +85,14 @@ git commit # etc, just like always, nothing you do changed except NOW CLEAN CODE
 
 **THAT’S IT, YOU’RE DONE, GET BACK TO WORK!!** But just some minor notes:
 
-> [!NOTE]
+> [!IMPORTANT]
 > If anything goes sideways during a commit, please
 > [report it!](https://github.com/MicahElliott/captain/issues) And note that you
-> can always disable Captain by setting the environment variable:
-> `CAPT_DISABLE=1`
+> can always disable Captain/hooks by setting the environment variable:
+> `CAPT=0` or `git-commit`'s `-n/--no-verify`.
 
-> [!NOTE]
-> MacOS users: If you use a git client/IDE that is not
+> [!TIP]
+> **MacOS users**: If you use a git client/IDE that is not
 > started from a terminal, you'll need to ensure your `PATH` is set to include
 > `/path/to/captain` by editing `/etc/paths`, as per
 > [this](https://stackoverflow.com/a/22465399/326516).
